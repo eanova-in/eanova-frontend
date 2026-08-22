@@ -741,24 +741,39 @@
 <section class="view" id="view-signup">
   <div class="wrap authshell">
     <div class="authcard">
-      <span class="eyebrow">Step 1 of 1</span>
-      <h2 style="margin-top:10px;">Create your firm's account</h2>
-      <p class="lead">14-day free trial. No card required.</p>
-      <div class="auth-error" id="signupError" style="display:none;"></div>
-      <form id="signupForm">
-        <div class="field"><label>Your name</label><input type="text" id="su-name" placeholder="Priya Sharma" required></div>
-        <div class="field"><label>Firm name</label><input type="text" id="su-firm" placeholder="Sharma &amp; Associates" required></div>
-        <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="priya@sharmaca.in" required></div>
-        <div class="field"><label>Region</label>
-          <select id="su-region">
-            <option value="in">🇮🇳 India — ₹99 first month</option>
-            <option value="intl">🌍 Outside India — $9 first month</option>
-          </select>
-        </div>
-        <div class="field"><label>Password</label><div class="pwd-field-wrap"><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6"><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
-        <button class="btn" type="submit">Create Account</button>
-      </form>
-      <div class="authswitch">Already have an account? <button type="button" data-nav="login">Log in</button></div>
+      <!-- STEP 1: Signup Form -->
+      <div id="signupStep1">
+        <span class="eyebrow">Step 1 of 2</span>
+        <h2 style="margin-top:10px;">Create your firm's account</h2>
+        <p class="lead">14-day free trial. No card required.</p>
+        <div class="auth-error" id="signupError" style="display:none;"></div>
+        <form id="signupForm">
+          <div class="field"><label>Your name</label><input type="text" id="su-name" placeholder="Priya Sharma" required></div>
+          <div class="field"><label>Firm name</label><input type="text" id="su-firm" placeholder="Sharma &amp; Associates" required></div>
+          <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="priya@sharmaca.in" required></div>
+          <div class="field"><label>Region</label>
+            <select id="su-region">
+              <option value="in">🇮🇳 India — ₹99 first month</option>
+              <option value="intl">🌍 Outside India — $9 first month</option>
+            </select>
+          </div>
+          <div class="field"><label>Password</label><div class="pwd-field-wrap"><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6"><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+          <button class="btn" type="submit">Create Account</button>
+        </form>
+        <div class="authswitch">Already have an account? <button type="button" data-nav="login">Log in</button></div>
+      </div>
+
+      <!-- STEP 2: OTP Verification -->
+      <div id="signupStep2" style="display:none;">
+        <span class="eyebrow">Step 2 of 2</span>
+        <h2 style="margin-top:10px;">Verify your email</h2>
+        <p class="lead" id="signupOtpSentTo">We've sent a 6-digit code to your email.</p>
+        <div class="auth-error" id="signupOtpError" style="display:none;"></div>
+        <form id="signupOtpForm">
+          <div class="field"><label>One-time code</label><input type="text" id="su-otp" placeholder="123456" maxlength="6" inputmode="numeric" required></div>
+          <button class="btn" type="submit">Verify & Create Account</button>
+        </form>
+      </div>
     </div>
   </div>
 </section>
@@ -771,7 +786,6 @@
       <p class="lead">Use the email and password you registered with.</p>
       <div class="auth-error" id="loginError" style="display:none;"></div>
       <form id="loginForm">
-        <div class="auth-error" id="loginError" style="display:none;"></div>
         <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="priya@sharmaca.in" required></div>
         <div class="field">
           <label style="display:flex;justify-content:space-between;align-items:center;">
@@ -1331,6 +1345,26 @@ function logoutUser(){
 
 const API_BASE = 'https://eanova-backend.onrender.com';
 
+/* ===================== NAVIGATION HANDLER ===================== */
+function navTo(viewId) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  const targetView = document.getElementById("view-" + viewId);
+  if (targetView) {
+    targetView.classList.add("active");
+    window.scrollTo(0, 0);
+  }
+}
+
+// Click handler for data-nav buttons/links
+document.addEventListener("click", function(e) {
+  const btn = e.target.closest("[data-nav]");
+  if (btn) {
+    e.preventDefault();
+    const viewName = btn.dataset.nav;
+    navTo(viewName);
+  }
+});
+
 /* ===================== SIGNUP FLOW (WITH EMAIL OTP) ===================== */
 document.getElementById('signupForm').addEventListener('submit', function(e){
   e.preventDefault();
@@ -1427,197 +1461,6 @@ function verifySignupOtp(otp) {
     }
   });
 }
-
-/* ===================== LOGIN FLOW ===================== */
-document.getElementById('loginForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('loginError');
-  if (errBox) errBox.style.display = 'none';
-
-  const email = document.getElementById('li-email').value.trim();
-  const password = document.getElementById('li-pass').value;
-
-  if (!email || !password) {
-    if (errBox) {
-      errBox.textContent = 'Please fill in both email and password.';
-      errBox.style.display = 'block';
-    }
-    return;
-  }
-
-  fetch(`${API_BASE}/api/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, password: password })
-  })
-  .then(res => res.json().then(data => ({ status: res.status, body: data })))
-  .then(result => {
-    if (result.status === 200 || result.body.token) {
-      const userData = result.body.user;
-      state.user = userData;
-      state.subscriptionActive = userData.subscriptionActive || false;
-      state.clients = userData.clients || [];
-      localStorage.setItem('eanova_user', JSON.stringify(userData));
-      localStorage.setItem('eanova_token', result.body.token);
-      navTo('dashboard');
-      renderDashboard();
-    } else {
-      if (errBox) {
-        errBox.textContent = result.body.message || 'Login failed.';
-        errBox.style.display = 'block';
-      }
-    }
-  })
-  .catch(err => {
-    if (errBox) {
-      errBox.textContent = 'Server connection error. Please try again.';
-      errBox.style.display = 'block';
-    }
-  });
-});
-
-/* ===================== FORGOT PASSWORD FLOW ===================== */
-document.getElementById('forgotPasswordLink').addEventListener('click', function(){
-  navTo('forgot');
-});
-
-document.getElementById('forgotEmailForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError1');
-  if (errBox) errBox.style.display = 'none';
-
-  const email = document.getElementById('fp-email').value.trim();
-
-  if (!email) {
-    if (errBox) {
-      errBox.textContent = 'Please enter your email.';
-      errBox.style.display = 'block';
-    }
-    return;
-  }
-
-  fetch(`${API_BASE}/api/forgot-password-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
-  })
-  .then(res => res.json().then(data => ({ status: res.status, body: data })))
-  .then(result => {
-    if (result.status === 200) {
-      window.pendingForgotEmail = email;
-      document.getElementById('forgotStep1').style.display = 'none';
-      document.getElementById('forgotStep2').style.display = 'block';
-      document.getElementById('forgotOtpSentTo').textContent = `We've sent a 6-digit code to ${email}.`;
-    } else {
-      if (errBox) {
-        errBox.textContent = result.body.message || 'Failed to send OTP.';
-        errBox.style.display = 'block';
-      }
-    }
-  })
-  .catch(err => {
-    if (errBox) {
-      errBox.textContent = 'Server connection error. Please try again.';
-      errBox.style.display = 'block';
-    }
-  });
-});
-
-document.getElementById('forgotOtpForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError2');
-  if (errBox) errBox.style.display = 'none';
-
-  const otp = document.getElementById('fp-otp').value.trim();
-  const email = window.pendingForgotEmail;
-
-  if (!otp || otp.length !== 6) {
-    if (errBox) {
-      errBox.textContent = 'Please enter a valid 6-digit code.';
-      errBox.style.display = 'block';
-    }
-    return;
-  }
-
-  window.pendingForgotOtp = otp;
-  document.getElementById('forgotStep2').style.display = 'none';
-  document.getElementById('forgotStep3').style.display = 'block';
-});
-
-document.getElementById('resendOtpLink').addEventListener('click', function(){
-  const email = window.pendingForgotEmail;
-  if (!email) return;
-
-  fetch(`${API_BASE}/api/forgot-password-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
-  })
-  .then(res => res.json().then(data => ({ status: res.status, body: data })))
-  .then(result => {
-    if (result.status === 200) {
-      alert('OTP resent to your email!');
-    }
-  })
-  .catch(err => {
-    alert('Failed to resend OTP. Please try again.');
-  });
-});
-
-document.getElementById('forgotResetForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError3');
-  if (errBox) errBox.style.display = 'none';
-
-  const newPass = document.getElementById('fp-newpass').value;
-  const confirmPass = document.getElementById('fp-newpass2').value;
-  const email = window.pendingForgotEmail;
-  const otp = window.pendingForgotOtp;
-
-  if (!newPass || newPass.length < 6) {
-    if (errBox) {
-      errBox.textContent = 'Password must be at least 6 characters.';
-      errBox.style.display = 'block';
-    }
-    return;
-  }
-
-  if (newPass !== confirmPass) {
-    if (errBox) {
-      errBox.textContent = 'Passwords do not match.';
-      errBox.style.display = 'block';
-    }
-    return;
-  }
-
-  fetch(`${API_BASE}/api/reset-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, otp: otp, newPassword: newPass })
-  })
-  .then(res => res.json().then(data => ({ status: res.status, body: data })))
-  .then(result => {
-    if (result.status === 200) {
-      alert('Password reset successful! Please log in with your new password.');
-      window.pendingForgotEmail = null;
-      window.pendingForgotOtp = null;
-      document.getElementById('forgotStep3').style.display = 'none';
-      document.getElementById('forgotStep1').style.display = 'block';
-      navTo('login');
-    } else {
-      if (errBox) {
-        errBox.textContent = result.body.message || 'Password reset failed.';
-        errBox.style.display = 'block';
-      }
-    }
-  })
-  .catch(err => {
-    if (errBox) {
-      errBox.textContent = 'Server error. Please try again.';
-      errBox.style.display = 'block';
-    }
-  });
-});
 
 /* ===================== DASHBOARD RENDER ===================== */
 function renderDashboard(){
