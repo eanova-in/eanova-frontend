@@ -741,7 +741,6 @@
 <section class="view" id="view-signup">
   <div class="wrap authshell">
     <div class="authcard">
-      <!-- STEP 1: Signup Form -->
       <div id="signupStep1">
         <span class="eyebrow">Step 1 of 2</span>
         <h2 style="margin-top:10px;">Create your firm's account</h2>
@@ -763,7 +762,6 @@
         <div class="authswitch">Already have an account? <button type="button" data-nav="login">Log in</button></div>
       </div>
 
-      <!-- STEP 2: OTP Verification -->
       <div id="signupStep2" style="display:none;">
         <span class="eyebrow">Step 2 of 2</span>
         <h2 style="margin-top:10px;">Verify your email</h2>
@@ -771,7 +769,7 @@
         <div class="auth-error" id="signupOtpError" style="display:none;"></div>
         <form id="signupOtpForm">
           <div class="field"><label>One-time code</label><input type="text" id="su-otp" placeholder="123456" maxlength="6" inputmode="numeric" required></div>
-          <button class="btn" type="submit">Verify & Create Account</button>
+          <button class="btn" type="submit">Verify &amp; Create Account</button>
         </form>
       </div>
     </div>
@@ -781,9 +779,9 @@
 <section class="view" id="view-login">
   <div class="wrap authshell">
     <div class="authcard">
-      <span class="eyebrow">Welcome back</span>
-      <h2 style="margin-top:10px;">Log in to EANOVA</h2>
-      <p class="lead">Use the email and password you registered with.</p>
+      <span class="eyebrow">Log in to your account</span>
+      <h2 style="margin-top:10px;">Welcome back</h2>
+      <p class="lead">Access your dashboard and manage clients.</p>
       <div class="auth-error" id="loginError" style="display:none;"></div>
       <form id="loginForm">
         <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="priya@sharmaca.in" required></div>
@@ -797,7 +795,6 @@
         <button class="btn" type="submit">Log In</button>
       </form>
       <div class="authswitch">New to EANOVA? <button type="button" data-nav="signup">Create an account</button></div>
-      <p style="font-size:11.5px;color:rgba(36,31,26,0.45);margin-top:18px;line-height:1.5;">Accounts are stored in this browser only — logging in on a different device or browser won't find this account yet. Real cross-device accounts need a backend, which is the next build step.</p>
     </div>
   </div>
 </section>
