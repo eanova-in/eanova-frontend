@@ -1363,7 +1363,278 @@ document.addEventListener("click", function(e) {
     const viewName = btn.dataset.nav;
     navTo(viewName);
   }
+}
+
+/* ===================== SIGNUP FLOW ===================== */
+document.getElementById('signupForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('signupError');
+  if (errBox) errBox.style.display = 'none';
+
+  const name = document.getElementById('su-name').value.trim();
+  const firm = document.getElementById('su-firm').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-pass').value;
+  const region = document.getElementById('su-region').value;
+
+  if (!email || !password) {
+    if (errBox) {
+      errBox.textContent = 'Please fill in all required fields.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  fetch(`${API_BASE}/api/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if (result.status === 200) {
+      window.pendingSignupData = { name, firm, email, password, region };
+      document.getElementById('signupStep1').style.display = 'none';
+      document.getElementById('signupStep2').style.display = 'block';
+      document.getElementById('signupOtpSentTo').textContent = `We've sent a 6-digit code to ${email}.`;
+    } else {
+      if (errBox) {
+        errBox.textContent = result.body.message || 'Failed to send OTP.';
+        errBox.style.display = 'block';
+      }
+    }
+  })
+  .catch(err => {
+    if (errBox) {
+      errBox.textContent = 'Server connection error.';
+      errBox.style.display = 'block';
+    }
+  });
 });
+
+document.getElementById('signupOtpForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('signupOtpError');
+  if (errBox) errBox.style.display = 'none';
+
+  const otp = document.getElementById('su-otp').value.trim();
+  const data = window.pendingSignupData;
+  
+  if (!otp || otp.length !== 6) {
+    if (errBox) {
+      errBox.textContent = 'Please enter a valid 6-digit code.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  if (!data) {
+    if (errBox) {
+      errBox.textContent = 'Please start registration again.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  fetch(`${API_BASE}/api/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: data.name,
+      firm: data.firm,
+      email: data.email,
+      password: data.password,
+      region: data.region,
+      otp: otp
+    })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if (result.status === 201) {
+      alert('✅ Account created successfully!');
+      window.pendingSignupData = null;
+      navTo('login');
+    } else {
+      if (errBox) {
+        errBox.textContent = result.body.message || 'OTP verification failed.';
+        errBox.style.display = 'block';
+      }
+    }
+  })
+  .catch(err => {
+    if (errBox) {
+      errBox.textContent = 'Server error.';
+      errBox.style.display = 'block';
+    }
+  });
+});
+
+/* ===================== LOGIN FLOW ===================== */
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('loginError');
+  if (errBox) errBox.style.display = 'none';
+
+  const email = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-pass').value;
+
+  if (!email || !password) {
+    if (errBox) {
+      errBox.textContent = 'Please fill in both email and password.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  fetch(`${API_BASE}/api/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, password: password })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if (result.status === 200 || result.body.token) {
+      const userData = result.body.user;
+      state.user = userData;
+      state.subscriptionActive = userData.subscriptionActive || false;
+      state.clients = userData.clients || [];
+      localStorage.setItem('eanova_user', JSON.stringify(userData));
+      localStorage.setItem('eanova_token', result.body.token);
+      navTo('dashboard');
+      renderDashboard();
+    } else {
+      if (errBox) {
+        errBox.textContent = result.body.message || 'Login failed.';
+        errBox.style.display = 'block';
+      }
+    }
+  })
+  .catch(err => {
+    if (errBox) {
+      errBox.textContent = 'Server connection error.';
+      errBox.style.display = 'block';
+    }
+  });
+});
+
+/* ===================== FORGOT PASSWORD FLOW ===================== */
+document.getElementById('forgotEmailForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError1');
+  if (errBox) errBox.style.display = 'none';
+
+  const email = document.getElementById('fp-email').value.trim();
+
+  if (!email) {
+    if (errBox) {
+      errBox.textContent = 'Please enter your email.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  fetch(`${API_BASE}/api/forgot-password-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if (result.status === 200) {
+      window.pendingForgotEmail = email;
+      document.getElementById('forgotStep1').style.display = 'none';
+      document.getElementById('forgotStep2').style.display = 'block';
+      document.getElementById('forgotOtpSentTo').textContent = `We've sent a 6-digit code to ${email}.`;
+    } else {
+      if (errBox) {
+        errBox.textContent = result.body.message || 'Failed to send OTP.';
+        errBox.style.display = 'block';
+      }
+    }
+  })
+  .catch(err => {
+    if (errBox) {
+      errBox.textContent = 'Server connection error.';
+      errBox.style.display = 'block';
+    }
+  });
+});
+
+document.getElementById('forgotOtpForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError2');
+  if (errBox) errBox.style.display = 'none';
+
+  const otp = document.getElementById('fp-otp').value.trim();
+
+  if (!otp || otp.length !== 6) {
+    if (errBox) {
+      errBox.textContent = 'Please enter a valid 6-digit code.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  window.pendingForgotOtp = otp;
+  document.getElementById('forgotStep2').style.display = 'none';
+  document.getElementById('forgotStep3').style.display = 'block';
+});
+
+document.getElementById('forgotResetForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError3');
+  if (errBox) errBox.style.display = 'none';
+
+  const newPass = document.getElementById('fp-newpass').value;
+  const confirmPass = document.getElementById('fp-newpass2').value;
+  const email = window.pendingForgotEmail;
+  const otp = window.pendingForgotOtp;
+
+  if (!newPass || newPass.length < 6) {
+    if (errBox) {
+      errBox.textContent = 'Password must be at least 6 characters.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    if (errBox) {
+      errBox.textContent = 'Passwords do not match.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  fetch(`${API_BASE}/api/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, otp: otp, newPassword: newPass })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if (result.status === 200) {
+      alert('✅ Password reset successful!');
+      window.pendingForgotEmail = null;
+      window.pendingForgotOtp = null;
+      document.getElementById('forgotStep3').style.display = 'none';
+      document.getElementById('forgotStep1').style.display = 'block';
+      navTo('login');
+    } else {
+      if (errBox) {
+        errBox.textContent = result.body.message || 'Password reset failed.';
+        errBox.style.display = 'block';
+      }
+    }
+  })
+  .catch(err => {
+    if (errBox) {
+      errBox.textContent = 'Server error.';
+      errBox.style.display = 'block';
+    }
+  });
+});
+);
 
 /* ===================== SIGNUP FLOW (WITH EMAIL OTP) ===================== */
 document.getElementById('signupForm').addEventListener('submit', function(e){
