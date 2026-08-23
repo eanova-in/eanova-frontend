@@ -1280,180 +1280,6 @@ document.getElementById('customerCareOkBtn').addEventListener('click', function(
   closeModal('customerCareModal');
 });
 
-/* ===================== MODAL HELPERS (restored — these were missing, which silently broke every modal-based popup on the site) ===================== */
-function openModal(id){ document.getElementById(id).classList.add('show'); }
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
-document.addEventListener('click', function(e){
-  const closer = e.target.closest('[data-close-modal]');
-  if(closer){ closeModal(closer.dataset.closeModal); }
-  if(e.target.classList.contains('modal-overlay')){ e.target.classList.remove('show'); }
-});
-
-/* ===================== ADD CLIENT (restored — button previously had no click handler) ===================== */
-document.getElementById('addClientBtnTop').addEventListener('click', ()=>openModal('addClientModal'));
-document.getElementById('addClientBtnEmpty').addEventListener('click', ()=>openModal('addClientModal'));
-document.getElementById('addClientForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const client = {
-    id: state._nextClientId++,
-    name: document.getElementById('nc-name').value.trim(),
-    gstin: document.getElementById('nc-gstin').value.trim().toUpperCase(),
-    contact: document.getElementById('nc-contact').value.trim(),
-    invoiceCount: parseInt(document.getElementById('nc-invoices').value, 10) || 250,
-    uploadedPR: false, uploaded2B: false,
-    reconciled: false,
-    results: null
-  };
-  state.clients.push(client);
-  persistCurrentAccount();
-  this.reset();
-  document.getElementById('nc-invoices').value = 250;
-  closeModal('addClientModal');
-  renderDashboard();
-});
-
-/* ===================== AUTH SUCCESS MODAL (restored) ===================== */
-function showAuthSuccess(title, message, continueLabel){
-  document.getElementById('authSuccessTitle').textContent = title;
-  document.getElementById('authSuccessMsg').textContent = message;
-  document.getElementById('authSuccessContinueBtn').textContent = continueLabel || 'Continue to Dashboard';
-  openModal('authSuccessModal');
-}
-document.getElementById('authSuccessContinueBtn').addEventListener('click', function(){
-  closeModal('authSuccessModal');
-  showView(state.user ? 'dashboard' : 'login');
-});
-
-/* ===================== LOGIN (restored — form had no submit handler at all, so clicking "Log In" did nothing but reload) ===================== */
-document.getElementById('loginForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('loginError');
-  errBox.style.display = 'none';
-
-  const email = document.getElementById('li-email').value.trim();
-  const password = document.getElementById('li-pass').value;
-  const acc = findAccount(email);
-
-  if(!acc){
-    errBox.textContent = "No account found with this email in this browser. If you signed up on a different device, that account won't be visible here yet — create a new one, or try the device you registered on.";
-    errBox.style.display = 'block';
-    return;
-  }
-  if(acc.password !== password){
-    errBox.textContent = 'Incorrect password. Try again.';
-    errBox.style.display = 'block';
-    return;
-  }
-
-  state.user = { name: acc.name, firm: acc.firm, email: acc.email, password: acc.password, region: acc.region, hasPaidBefore: acc.hasPaidBefore };
-  state.clients = acc.clients || [];
-  state.subscriptionActive = !!acc.subscriptionActive;
-  state._nextClientId = acc.nextClientId || (state.clients.length + 1);
-  state._nextMismatchId = acc.nextMismatchId || 1;
-
-  try { localStorage.setItem(SESSION_KEY, email); } catch(err){ /* storage unavailable */ }
-
-  this.reset();
-  showAuthSuccess('Welcome back', "You're logged in as " + acc.name + '.');
-});
-
-/* ===================== FORGOT PASSWORD FLOW (restored) ===================== */
-let pendingReset = { email: null, otp: null };
-
-function generateOtp(){
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-function resetForgotFlow(){
-  document.getElementById('forgotStep1').style.display = 'block';
-  document.getElementById('forgotStep2').style.display = 'none';
-  document.getElementById('forgotStep3').style.display = 'none';
-  document.getElementById('forgotError1').style.display = 'none';
-  document.getElementById('forgotError2').style.display = 'none';
-  document.getElementById('forgotError3').style.display = 'none';
-  document.getElementById('forgotEmailForm').reset();
-  document.getElementById('forgotOtpForm').reset();
-  document.getElementById('forgotResetForm').reset();
-  pendingReset = { email: null, otp: null };
-}
-document.getElementById('forgotPasswordLink').addEventListener('click', function(){
-  resetForgotFlow();
-  showView('forgot');
-});
-document.getElementById('forgotEmailForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError1');
-  errBox.style.display = 'none';
-  const email = document.getElementById('fp-email').value.trim();
-
-  if(!findAccount(email)){
-    errBox.textContent = 'No account found with this email in this browser.';
-    errBox.style.display = 'block';
-    return;
-  }
-
-  // NOTE: no real email/SMS OTP service is wired up yet (see OTP-SEND-HOOK comment above),
-  // so the code is shown directly on screen instead of pretending to have emailed it.
-  pendingReset.email = email;
-  pendingReset.otp = generateOtp();
-  document.getElementById('forgotOtpSentTo').innerHTML =
-    'No email/SMS service is wired up yet, so here is your code directly: <strong style="color:var(--navy);font-family:\'IBM Plex Mono\',monospace;">' + pendingReset.otp + '</strong>.';
-
-  document.getElementById('forgotStep1').style.display = 'none';
-  document.getElementById('forgotStep2').style.display = 'block';
-});
-document.getElementById('resendOtpLink').addEventListener('click', function(){
-  if(!pendingReset.email) return;
-  pendingReset.otp = generateOtp();
-  document.getElementById('forgotOtpSentTo').innerHTML =
-    'New code (demo mode — no email/SMS service connected yet): <strong style="color:var(--navy);font-family:\'IBM Plex Mono\',monospace;">' + pendingReset.otp + '</strong>';
-});
-document.getElementById('forgotOtpForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError2');
-  errBox.style.display = 'none';
-  const entered = document.getElementById('fp-otp').value.trim();
-
-  if(entered !== pendingReset.otp){
-    errBox.textContent = 'Incorrect code. Please try again.';
-    errBox.style.display = 'block';
-    return;
-  }
-
-  document.getElementById('forgotStep2').style.display = 'none';
-  document.getElementById('forgotStep3').style.display = 'block';
-});
-document.getElementById('forgotResetForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const errBox = document.getElementById('forgotError3');
-  errBox.style.display = 'none';
-  const p1 = document.getElementById('fp-newpass').value;
-  const p2 = document.getElementById('fp-newpass2').value;
-
-  if(p1 !== p2){
-    errBox.textContent = 'Passwords do not match.';
-    errBox.style.display = 'block';
-    return;
-  }
-
-  const accounts = loadAccounts();
-  const idx = accounts.findIndex(a => a.email.toLowerCase() === pendingReset.email.toLowerCase());
-  if(idx === -1){
-    errBox.textContent = 'Something went wrong — account not found. Start over.';
-    errBox.style.display = 'block';
-    return;
-  }
-  accounts[idx].password = p1;
-  saveAccounts(accounts);
-
-  if(state.user && state.user.email.toLowerCase() === pendingReset.email.toLowerCase()){
-    state.user.password = p1;
-  }
-
-  resetForgotFlow();
-  showView('login');
-  showAuthSuccess('Password reset', 'Your password has been updated. Log in with your new password.', 'Back to Log In');
-});
-
 document.addEventListener('click', function(e){
   const scrollBtn = e.target.closest('[data-scroll]');
   if(scrollBtn){
@@ -1568,11 +1394,16 @@ document.getElementById('signupForm').addEventListener('submit', function(e){
   .then(result => {
     if (result.status === 200) {
       window.pendingSignupData = { name, firm, email, password, region };
-      document.getElementById('signupOtpSentTo').textContent = "We've sent a 6-digit code to " + email + '.';
-      document.getElementById('signupOtpError').style.display = 'none';
-      document.getElementById('signupOtpForm').reset();
-      document.getElementById('signupStep1').style.display = 'none';
-      document.getElementById('signupStep2').style.display = 'block';
+      
+      const otpCode = prompt(`An OTP code has been sent to ${email}. Please check your Gmail and enter the OTP:`);
+      if (otpCode) {
+        verifySignupOtp(otpCode);
+      } else {
+        if (errBox) {
+          errBox.textContent = 'OTP verification cancelled.';
+          errBox.style.display = 'block';
+        }
+      }
     } else {
       if (errBox) {
         errBox.textContent = result.body.message || 'Failed to send OTP.';
@@ -1588,14 +1419,8 @@ document.getElementById('signupForm').addEventListener('submit', function(e){
   });
 });
 
-document.getElementById('signupOtpForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const otp = document.getElementById('su-otp').value.trim();
-  if(otp) verifySignupOtp(otp);
-});
-
 function verifySignupOtp(otp) {
-  const errBox = document.getElementById('signupOtpError');
+  const errBox = document.getElementById('signupError');
   const data = window.pendingSignupData;
   if (!data) return;
 
@@ -1614,19 +1439,14 @@ function verifySignupOtp(otp) {
   .then(res => res.json().then(resData => ({ status: res.status, body: resData })))
   .then(result => {
     if (result.status === 201) {
-      state.user = { name: data.name, firm: data.firm, email: data.email, password: data.password, region: data.region, hasPaidBefore: false };
+      state.user = { name: data.name, firm: data.firm, email: data.email, region: data.region };
       state.clients = [];
       state.subscriptionActive = false;
-      state._nextClientId = 1;
-      state._nextMismatchId = 1;
 
-      persistCurrentAccount();
       try { localStorage.setItem(SESSION_KEY, data.email); } catch(e){}
 
       document.getElementById('signupForm').reset();
-      document.getElementById('signupStep1').style.display = 'block';
-      document.getElementById('signupStep2').style.display = 'none';
-      showAuthSuccess('Account created', 'Your account has been verified and saved.');
+      showAuthSuccess('Account Created', 'Your account has been verified and saved to database!');
     } else {
       if (errBox) {
         errBox.textContent = result.body.message || 'OTP verification failed.';
