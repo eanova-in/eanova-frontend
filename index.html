@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EANOVA — GST reconciliation for Indian CA practices</title>
 
-<!-- ===== OG TAGS (লোগো ফিক্স – শুধু এই লাইন যোগ করা) ===== -->
+<!-- ===== OG TAGS (লোগো ফিক্স) ===== -->
 <meta property="og:title" content="EANOVA — GST reconciliation for Indian CA practices">
 <meta property="og:description" content="Reconcile your GSTR-2B and purchase register in minutes — not hours.">
 <meta property="og:image" content="https://www.eanova.in/logo-og.png">
@@ -21,7 +21,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* ===== আপনার সম্পূর্ণ CSS – আমি কোনো পরিবর্তন করিনি ===== */
-  /* (আপনার আগের CSS ঠিক একই থাকবে; আমি সংক্ষিপ্ততার জন্য এখানে রেখেছি, কিন্তু পুরো ফাইলে সব CSS থাকবে) */
   :root{
     --navy:#14213D; --paper:#EDE7D9; --paper-deep:#E4DCC8;
     --red:#A63D40; --gold:#C08A28; --green:#3F6659; --ink:#241F1A;
@@ -382,20 +381,1318 @@
 </style>
 </head>
 <body>
-<!-- ===== আপনার পুরো HTML স্ট্রাকচার – আমি কিছুই পরিবর্তন করিনি ===== -->
-<!-- (এখানে আপনার সব HTML থাকবে, আমি শুধু JavaScript অংশ আপডেট করেছি এবং OG ট্যাগ যোগ করেছি) -->
 
-<!-- ... আপনার পুরো HTML কোড (আগের মতো) ... -->
+<!-- ===== আপনার সম্পূর্ণ HTML স্ট্রাকচার (আমি কিছু পরিবর্তন করিনি) ===== -->
+<!-- TOP NAV -->
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="header-left">
+      <div class="brand" data-nav="landing">
+        <img src="data:image/webp;base64,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" alt="EANOVA" class="brand-logo">
+        <span class="brand-text">EANOVA</span>
+      </div>
+    </div>
+    <div class="header-right">
+    <nav id="navRight">
+      <a href="#how" data-nav="landing" data-scroll="how">How It Works</a>
+      <a href="#demo" data-nav="landing" data-scroll="demo">Demo</a>
+      <a href="#pricing" data-nav="landing" data-scroll="pricing">Pricing</a>
+      <a href="#faq" data-nav="landing" data-scroll="faq">FAQ</a>
+      <a href="mailto:eanova.in@gmail.com" class="customer-care-link">Customer Care</a>
+      <button class="navlink-ghost" id="navDashLink" style="display:none" data-nav="dashboard">Dashboard</button>
+      <button class="navbtn" id="navCtaBtn" data-nav="signup">Start Free Trial</button>
+    </nav>
+    <div class="profile-wrap" id="profileWrap" style="display:none;">
+      <button class="profile-btn" id="profileBtn" aria-label="Profile">
+        <img id="profileBtnImg" style="display:none;" alt="Profile">
+        <svg id="profileBtnIcon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="pd-head">
+          <div class="pd-avatar-wrap">
+            <div class="pd-avatar" id="pdAvatar">
+              <img id="pdAvatarImg" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Profile">
+              <svg id="pdAvatarIcon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <button class="pd-avatar-edit" id="pdAvatarEditBtn" aria-label="Change profile photo" title="Change profile photo">✎</button>
+            <input type="file" id="pdAvatarFileInput" accept="image/*">
+          </div>
+          <div class="pd-name" id="pdName">—</div>
+          <div class="pd-firm" id="pdFirm">—</div>
+        </div>
+        <div class="pd-body">
+          <div class="pd-row">
+            <span class="pd-row-label">Email</span>
+            <span class="pd-row-value">
+              <span class="pd-email-text" id="pdEmailText">—</span>
+              <button type="button" class="pd-eye" id="pdEmailEyeBtn" aria-label="Toggle email visibility">
+                <svg id="pdEmailEyeIcon" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+              </button>
+            </span>
+          </div>
+          <div class="pd-row">
+            <span class="pd-row-label">Current plan</span>
+            <span class="pd-row-value"><span class="pd-plan-badge" id="pdPlanBadge">—</span></span>
+          </div>
+        </div>
+        <div class="pd-footer">
+          <button type="button" class="pd-logout-btn" id="pdLogoutBtn">Log out</button>
+        </div>
+      </div>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#how" data-nav="landing" data-scroll="how">How It Works</a>
+    <a href="#demo" data-nav="landing" data-scroll="demo">Demo</a>
+    <a href="#pricing" data-nav="landing" data-scroll="pricing">Pricing</a>
+    <a href="#faq" data-nav="landing" data-scroll="faq">FAQ</a>
+    <button type="button" class="navlink-ghost" id="customerCareLink" style="text-align:left;">✉️ Customer Care</button>
+    <button class="navlink-ghost" id="navDashLinkM" style="display:none" data-nav="dashboard">Dashboard</button>
+    <button class="navbtn" id="navCtaBtnM" data-nav="signup" style="margin-top:6px;">Start Free Trial</button>
+  </div>
+</header>
+
+<!-- LANDING PAGE -->
+<main class="view active" id="view-landing">
+  <section class="hero wrap">
+    <span class="eyebrow">Built for Indian CA &amp; GST practices</span>
+    <h1>Reconcile your GSTR-2B and purchase register in <em>minutes — not hours.</em></h1>
+    <p class="sub">Upload both files, and EANOVA matches every invoice, flags real mismatches, and gives you a client-ready report — instead of a spreadsheet marathon.</p>
+    <div class="cta-row">
+      <button class="btn" data-nav="signup">Start Free Trial</button>
+      <button class="btn btn-outline" data-scroll="day">See How It Works ↓</button>
+    </div>
+    <div class="stat-strip">Illustrative, based on industry reporting: Indian CA firms describe spending <strong>60–90 hours/month</strong> on manual reconciliation across a 30-client book. Try the calculator below with your own numbers.</div>
+
+    <div class="ledger" id="calc">
+      <div class="ledger-head"><span class="t1">Monthly Reconciliation Ledger</span><span class="t2">as computed for your practice</span></div>
+      <div class="ledger-body">
+        <div class="stamp" id="stamp">Time &amp;<br>cost<br>at stake</div>
+        <div class="controls">
+          <div class="control"><label>Active clients &nbsp;<span class="valline" id="clientsVal">30</span></label><input type="range" id="clients" min="5" max="100" value="30"></div>
+          <div class="control"><label>Avg. invoices / client / month &nbsp;<span class="valline" id="invVal">250</span></label><input type="range" id="invoices" min="50" max="500" value="250" step="10"></div>
+        </div>
+        <div class="rows">
+          <div class="row total"><span class="label">Manual reconciliation hours (industry avg: ~1 hr per 100 invoices)</span><span class="num" id="hoursOut">0 hrs</span></div>
+          <div class="row"><span class="label">Value of that time, at ₹400/hr staff cost</span><span class="num" id="costOut">₹0</span></div>
+        </div>
+      </div>
+      <div class="ledger-note">Formula shown for transparency: hours = (invoices ÷ 100) × clients. Cost = hours × ₹400. This mirrors the 2–3 hrs per 200–300 invoice client that Indian CA firms report today. Want to see it on your own numbers? Run a free reconciliation check below — no signup needed.</div>
+    </div>
+    <div class="cta-row" style="margin-top:22px;">
+      <button class="btn btn-gold" data-nav="signup">Start Free Trial →</button>
+    </div>
+  </section>
+
+  <section class="wrap" id="how">
+    <div class="section-head"><span class="eyebrow">Five seconds to understand</span><h2>How it works</h2></div>
+    <div class="steps">
+      <div class="step"><div class="stepnum">01</div><h4>Upload</h4><p>Drop in the purchase register and the GSTR-2B export for a client. Excel, CSV or PDF — whatever you already have.</p></div>
+      <div class="step"><div class="stepnum">02</div><h4>Reconcile</h4><p>EANOVA matches every invoice, flags real mismatches vs. timing differences, and sorts what actually needs your eyes.</p></div>
+      <div class="step"><div class="stepnum">03</div><h4>Download Report</h4><p>A client-ready Excel or PDF report, every match and mismatch laid out — no manual formatting.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="demo">
+    <div class="section-head"><span class="eyebrow">No signup needed</span><h2>Run a free reconciliation check</h2><p>Upload your actual Purchase Register and GSTR-2B (Excel or CSV) — this runs the real matching engine on your real data, right here, before you sign up. Files need columns for Invoice No, GSTIN, and Amount (names can vary — we try to detect them).</p></div>
+    <div class="democard">
+      <div class="uploadgrid" style="margin-top:0;">
+        <div class="uploadcard" id="demoUploadCardPR">
+          <div class="icon">📄</div><h4>Purchase Register</h4>
+          <div class="fname" id="demoPRFname"></div>
+          <label class="filebtn">Choose File<input type="file" id="demoPRFile" accept=".xlsx,.xls,.csv"></label>
+        </div>
+        <div class="uploadcard" id="demoUploadCard2B">
+          <div class="icon">🧾</div><h4>GSTR-2B</h4>
+          <div class="fname" id="demoBFname"></div>
+          <label class="filebtn">Choose File<input type="file" id="demoBFile" accept=".xlsx,.xls,.csv"></label>
+        </div>
+      </div>
+      <div class="runrow">
+        <button class="btn" id="demoRunBtn" disabled>Run Reconciliation</button>
+      </div>
+      <div class="spinner" id="demoSpinner"><span class="dotload"></span><span class="dotload"></span><span class="dotload"></span>&nbsp; Reading and matching your files…</div>
+      <div class="demo-error" id="demoError" style="display:none;"></div>
+      <div class="demo-result" id="demoResult">
+        <div class="summarygrid" id="demoSummary"></div>
+        <p style="font-size:13px;color:rgba(36,31,26,0.55);margin-top:20px;">This ran on the files you uploaded, in your browser — nothing is sent to a server. Sign up to save clients, download reports, and track this over time.</p>
+        <button class="btn" style="margin-top:6px;" data-nav="signup">Start Free Trial →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="beforeafter">
+    <div class="section-head"><span class="eyebrow">Per client, per month</span><h2>Before vs. after</h2></div>
+    <div class="baGrid">
+      <div class="baCard before"><div class="lbl">Manual, in Excel</div><div class="big">~3 hours</div><div class="lbl" style="margin-top:6px;">≈ ₹1,200 in staff time</div></div>
+      <div class="baArrow">→</div>
+      <div class="baCard after"><div class="lbl">With EANOVA</div><div class="big">~10 minutes</div><div class="lbl" style="margin-top:6px;">≈ ₹67 in staff time</div></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="fixes">
+    <div class="section-head"><span class="eyebrow">One dashboard, every recurring fire</span><h2>What EANOVA actually automates</h2><p>Each card is a real, named pain point from Indian CA practice — and the specific fix for it.</p></div>
+    <div class="fixgrid">
+      <div class="fixcard"><div class="pnum">01 — Reconciliation</div><h3>GSTR-2B matching</h3><div class="problem">2–3 hours per client, every month, done by eye in Excel.</div><div class="solution">Fuzzy-matches invoices despite typos and formatting drift; flags true mismatches vs. timing differences in seconds.</div><button class="trycta" data-scroll="demo">Try this →</button></div>
+      <div class="fixcard"><div class="pnum">02 — Notices</div><h3>Notice Radar</h3><div class="problem">GST, IT and TDS notices sit unseen across three separate portals, burning response days.</div><div class="solution">Auto-fetches every notice the moment it's issued and starts a visible countdown, per client, in one calendar.</div><button class="trycta" data-nav="signup">Try this →</button></div>
+      <div class="fixcard"><div class="pnum">03 — Deadlines</div><h3>Compliance Autopilot</h3><div class="problem">Monthly, QRMP and composition clients each follow different due dates, tracked from memory.</div><div class="solution">Auto-generates the right recurring task for each client's actual filing category, plus DSC-expiry alerts.</div><button class="trycta" data-nav="signup">Try this →</button></div>
+      <div class="fixcard"><div class="pnum">04 — Documents</div><h3>Client Vault</h3><div class="problem">"What documents do you need?" answered over WhatsApp, 15–20 times a day.</div><div class="solution">Clients upload PAN, bank statements and invoices to a portal; your team is notified only when something actually arrives.</div><button class="trycta" data-nav="signup">Try this →</button></div>
+      <div class="fixcard"><div class="pnum">05 — Data entry</div><h3>Invoice OCR</h3><div class="problem">Vendor, GSTIN and line items typed in by hand from scans and phone photos.</div><div class="solution">Reads any invoice — PDF, scan, or blurry photo — and validates the GSTIN checksum in about three seconds.</div><button class="trycta" data-scroll="demo">Try this →</button></div>
+      <div class="fixcard"><div class="pnum">06 — Fees</div><h3>Aging &amp; Follow-up</h3><div class="problem">No clean view of which clients are overdue on fees, or by how long.</div><div class="solution">Live aging report with one-tap WhatsApp payment reminders and Razorpay/UPI links.</div><button class="trycta" data-nav="signup">Try this →</button></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="segments">
+    <div class="section-head"><span class="eyebrow">Whatever size your practice is</span><h2>Built for CA firms of every size</h2></div>
+    <div class="segGrid">
+      <div class="segCard"><div class="icon">🧑‍💼</div><h4>Solo CA</h4><p>Running everything yourself. Reclaim the hours you currently spend on reconciliation and chasing documents.</p></div>
+      <div class="segCard"><div class="icon">🏢</div><h4>Small Firm</h4><p>A few partners, a handful of article clerks. Assign, track and review reconciliation work from one dashboard.</p></div>
+      <div class="segCard"><div class="icon">📈</div><h4>10–100+ Clients</h4><p>Scaling practices that can't afford manual reconciliation to be the bottleneck on growth.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="trust">
+    <div class="section-head"><span class="eyebrow">Before you'd upload a single invoice</span><h2>How we plan to handle your clients' data</h2><p>CA firms hold financial data that isn't theirs alone to risk. These are commitments for what we build before real client data touches this product — not yet-built infrastructure we're claiming today.</p></div>
+    <div class="trustgrid">
+      <div class="trustcard"><div class="icon">🇮🇳</div><h4>India-region hosting</h4><p>Planned: client data will reside on India-region servers, not routed through foreign data centers.</p></div>
+      <div class="trustcard"><div class="icon">🔒</div><h4>Encryption by default</h4><p>Planned: encryption at rest and in transit for every uploaded file, before any real client data is accepted.</p></div>
+      <div class="trustcard"><div class="icon">🚫</div><h4>Never sold or shared</h4><p>Commitment: client financial data will never be sold, shared with third parties, or used to train external models.</p></div>
+      <div class="trustcard"><div class="icon">📤</div><h4>Yours to export or delete</h4><p>Planned: full data export or permanent deletion, on request, at any time — no lock-in.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="pricing">
+    <div class="section-head"><span class="eyebrow" style="color:var(--red);">Launch pricing</span><h2>Simple pricing, cheaper to start</h2><p>A low first-month price to try it properly, a fair monthly rate after, and a discount if you commit for a year.</p></div>
+    <div class="region-toggle" id="regionToggle">
+      <button class="region-btn active" data-region="in" type="button">🇮🇳 India (₹)</button>
+      <button class="region-btn" data-region="intl" type="button">🌍 Outside India ($)</button>
+    </div>
+    <div class="price-grid" id="priceGrid">
+      <div class="pricecard"><div class="pc-label">First Month</div><div class="pc-price"><span class="pc-num" data-in="99" data-intl="9">99</span></div><div class="pc-sub">New accounts only, one-time introductory price</div><ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Real reconciliation engine</li></ul>
+        <!-- ===== changed data-nav to checkout and added data-plan ===== -->
+        <button class="btn btn-outline btn-sm" data-plan="first" data-nav="checkout" type="button">Start at this price →</button>
+      </div>
+      <div class="pricecard"><div class="pc-label">Monthly</div><div class="pc-price"><span class="pc-num" data-in="199" data-intl="25">199</span><span class="pc-permo">/mo</span></div><div class="pc-sub">From month 2 onward, pay-as-you-go</div><ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Cancel anytime</li></ul>
+        <button class="btn btn-outline btn-sm" data-plan="monthly" data-nav="checkout" type="button">Start Free Trial →</button>
+      </div>
+      <div class="pricecard featured"><div class="pc-badge">Best value</div><div class="pc-label">Annual</div><div class="pc-price"><span class="pc-num" data-in="150" data-intl="19">150</span><span class="pc-permo">/mo</span></div><div class="pc-sub" id="pcAnnualSub">Billed yearly — <span data-in="₹1,800" data-intl="$228">₹1,800</span>/year total</div><ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>~25% cheaper than monthly</li></ul>
+        <button class="btn btn-gold btn-sm" data-plan="annual" data-nav="checkout" type="button">Get the annual plan →</button>
+      </div>
+    </div>
+    <p class="price-note">You choose your region when you sign up. This is a simple, honest self-declaration for now, not enforced by billing — that gets tightened once a real payment gateway is wired up. <button class="linklike" data-nav="signup" type="button">Start Free Trial</button></p>
+  </section>
+
+  <section class="wrap" id="faq">
+    <div class="section-head"><span class="eyebrow">Before you ask</span><h2>Frequently asked questions</h2></div>
+    <div class="faq-tabs" id="faqTabs">
+      <button class="faq-tab active" data-filter="all" type="button">All</button>
+      <button class="faq-tab" data-filter="general" type="button">General</button>
+      <button class="faq-tab" data-filter="security" type="button">Security</button>
+      <button class="faq-tab" data-filter="billing" type="button">Billing &amp; Trial</button>
+    </div>
+    <div class="faqlist" id="faqList">
+      <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>Which file formats are supported?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Excel (.xlsx), CSV, and PDF exports — for both your purchase register and your GSTR-2B.</div></div></div>
+      <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Is client data secure?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Data protection (India-region hosting, encryption at rest/in transit) is a firm commitment before any real client data is accepted — see "How we plan to handle your clients' data" above. It's not yet-built infrastructure we're claiming as live today.</div></div></div>
+      <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>How many clients can I add?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Unlimited, on every plan — including the free trial.</div></div></div>
+      <div class="faqitem" data-category="billing"><button class="faqq" type="button"><span>Is there a free trial?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Yes, 14 days, full access, no card required to start.</div></div></div>
+      <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Do I need to share my GST portal login?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">No. You upload your GSTR-2B export directly — EANOVA never asks for or stores your GST portal credentials.</div></div></div>
+      <div class="faqitem" data-category="billing"><button class="faqq" type="button"><span>What happens when the trial ends?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">You'll be prompted to upgrade to the ₹199/month plan (₹150/mo if you go annual). Nothing is charged automatically — your account simply pauses until you decide.</div></div></div>
+      <div class="faqitem" data-category="billing"><button class="faqq" type="button"><span>Can I cancel anytime?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Yes, no lock-in contract. Cancel whenever you like from your dashboard.</div></div></div>
+    </div>
+    <div class="faq-callout">
+      <div class="fc-left"><div class="fc-icon">💬</div><div><h4>Still have a question?</h4><p>Ask the EANOVA assistant directly — it's faster than scrolling.</p></div></div>
+      <button class="btn btn-gold btn-sm" id="faqAskAssistantBtn">Ask the Assistant →</button>
+    </div>
+  </section>
+
+  <section class="wrap" id="day">
+    <div class="section-head"><span class="eyebrow">Reconciliation isn't the only fire</span><h2>A senior associate's actual Tuesday</h2><p>This is a composite of how solo and small CA firms across India describe a normal working day.</p></div>
+    <div class="daylog">
+      <div class="item"><div class="time">09:15</div><div class="desc">Opens GST, Income Tax and TRACES portals one by one, checking each client for a new notice. No single view exists — and the notice's response clock started the moment it was issued, not the moment it's found.</div></div>
+      <div class="item"><div class="time">10:00</div><div class="desc">Assigns pending GSTR-1 and 3B filings to article clerks, cross-checking which clients are on monthly vs. QRMP cycles by memory.</div></div>
+      <div class="item"><div class="time">11:30</div><div class="desc">Responds to 15–20 client WhatsApp messages asking "what documents do you need from me?" — the same question, different clients, every day.</div></div>
+      <div class="item"><div class="time">13:00</div><div class="desc">Manually types vendor name, GSTIN and line items from a stack of scanned invoices into the accounting system, one field at a time.</div></div>
+      <div class="item"><div class="time">15:00</div><div class="desc">Starts the monthly GSTR-2B vs. purchase-register match for a 250-invoice client. Finds three mismatches. Can't yet tell if they're timing differences or real errors.</div></div>
+      <div class="item"><div class="time">17:30</div><div class="desc">Checks a spreadsheet for whose Digital Signature Certificate is expiring this week — because a missed DSC renewal silently blocks every filing behind it.</div></div>
+      <div class="item"><div class="time">18:15</div><div class="desc">Glances at an aging report to see which clients haven't paid this quarter's fee, before writing three more follow-up messages.</div></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="testimonials">
+    <div class="section-head"><span class="eyebrow">Coming soon</span><h2>What CA firms say</h2></div>
+    <div class="testicard"><div class="icon">💬</div><h4>Real testimonials, once we have them</h4><p>EANOVA hasn't onboarded its first paying CA firms yet. Rather than fabricate quotes, this space stays empty until it can show real feedback from real practices — the kind that says "my 3-hour job now takes 15 minutes."</p></div>
+  </section>
+
+  <footer class="wrap">
+    <span>&copy; 2026 EANOVA. All rights reserved.</span>
+    <span>Figures on this page are illustrative, based on industry-reported reconciliation times.</span>
+    <span>Developer by Mr.Gama</span>
+  </footer>
+</main>
+
+<!-- SIGNUP VIEW -->
+<section class="view" id="view-signup">
+  <div class="wrap authshell">
+    <div class="authcard">
+      <div id="signupStep1">
+        <span class="eyebrow">Step 1 of 2</span>
+        <h2 style="margin-top:10px;">Create your firm's account</h2>
+        <p class="lead">14-day free trial. No card required.</p>
+        <div class="auth-error" id="signupError" style="display:none;"></div>
+        <form id="signupForm">
+          <div class="field"><label>Your name</label><input type="text" id="su-name" placeholder="Priya Sharma" required></div>
+          <div class="field"><label>Firm name</label><input type="text" id="su-firm" placeholder="Sharma &amp; Associates" required></div>
+          <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="priya@sharmaca.in" required></div>
+          <div class="field"><label>Region</label><select id="su-region"><option value="in">🇮🇳 India — ₹99 first month</option><option value="intl">🌍 Outside India — $9 first month</option></select></div>
+          <div class="field"><label>Password</label><div class="pwd-field-wrap"><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6"><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+          <button class="btn" type="submit">Create Account</button>
+        </form>
+        <div class="authswitch">Already have an account? <button type="button" data-nav="login">Log in</button></div>
+      </div>
+      <div id="signupStep2" style="display:none;">
+        <span class="eyebrow">Step 2 of 2</span>
+        <h2 style="margin-top:10px;">Verify your email</h2>
+        <p class="lead" id="signupOtpSentTo">We've sent a 6-digit code to your email.</p>
+        <div class="auth-error" id="signupOtpError" style="display:none;"></div>
+        <form id="signupOtpForm">
+          <div class="field"><label>One-time code</label><input type="text" id="su-otp" placeholder="123456" maxlength="6" inputmode="numeric" required></div>
+          <button class="btn" type="submit">Verify & Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN VIEW -->
+<section class="view" id="view-login">
+  <div class="wrap authshell">
+    <div class="authcard">
+      <span class="eyebrow">Welcome back</span>
+      <h2 style="margin-top:10px;">Log in to EANOVA</h2>
+      <p class="lead">Use the email and password you registered with.</p>
+      <div class="auth-error" id="loginError" style="display:none;"></div>
+      <form id="loginForm">
+        <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="priya@sharmaca.in" required></div>
+        <div class="field"><label style="display:flex;justify-content:space-between;align-items:center;"><span>Password</span><button type="button" class="linklike" id="forgotPasswordLink" style="font-size:12px;">Forgot password?</button></label><div class="pwd-field-wrap"><input type="password" id="li-pass" placeholder="Your password" required><button type="button" class="pwd-eye-btn" data-pwd-toggle="li-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+        <button class="btn" type="submit">Log In</button>
+      </form>
+      <div class="authswitch">New to EANOVA? <button type="button" data-nav="signup">Create an account</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- FORGOT PASSWORD VIEW -->
+<section class="view" id="view-forgot">
+  <div class="wrap authshell">
+    <div class="authcard">
+      <div id="forgotStep1">
+        <span class="eyebrow">Reset password — step 1 of 3</span>
+        <h2 style="margin-top:10px;">Forgot your password?</h2>
+        <p class="lead">Enter the email on your account. We'll send a one-time code to verify it's you.</p>
+        <div class="auth-error" id="forgotError1" style="display:none;"></div>
+        <form id="forgotEmailForm">
+          <div class="field"><label>Email</label><input type="email" id="fp-email" placeholder="priya@sharmaca.in" required></div>
+          <button class="btn" type="submit">Send OTP</button>
+        </form>
+      </div>
+      <div id="forgotStep2" style="display:none;">
+        <span class="eyebrow">Reset password — step 2 of 3</span>
+        <h2 style="margin-top:10px;">Enter the code</h2>
+        <p class="lead" id="forgotOtpSentTo">We've sent a 6-digit code to your email.</p>
+        <div class="auth-error" id="forgotError2" style="display:none;"></div>
+        <form id="forgotOtpForm">
+          <div class="field"><label>One-time code</label><input type="text" id="fp-otp" placeholder="123456" maxlength="6" inputmode="numeric" required></div>
+          <button class="btn" type="submit">Verify Code</button>
+        </form>
+        <div class="authswitch"><button type="button" id="resendOtpLink">Resend code</button></div>
+      </div>
+      <div id="forgotStep3" style="display:none;">
+        <span class="eyebrow">Reset password — step 3 of 3</span>
+        <h2 style="margin-top:10px;">Set a new password</h2>
+        <p class="lead">Choose a new password for your account.</p>
+        <div class="auth-error" id="forgotError3" style="display:none;"></div>
+        <form id="forgotResetForm">
+          <div class="field"><label>New password</label><div class="pwd-field-wrap"><input type="password" id="fp-newpass" placeholder="At least 8 characters" required minlength="6"><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+          <div class="field"><label>Confirm new password</label><div class="pwd-field-wrap"><input type="password" id="fp-newpass2" placeholder="Re-enter password" required minlength="6"><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass2" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+          <button class="btn" type="submit">Reset Password</button>
+        </form>
+      </div>
+      <div class="authswitch" style="margin-top:20px;">Remembered it? <button type="button" data-nav="login">Back to log in</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD VIEW -->
+<section class="view" id="view-dashboard">
+  <div class="wrap dash-top">
+    <div class="dash-title"><div><h1 id="dashGreeting">Welcome back</h1><p style="font-size:14px;color:rgba(36,31,26,0.6);margin-top:4px;" id="dashFirm">—</p></div><button class="btn" id="addClientBtnTop">+ Add Client</button></div>
+    <div class="trialbanner" id="trialBanner"><div class="msg">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial.</div><button class="btn btn-sm btn-gold" data-nav="checkout">Upgrade to Paid — ₹199/mo</button></div>
+    <div class="clientbar"><h3>Your clients</h3></div>
+    <div id="clientListWrap">
+      <div class="emptystate" id="emptyClients"><div class="big">📂</div><h3>Add your first client</h3><p>Upload their purchase register and GSTR-2B to run a reconciliation.</p><button class="btn" style="margin-top:18px;" id="addClientBtnEmpty">+ Add Client</button></div>
+      <div class="table-wrap" id="clientTableWrap" style="display:none;"><table><thead><tr><th>Client</th><th>GSTIN</th><th>Invoices/mo</th><th>Status</th><th></th></tr></thead><tbody id="clientTableBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENT DETAIL VIEW -->
+<section class="view" id="view-client">
+  <div class="wrap" style="padding-top:32px;">
+    <a href="#" class="backlink" data-nav="dashboard">← Back to dashboard</a>
+    <div class="clienthead"><div><h1 id="cd-name">Client name</h1><div class="meta" id="cd-meta">GSTIN · invoices/mo</div></div><span class="badge" id="cd-status-badge">Not started</span></div>
+    <div id="cd-uploadSection">
+      <div class="uploadgrid"><div class="uploadcard" id="uploadCardPR"><div class="icon">📄</div><h4>Purchase Register</h4><div class="fname" id="prFname"></div><label class="filebtn">Choose File<input type="file" id="prFile"></label></div><div class="uploadcard" id="uploadCard2B"><div class="icon">🧾</div><h4>GSTR-2B</h4><div class="fname" id="bFname"></div><label class="filebtn">Choose File<input type="file" id="bFile"></label></div></div>
+      <div class="runrow"><button class="btn" id="runReconBtn" disabled>Run Reconciliation</button></div>
+      <div class="spinner" id="reconSpinner"><span class="dotload"></span><span class="dotload"></span><span class="dotload"></span>&nbsp; Reading and matching your files…</div>
+      <div class="demo-error" id="reconError" style="display:none;"></div>
+    </div>
+    <div id="cd-resultsSection" style="display:none;">
+      <div class="summarygrid"><div class="sumcard"><div class="n" id="sumMatched">0</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n" id="sumPartial">0</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n" id="sumMismatch">0</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n" id="sumMissing">0</div><div class="l">Missing in 2B</div></div></div>
+      <div class="resultbar"><h3 id="issuesTitle">Issues to review</h3><div class="btnrow"><button class="btn btn-outline btn-sm" id="rerunBtn">Re-run Reconciliation</button><button class="btn btn-outline btn-sm" id="downloadCsvBtn">Download Excel Report</button><button class="btn btn-outline btn-sm" id="downloadPdfBtn">Download PDF Report</button></div></div>
+      <div class="table-wrap" style="margin-top:18px;"><table><thead><tr><th>Invoice No.</th><th>GSTIN</th><th>Purchase Amt</th><th>GSTR-2B Amt</th><th>Difference</th><th>Type</th><th></th></tr></thead><tbody id="mismatchTableBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKOUT VIEW -->
+<section class="view" id="view-checkout">
+  <div class="wrap" style="padding-top:40px;padding-bottom:70px;">
+    <a href="#" class="backlink" data-nav="dashboard">← Back to dashboard</a>
+    <h1 style="margin-top:14px;font-size:28px;">Upgrade to Paid</h1>
+    <div id="checkoutForm">
+      <div class="checkoutwrap">
+        <div class="paycard"><h3 style="font-size:17px;">Payment details <span style="font-size:12px;color:rgba(36,31,26,0.5);font-weight:400;">(demo — no real charge)</span></h3><div class="field"><label>Name on card</label><input type="text" id="pay-name" placeholder="Priya Sharma"></div><div class="field"><label>Card number</label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="19"></div><div class="field" style="display:flex;gap:12px;"><div style="flex:1;"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5"></div><div style="flex:1;"><label>CVV</label><input type="text" placeholder="123" maxlength="3"></div></div><button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button></div>
+        <div class="ordercard"><h3 style="color:var(--paper);font-size:17px;">Order summary</h3><div class="row2"><span id="orderPlanLabel">EANOVA — Monthly plan</span><span id="orderPlanAmount">₹199</span></div><div class="row2"><span>Billing cycle</span><span>Monthly</span></div><div class="row2"><span>GST (18%)</span><span>Included</span></div><div class="row2 total"><span>Total due today</span><span id="orderTotalAmount">₹199</span></div></div>
+      </div>
+    </div>
+    <div id="checkoutSuccess" style="display:none;"><div class="successbox"><div class="check">✅</div><h2 style="margin-top:16px;">Payment successful</h2><p style="color:rgba(36,31,26,0.65);margin-top:8px;">Your subscription is now active. Unlimited clients, every month.</p><button class="btn" style="margin-top:24px;" data-nav="dashboard">Go to Dashboard</button></div></div>
+  </div>
+</section>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="addClientModal"><div class="modal"><button class="modal-close" data-close-modal="addClientModal">✕</button><h3>Add a client</h3><form id="addClientForm"><div class="field"><label>Client name</label><input type="text" id="nc-name" placeholder="Rahman Textiles Pvt Ltd" required></div><div class="field"><label>GSTIN</label><input type="text" id="nc-gstin" placeholder="19ABCDE1234F1Z5" required></div><div class="field"><label>Contact (email or phone)</label><input type="text" id="nc-contact" placeholder="accounts@rahmantextiles.in" required></div><div class="field"><label>Approx. invoices / month</label><input type="number" id="nc-invoices" value="250" min="10" max="2000" required></div><button class="btn" type="submit" style="width:100%;margin-top:10px;justify-content:center;">Save Client</button></form></div></div>
+
+<div class="modal-overlay" id="detailModal"><div class="modal"><button class="modal-close" data-close-modal="detailModal">✕</button><h3>Invoice detail</h3><div id="detailModalBody" style="margin-top:16px;font-size:14px;"></div><button class="btn" id="markResolvedBtn" style="width:100%;margin-top:22px;justify-content:center;">Mark Resolved</button></div></div>
+
+<div class="modal-overlay" id="authSuccessModal"><div class="modal auth-success-modal"><div class="auth-success-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#3F6659" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3 id="authSuccessTitle">Account created</h3><p id="authSuccessMsg" class="auth-success-msg">Your account is ready.</p><button class="btn" id="authSuccessContinueBtn" style="width:100%;margin-top:22px;justify-content:center;">Continue to Dashboard</button></div></div>
+
+<div class="modal-overlay" id="customerCareModal"><div class="modal" style="text-align:center;padding:36px 32px;"><h3>Please contact</h3><p style="font-size:14px;color:rgba(36,31,26,0.65);margin-top:10px;">For any questions or support, reach out to us at:</p><a href="mailto:eanova.in@gmail.com" style="display:block;margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--navy);text-decoration:underline;word-break:break-all;">eanova.in@gmail.com</a><button class="btn" id="customerCareOkBtn" style="width:100%;margin-top:24px;justify-content:center;">OK</button></div></div>
+
+<div class="modal-overlay" id="resetSuccessModal"><div class="modal auth-success-modal"><div class="auth-success-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#3F6659" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3 id="resetSuccessTitle">Password Reset</h3><p id="resetSuccessMsg" class="auth-success-msg">Your password has been reset successfully. Please log in.</p><button class="btn" id="resetSuccessContinueBtn" style="width:100%;margin-top:22px;justify-content:center;">Go to Login</button></div></div>
+
+<!-- PRINT REPORT -->
+<div id="print-report"></div>
+
+<!-- AI CHAT -->
+<button class="ai-widget-btn" id="aiWidgetBtn" aria-label="Chat with the EANOVA assistant">💬</button>
+<div class="ai-chat-panel" id="aiChatPanel">
+  <div class="ai-chat-head"><div class="avatar">🤖</div><div class="info"><div class="name">EANOVA Assistant</div><div class="sub">here to help</div></div><button class="ai-chat-close" id="aiChatClose">✕</button></div>
+  <div class="ai-chat-body" id="aiChatBody"><div class="ai-msg bot">Hi! 👋 I can tell you about pricing, the free trial, file uploads, security, or how reconciliation works. What do you want to know?</div></div>
+  <div class="ai-chips"><button class="ai-chip" data-ask="pricing">Pricing?</button><button class="ai-chip" data-ask="upload">File formats?</button><button class="ai-chip" data-ask="security">Is data secure?</button></div>
+  <div class="ai-chat-inputrow"><input type="text" id="aiChatInput" placeholder="Ask a question…"><button class="ai-chat-send" id="aiChatSend">→</button></div>
+</div>
 
 <script>
-/* ===== শুধু JavaScript অংশ পরিবর্তন করা হয়েছে – বাকি সব আগের মতো ===== */
+// ===== পুরানো JavaScript (আমি শুধু কিছু ফাংশন যোগ/পরিবর্তন করেছি) =====
+// বাকি সব আগের মতো থাকবে। নিচে শুধু পরিবর্তিত অংশ দেওয়া হলো।
 
-// API Base
+/* ===== STATE ===== */
+const state = {
+  user: null,
+  clients: [],
+  currentClientId: null,
+  subscriptionActive: false,
+  _nextClientId: 1,
+  _nextMismatchId: 1
+};
+
+const ACCOUNTS_KEY = 'eanova_accounts_v1';
+const SESSION_KEY = 'eanova_session_v1';
 const API_BASE = 'https://eanova-backend.onrender.com';
 
-// =============================
-// ১. AI চ্যাটবট – মাল্টি-ল্যাঙ্গুয়েজ (কীওয়ার্ড-ভিত্তিক)
-// =============================
+function loadAccounts(){
+  try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveAccounts(accounts){
+  try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)); } catch(e){}
+}
+function findAccount(email){
+  return loadAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
+}
+function persistCurrentAccount(){
+  if(!state.user) return;
+  const accounts = loadAccounts();
+  const idx = accounts.findIndex(a => a.email.toLowerCase() === state.user.email.toLowerCase());
+  const cleanClients = state.clients.map(c => {
+    const copy = Object.assign({}, c);
+    delete copy.prFileObj;
+    delete copy.gstrFileObj;
+    return copy;
+  });
+  const record = {
+    name: state.user.name, firm: state.user.firm, email: state.user.email,
+    password: state.user.password, region: state.user.region,
+    hasPaidBefore: state.user.hasPaidBefore, subscriptionActive: state.subscriptionActive,
+    clients: cleanClients, nextClientId: state._nextClientId, nextMismatchId: state._nextMismatchId
+  };
+  if(idx >= 0) accounts[idx] = record; else accounts.push(record);
+  saveAccounts(accounts);
+}
+function loadSessionOnBoot(){
+  let email;
+  try { email = localStorage.getItem(SESSION_KEY); } catch(e){ return; }
+  if(!email) return;
+  const acc = findAccount(email);
+  if(!acc) return;
+  state.user = { name: acc.name, firm: acc.firm, email: acc.email, password: acc.password, region: acc.region, hasPaidBefore: acc.hasPaidBefore };
+  state.clients = acc.clients || [];
+  state.subscriptionActive = !!acc.subscriptionActive;
+  state._nextClientId = acc.nextClientId || (state.clients.length + 1);
+  state._nextMismatchId = acc.nextMismatchId || 1;
+}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0, behavior:'instant'});
+  if(name === 'dashboard') renderDashboard();
+  if(name === 'checkout') renderCheckout();
+  updateNavState();
+  closeMobileMenu();
+}
+
+function renderCheckout(){
+  const plan = window._selectedPlan || 'monthly';
+  const p = currentPlanPrice(plan);
+  document.getElementById('payBtnAmount').textContent = p.currency + p.amount;
+  document.getElementById('orderPlanLabel').textContent = 'EANOVA — ' + p.label + ' plan';
+  document.getElementById('orderPlanAmount').textContent = p.currency + p.amount;
+  document.getElementById('orderTotalAmount').textContent = p.currency + p.amount;
+  document.getElementById('checkoutForm').style.display = 'block';
+  document.getElementById('checkoutSuccess').style.display = 'none';
+}
+
+function currentPlanPrice(plan){
+  const region = (state.user && state.user.region) || 'in';
+  const rates = {
+    'first': { in: { currency: '₹', amount: '99', period: '/mo', label: 'First Month' }, intl: { currency: '$', amount: '9', period: '/mo', label: 'First Month' } },
+    'monthly': { in: { currency: '₹', amount: '199', period: '/mo', label: 'Monthly' }, intl: { currency: '$', amount: '25', period: '/mo', label: 'Monthly' } },
+    'annual': { in: { currency: '₹', amount: '150', period: '/mo', label: 'Annual' }, intl: { currency: '$', amount: '19', period: '/mo', label: 'Annual' } }
+  };
+  const p = rates[plan] || rates.monthly;
+  return p[region] || p.in;
+}
+
+function updateNavState(){
+  const loggedIn = !!state.user;
+  document.getElementById('navDashLink').style.display = loggedIn ? 'inline-block' : 'none';
+  document.getElementById('navDashLinkM').style.display = loggedIn ? 'block' : 'none';
+  const cta = document.getElementById('navCtaBtn');
+  const ctaM = document.getElementById('navCtaBtnM');
+  if(loggedIn){
+    cta.textContent = 'Dashboard'; cta.dataset.nav = 'dashboard';
+    ctaM.textContent = 'Dashboard'; ctaM.dataset.nav = 'dashboard';
+  } else {
+    cta.textContent = 'Start Free Trial'; cta.dataset.nav = 'signup';
+    ctaM.textContent = 'Start Free Trial'; ctaM.dataset.nav = 'signup';
+  }
+  updateProfileMenu();
+}
+
+function logoutUser(){
+  persistCurrentAccount();
+  try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+  state.user = null; state.subscriptionActive = false; state.clients = []; state.currentClientId = null;
+  showView('landing');
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+}
+document.querySelectorAll('[data-close-modal]').forEach(btn => {
+  btn.addEventListener('click', function(){
+    closeModal(this.dataset.closeModal);
+  });
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e){
+    if(e.target === this) closeModal(this.id);
+  });
+});
+
+function showAuthSuccess(title, msg){
+  document.getElementById('authSuccessTitle').textContent = title;
+  document.getElementById('authSuccessMsg').textContent = msg;
+  openModal('authSuccessModal');
+}
+function showResetSuccess(){
+  openModal('resetSuccessModal');
+}
+document.getElementById('authSuccessContinueBtn').addEventListener('click', function(){
+  closeModal('authSuccessModal');
+  showView('dashboard');
+});
+document.getElementById('resetSuccessContinueBtn').addEventListener('click', function(){
+  closeModal('resetSuccessModal');
+  showView('login');
+});
+
+/* ===== NAVIGATION ===== */
+document.addEventListener('click', function(e){
+  const scrollBtn = e.target.closest('[data-scroll]');
+  if(scrollBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    const id = scrollBtn.dataset.scroll;
+    if(!document.getElementById('view-landing').classList.contains('active')){
+      showView('landing');
+      setTimeout(function(){ document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'}); }, 30);
+    } else {
+      closeMobileMenu();
+      document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    return;
+  }
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    const target = navBtn.dataset.nav;
+    if((target === 'dashboard' || target === 'checkout' || target === 'client') && !state.user){
+      showView('signup');
+      return;
+    }
+    showView(target);
+    return;
+  }
+});
+
+/* ===== CALCULATOR ===== */
+(function(){
+  const clientsInput = document.getElementById('clients');
+  const invoicesInput = document.getElementById('invoices');
+  const clientsVal = document.getElementById('clientsVal');
+  const invVal = document.getElementById('invVal');
+  const hoursOut = document.getElementById('hoursOut');
+  const costOut = document.getElementById('costOut');
+  const stamp = document.getElementById('stamp');
+  function fmtINR(n){ return '₹' + Math.round(n).toLocaleString('en-IN'); }
+  function calc(){
+    const clients = parseInt(clientsInput.value, 10);
+    const invoices = parseInt(invoicesInput.value, 10);
+    clientsVal.textContent = clients; invVal.textContent = invoices;
+    const totalHours = (invoices / 100) * clients;
+    const totalCost = totalHours * 400;
+    hoursOut.textContent = Math.round(totalHours).toLocaleString('en-IN') + ' hrs';
+    costOut.textContent = fmtINR(totalCost);
+    stamp.classList.add('show');
+  }
+  clientsInput.addEventListener('input', calc);
+  invoicesInput.addEventListener('input', calc);
+  calc();
+})();
+
+/* ===== ইমেইল ভ্যালিডেশন ফাংশন ===== */
+function isValidEmail(email){
+  if(!email) return false;
+  if(!email.includes('@')) return false;
+  const parts = email.split('@');
+  if(parts.length !== 2) return false;
+  if(parts[0].length < 1) return false;
+  if(!parts[1].includes('.')) return false;
+  return true;
+}
+
+/* ===== SIGNUP (ভ্যালিডেশন যোগ) ===== */
+window.pendingSignupData = null;
+document.getElementById('signupForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('signupError');
+  errBox.style.display = 'none';
+  const name = document.getElementById('su-name').value.trim();
+  const firm = document.getElementById('su-firm').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-pass').value;
+  const region = document.getElementById('su-region').value;
+
+  // ইমেইল ভ্যালিডেশন
+  if(!isValidEmail(email)){
+    errBox.textContent = 'Please enter a valid email address (e.g., name@domain.com).';
+    errBox.style.display = 'block';
+    return;
+  }
+  if(!name || !firm || !password){
+    errBox.textContent = 'Please fill all fields.';
+    errBox.style.display = 'block';
+    return;
+  }
+  window.pendingSignupData = { name, firm, email, password, region };
+  fetch(`${API_BASE}/api/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if(result.status === 200){
+      document.getElementById('signupStep1').style.display = 'none';
+      document.getElementById('signupStep2').style.display = 'block';
+      document.getElementById('signupOtpSentTo').textContent = `We've sent a 6-digit code to ${email}.`;
+    } else {
+      errBox.textContent = result.body.message || 'Failed to send OTP.';
+      errBox.style.display = 'block';
+    }
+  })
+  .catch(err => {
+    errBox.textContent = 'Server error. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+
+document.getElementById('signupOtpForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('signupOtpError');
+  errBox.style.display = 'none';
+  const otp = document.getElementById('su-otp').value.trim();
+  const data = window.pendingSignupData;
+  if(!data || !otp) return;
+  fetch(`${API_BASE}/api/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: data.name,
+      firm: data.firm,
+      email: data.email,
+      password: data.password,
+      region: data.region,
+      otp: otp
+    })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if(result.status === 201){
+      state.user = { name: data.name, firm: data.firm, email: data.email, region: data.region };
+      state.clients = [];
+      state.subscriptionActive = false;
+      try { localStorage.setItem(SESSION_KEY, data.email); } catch(e){}
+      showAuthSuccess('Account Created', 'Your account has been verified and saved!');
+    } else {
+      errBox.textContent = result.body.message || 'OTP verification failed.';
+      errBox.style.display = 'block';
+    }
+  })
+  .catch(err => {
+    errBox.textContent = 'Server error. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+
+/* ===== LOGIN ===== */
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('loginError');
+  errBox.style.display = 'none';
+  const email = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-pass').value;
+  if(!email || !password){
+    errBox.textContent = 'Please fill in both fields.';
+    errBox.style.display = 'block';
+    return;
+  }
+  fetch(`${API_BASE}/api/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if(result.status === 200){
+      const userData = result.body.user;
+      state.user = { name: userData.name, firm: userData.firm, email: userData.email, region: userData.region };
+      state.clients = userData.clients || [];
+      state.subscriptionActive = userData.subscriptionActive || false;
+      try { localStorage.setItem(SESSION_KEY, email); } catch(e){}
+      showView('dashboard');
+    } else {
+      errBox.textContent = result.body.message || 'Login failed.';
+      errBox.style.display = 'block';
+    }
+  })
+  .catch(err => {
+    errBox.textContent = 'Server error. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+
+/* ===== FORGOT PASSWORD ===== */
+document.getElementById('forgotPasswordLink').addEventListener('click', function(e){
+  e.preventDefault();
+  showView('forgot');
+  document.getElementById('forgotStep1').style.display = 'block';
+  document.getElementById('forgotStep2').style.display = 'none';
+  document.getElementById('forgotStep3').style.display = 'none';
+});
+
+document.getElementById('forgotEmailForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError1');
+  errBox.style.display = 'none';
+  const email = document.getElementById('fp-email').value.trim();
+  if(!email){
+    errBox.textContent = 'Please enter your email.';
+    errBox.style.display = 'block';
+    return;
+  }
+  fetch(`${API_BASE}/api/forgot-password-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if(result.status === 200){
+      document.getElementById('forgotStep1').style.display = 'none';
+      document.getElementById('forgotStep2').style.display = 'block';
+      document.getElementById('forgotOtpSentTo').textContent = `We've sent a 6-digit code to ${email}.`;
+      document.getElementById('fp-otp').dataset.email = email;
+    } else {
+      errBox.textContent = result.body.message || 'Failed to send OTP.';
+      errBox.style.display = 'block';
+    }
+  })
+  .catch(err => {
+    errBox.textContent = 'Server error. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+
+document.getElementById('forgotOtpForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError2');
+  errBox.style.display = 'none';
+  const otp = document.getElementById('fp-otp').value.trim();
+  if(!otp){
+    errBox.textContent = 'Please enter the OTP.';
+    errBox.style.display = 'block';
+    return;
+  }
+  window._resetOtp = otp;
+  document.getElementById('forgotStep2').style.display = 'none';
+  document.getElementById('forgotStep3').style.display = 'block';
+});
+
+document.getElementById('forgotResetForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const errBox = document.getElementById('forgotError3');
+  errBox.style.display = 'none';
+  const newPass = document.getElementById('fp-newpass').value;
+  const newPass2 = document.getElementById('fp-newpass2').value;
+  if(newPass !== newPass2){
+    errBox.textContent = 'Passwords do not match.';
+    errBox.style.display = 'block';
+    return;
+  }
+  if(newPass.length < 6){
+    errBox.textContent = 'Password must be at least 6 characters.';
+    errBox.style.display = 'block';
+    return;
+  }
+  const email = document.getElementById('fp-otp').dataset.email;
+  const otp = window._resetOtp;
+  fetch(`${API_BASE}/api/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp, newPassword: newPass })
+  })
+  .then(res => res.json().then(data => ({ status: res.status, body: data })))
+  .then(result => {
+    if(result.status === 200){
+      showResetSuccess();
+    } else {
+      errBox.textContent = result.body.message || 'Reset failed.';
+      errBox.style.display = 'block';
+    }
+  })
+  .catch(err => {
+    errBox.textContent = 'Server error. Please try again.';
+    errBox.style.display = 'block';
+  });
+});
+
+/* ===== DASHBOARD ===== */
+function renderDashboard(){
+  if(!state.user) return;
+  document.getElementById('dashGreeting').textContent = 'Welcome back, ' + state.user.name.split(' ')[0];
+  document.getElementById('dashFirm').textContent = state.user.firm;
+  const banner = document.getElementById('trialBanner');
+  if(state.subscriptionActive){
+    banner.classList.add('active');
+    banner.innerHTML = '<div class="msg">✅ <strong>Subscription active</strong> — unlimited clients.</div>';
+  } else {
+    banner.classList.remove('active');
+    banner.innerHTML = '<div class="msg">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial.</div><button class="btn btn-sm btn-gold" data-nav="checkout">Upgrade to Paid — ₹199/mo</button>';
+  }
+  if(state.clients.length === 0){
+    document.getElementById('emptyClients').style.display = 'block';
+    document.getElementById('clientTableWrap').style.display = 'none';
+  } else {
+    document.getElementById('emptyClients').style.display = 'none';
+    document.getElementById('clientTableWrap').style.display = 'block';
+    const tbody = document.getElementById('clientTableBody');
+    tbody.innerHTML = state.clients.map(c => `
+      <tr>
+        <td><strong>${c.name}</strong></td>
+        <td class="mono" style="font-size:12.5px;">${c.gstin}</td>
+        <td>${c.invoiceCount}</td>
+        <td><span class="badge ${c.reconciled ? 'badge-done' : 'badge-pending'}">${c.reconciled ? 'Reconciled' : 'Not started'}</span></td>
+        <td><button class="btn btn-sm btn-outline" data-action="open-client" data-id="${c.id}">Open →</button></td>
+      </tr>
+    `).join('');
+  }
+}
+
+document.addEventListener('click', function(e){
+  const openBtn = e.target.closest('[data-action="open-client"]');
+  if(openBtn){
+    state.currentClientId = parseInt(openBtn.dataset.id, 10);
+    renderClientDetail();
+    showView('client');
+  }
+});
+
+/* ===== CLIENT DETAIL (সংক্ষিপ্ত) ===== */
+function getCurrentClient(){ return state.clients.find(c => c.id === state.currentClientId); }
+
+function renderClientDetail(){
+  const c = getCurrentClient();
+  if(!c) return;
+  document.getElementById('cd-name').textContent = c.name;
+  document.getElementById('cd-meta').textContent = c.gstin + '  ·  ~' + c.invoiceCount + ' invoices/month  ·  ' + c.contact;
+  document.getElementById('cd-status-badge').textContent = c.reconciled ? 'Reconciled' : 'Not started';
+  document.getElementById('cd-status-badge').className = 'badge ' + (c.reconciled ? 'badge-done' : 'badge-pending');
+  document.getElementById('prFname').textContent = (c.uploadedPR && c.prFileObj) ? ('✓ ' + c.prFileObj.name) : '';
+  document.getElementById('bFname').textContent = (c.uploaded2B && c.gstrFileObj) ? ('✓ ' + c.gstrFileObj.name) : '';
+  document.getElementById('uploadCardPR').classList.toggle('filled', c.uploadedPR);
+  document.getElementById('uploadCard2B').classList.toggle('filled', c.uploaded2B);
+  document.getElementById('runReconBtn').disabled = !(c.uploadedPR && c.uploaded2B);
+  document.getElementById('reconSpinner').classList.remove('show');
+  if(c.reconciled && c.results){
+    document.getElementById('cd-uploadSection').style.display = 'none';
+    document.getElementById('cd-resultsSection').style.display = 'block';
+    renderResults(c);
+  } else {
+    document.getElementById('cd-uploadSection').style.display = 'block';
+    document.getElementById('cd-resultsSection').style.display = 'none';
+  }
+}
+
+document.getElementById('prFile').addEventListener('change', function(){
+  const c = getCurrentClient(); if(!c) return;
+  c.uploadedPR = this.files.length > 0;
+  c.prFileObj = this.files[0] || null;
+  document.getElementById('prFname').textContent = c.uploadedPR ? ('✓ ' + this.files[0].name) : '';
+  renderClientDetail();
+});
+document.getElementById('bFile').addEventListener('change', function(){
+  const c = getCurrentClient(); if(!c) return;
+  c.uploaded2B = this.files.length > 0;
+  c.gstrFileObj = this.files[0] || null;
+  document.getElementById('bFname').textContent = c.uploaded2B ? ('✓ ' + this.files[0].name) : '';
+  renderClientDetail();
+});
+
+document.getElementById('runReconBtn').addEventListener('click', runReconciliation);
+document.getElementById('rerunBtn').addEventListener('click', function(){
+  const c = getCurrentClient(); if(!c) return;
+  c.reconciled = false; c.results = null;
+  renderClientDetail();
+});
+
+async function runReconciliation(){
+  const c = getCurrentClient(); if(!c) return;
+  const errBox = document.getElementById('reconError');
+  errBox.style.display = 'none';
+  document.getElementById('reconSpinner').classList.add('show');
+  document.getElementById('runReconBtn').disabled = true;
+  try {
+    const results = await runRealReconciliation(c.prFileObj, c.gstrFileObj);
+    c.results = results;
+    c.reconciled = true;
+    renderClientDetail();
+  } catch(err){
+    document.getElementById('reconSpinner').classList.remove('show');
+    document.getElementById('runReconBtn').disabled = false;
+    errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
+    errBox.style.display = 'block';
+  }
+}
+
+function readFileAsRows(file){
+  return new Promise((resolve, reject) => {
+    if(!file){ reject(new Error('No file selected.')); return; }
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type: 'array'});
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, {defval: ''});
+        resolve(rows);
+      } catch(err){ reject(new Error('Could not read "' + file.name + '" — is it a valid Excel or CSV file?')); }
+    };
+    reader.onerror = () => reject(new Error('Could not read "' + file.name + '".'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function findColumn(row, patterns){
+  const keys = Object.keys(row);
+  for(const p of patterns){
+    for(const k of keys){
+      if(p.test(k)) return k;
+    }
+  }
+  return null;
+}
+
+function normalizeRows(rows){
+  if(!rows || !rows.length) return null;
+  const sample = rows[0];
+  const invKey = findColumn(sample, [/invoice.?no/i, /inv.?no/i, /bill.?no/i, /^invoice$/i, /^inv$/i]);
+  const gstinKey = findColumn(sample, [/gstin/i]);
+  const amtKey = findColumn(sample, [/taxable.?value/i, /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i]);
+  if(!invKey || !gstinKey || !amtKey) return null;
+  return rows.map(r => ({
+    invoiceNo: String(r[invKey]).trim(),
+    gstin: String(r[gstinKey]).trim().toUpperCase(),
+    amount: parseFloat(String(r[amtKey]).replace(/[^0-9.\-]/g, '')) || 0
+  })).filter(r => r.invoiceNo && r.gstin);
+}
+
+function reconcileRows(prRows, gstrRows){
+  const gstrMap = new Map();
+  gstrRows.forEach(r => gstrMap.set(r.invoiceNo.toUpperCase() + '|' + r.gstin, r));
+  let matched = 0, partialCount = 0, mismatchCount = 0, missingCount = 0;
+  const issues = [];
+  prRows.forEach(pr => {
+    const key = pr.invoiceNo.toUpperCase() + '|' + pr.gstin;
+    const gstrRow = gstrMap.get(key);
+    if(!gstrRow){
+      missingCount++;
+      issues.push({id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false});
+      return;
+    }
+    const diff = Math.abs(pr.amount - gstrRow.amount);
+    const tolerance = Math.max(500, pr.amount * 0.02);
+    if(diff < 1){
+      matched++;
+    } else if(diff <= tolerance){
+      partialCount++;
+      issues.push({id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial', resolved: false});
+    } else {
+      mismatchCount++;
+      issues.push({id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch', resolved: false});
+    }
+  });
+  return { total: prRows.length, matched, partialCount, mismatchCount, missingCount, issues };
+}
+
+async function runRealReconciliation(prFile, gstrFile){
+  const [prRowsRaw, gstrRowsRaw] = await Promise.all([readFileAsRows(prFile), readFileAsRows(gstrFile)]);
+  const prRows = normalizeRows(prRowsRaw);
+  const gstrRows = normalizeRows(gstrRowsRaw);
+  if(!prRows || !gstrRows){
+    throw new Error("Couldn't find Invoice No / GSTIN / Amount columns in one of the files. Check the column headers and try again.");
+  }
+  if(prRows.length === 0 || gstrRows.length === 0){
+    throw new Error('One of the files has no readable rows once the header is removed.');
+  }
+  return reconcileRows(prRows, gstrRows);
+}
+
+function renderResults(client){
+  const r = client.results;
+  document.getElementById('sumMatched').textContent = r.matched;
+  document.getElementById('sumPartial').textContent = r.partialCount;
+  document.getElementById('sumMismatch').textContent = r.mismatchCount;
+  document.getElementById('sumMissing').textContent = r.missingCount;
+  const unresolved = r.issues.filter(i => !i.resolved).length;
+  document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved===1?'':'s') + ' to review';
+  const tbody = document.getElementById('mismatchTableBody');
+  tbody.innerHTML = r.issues.map(i => `
+    <tr class="${i.resolved ? 'resolved-row' : ''}" data-row-id="${i.id}">
+      <td class="mono">${i.invoiceNo}</td>
+      <td class="mono" style="font-size:12px;">${i.gstin}</td>
+      <td class="mono">₹${i.purchaseAmt.toLocaleString('en-IN')}</td>
+      <td class="mono">₹${i.gstrAmt.toLocaleString('en-IN')}</td>
+      <td class="mono">₹${i.diff.toLocaleString('en-IN')}</td>
+      <td><span class="typebadge ${i.type}">${i.type === 'missing' ? 'Missing in 2B' : i.type}</span></td>
+      <td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="${i.id}" ${i.resolved ? 'disabled' : ''}>${i.resolved ? 'Resolved' : 'View Details'}</button></td>
+    </tr>
+  `).join('');
+}
+
+document.addEventListener('click', function(e){
+  const viewBtn = e.target.closest('[data-action="view-detail"]');
+  if(viewBtn){
+    const c = getCurrentClient();
+    const issue = c.results.issues.find(i => i.id === parseInt(viewBtn.dataset.mid, 10));
+    if(!issue) return;
+    document.getElementById('detailModalBody').innerHTML = `
+      <div style="margin-bottom:10px;"><strong>Invoice No:</strong> ${issue.invoiceNo}</div>
+      <div style="margin-bottom:10px;"><strong>GSTIN:</strong> ${issue.gstin}</div>
+      <div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹${issue.purchaseAmt.toLocaleString('en-IN')}</div>
+      <div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹${issue.gstrAmt.toLocaleString('en-IN')}</div>
+      <div style="margin-bottom:10px;"><strong>Difference:</strong> ₹${issue.diff.toLocaleString('en-IN')}</div>
+    `;
+    document.getElementById('markResolvedBtn').dataset.mid = issue.id;
+    document.getElementById('markResolvedBtn').style.display = issue.resolved ? 'none' : 'block';
+    openModal('detailModal');
+  }
+});
+
+document.getElementById('markResolvedBtn').addEventListener('click', function(){
+  const c = getCurrentClient();
+  const issue = c.results.issues.find(i => i.id === parseInt(this.dataset.mid, 10));
+  if(issue){ issue.resolved = true; }
+  persistCurrentAccount();
+  closeModal('detailModal');
+  renderResults(c);
+});
+
+document.getElementById('downloadCsvBtn').addEventListener('click', function(){
+  const c = getCurrentClient(); if(!c || !c.results) return;
+  let csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Status\n';
+  c.results.issues.forEach(i => {
+    csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.resolved ? 'Resolved':'Open'].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = c.name.replace(/\s+/g,'_') + '_reconciliation_report.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('downloadPdfBtn').addEventListener('click', function(){
+  const c = getCurrentClient(); if(!c || !c.results) return;
+  const r = c.results;
+  let rows = r.issues.map(i => `<tr><td>${i.invoiceNo}</td><td>${i.gstin}</td><td>₹${i.purchaseAmt.toLocaleString('en-IN')}</td><td>₹${i.gstrAmt.toLocaleString('en-IN')}</td><td>₹${i.diff.toLocaleString('en-IN')}</td><td>${i.type}</td><td>${i.resolved?'Resolved':'Open'}</td></tr>`).join('');
+  document.getElementById('print-report').innerHTML = `
+    <h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>
+    <p><strong>Client:</strong> ${c.name} &nbsp; <strong>GSTIN:</strong> ${c.gstin}</p>
+    <p><strong>Matched:</strong> ${r.matched} &nbsp; <strong>Partial:</strong> ${r.partialCount} &nbsp; <strong>Mismatch:</strong> ${r.mismatchCount} &nbsp; <strong>Missing in 2B:</strong> ${r.missingCount}</p>
+    <table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;">
+      <thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  window.print();
+});
+
+/* ===== PAYMENT ===== */
+document.getElementById('payBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  document.getElementById('checkoutForm').style.display = 'none';
+  document.getElementById('checkoutSuccess').style.display = 'block';
+  state.subscriptionActive = true;
+  if(state.user) state.user.hasPaidBefore = true;
+  persistCurrentAccount();
+});
+
+/* ===== PRICING - plan selection ===== */
+document.querySelectorAll('[data-plan]').forEach(btn => {
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    const plan = this.dataset.plan;
+    window._selectedPlan = plan;
+    showView('checkout');
+    renderCheckout(plan);
+  });
+});
+
+/* ===== PROFILE ===== */
+const AVATAR_KEY_PREFIX = 'eanova_avatar_v1_';
+let profileEmailRevealed = false;
+
+function maskEmail(email){
+  if(!email) return '—';
+  const at = email.indexOf('@');
+  if(at <= 0) return '•'.repeat(Math.max(email.length,3));
+  const name = email.slice(0, at);
+  const domain = email.slice(at);
+  const visible = name.slice(0, 2);
+  const hidden = '•'.repeat(Math.max(name.length - 2, 3));
+  return visible + hidden + domain;
+}
+
+function getAvatarForEmail(email){
+  if(!email) return null;
+  try { return localStorage.getItem(AVATAR_KEY_PREFIX + email.toLowerCase()); } catch(e){ return null; }
+}
+function setAvatarForEmail(email, dataUrl){
+  if(!email) return;
+  try { localStorage.setItem(AVATAR_KEY_PREFIX + email.toLowerCase(), dataUrl); } catch(e){}
+}
+
+function updateProfileMenu(){
+  const wrap = document.getElementById('profileWrap');
+  const loggedIn = !!state.user;
+  wrap.style.display = loggedIn ? 'block' : 'none';
+  if(!loggedIn){
+    document.getElementById('profileDropdown').classList.remove('show');
+    return;
+  }
+  const avatarUrl = getAvatarForEmail(state.user.email);
+  const btnImg = document.getElementById('profileBtnImg');
+  const btnIcon = document.getElementById('profileBtnIcon');
+  const pdImg = document.getElementById('pdAvatarImg');
+  const pdIcon = document.getElementById('pdAvatarIcon');
+  if(avatarUrl){
+    btnImg.src = avatarUrl; btnImg.style.display = 'block'; btnIcon.style.display = 'none';
+    pdImg.src = avatarUrl; pdImg.style.display = 'block'; pdIcon.style.display = 'none';
+  } else {
+    btnImg.style.display = 'none'; btnIcon.style.display = 'block';
+    pdImg.style.display = 'none'; pdIcon.style.display = 'block';
+  }
+  document.getElementById('pdName').textContent = state.user.name || '—';
+  document.getElementById('pdFirm').textContent = state.user.firm || '—';
+  profileEmailRevealed = false;
+  renderProfileEmail();
+  const badge = document.getElementById('pdPlanBadge');
+  if(state.subscriptionActive){
+    const p = currentPlanPrice('monthly'); // or actual plan
+    badge.textContent = 'Paid — ' + p.currency + p.amount + p.period;
+    badge.classList.remove('trial');
+  } else {
+    badge.textContent = 'Free trial';
+    badge.classList.add('trial');
+  }
+}
+
+function renderProfileEmail(){
+  const el = document.getElementById('pdEmailText');
+  const eyeIcon = document.getElementById('pdEmailEyeIcon');
+  if(!state.user) return;
+  el.textContent = profileEmailRevealed ? state.user.email : maskEmail(state.user.email);
+  eyeIcon.innerHTML = profileEmailRevealed
+    ? '<path d="M2 2l20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.6 5.1A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.1 3.8M6.6 6.6C3.5 8.5 1 12 1 12s4 7 11 7a10.6 10.6 0 0 0 4.4-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+    : '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>';
+}
+
+document.getElementById('pdEmailEyeBtn').addEventListener('click', function(){
+  profileEmailRevealed = !profileEmailRevealed;
+  renderProfileEmail();
+});
+
+document.getElementById('profileBtn').addEventListener('click', function(e){
+  e.stopPropagation();
+  document.getElementById('profileDropdown').classList.toggle('show');
+});
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('profileWrap');
+  if(!wrap.contains(e.target)){
+    document.getElementById('profileDropdown').classList.remove('show');
+  }
+});
+
+document.getElementById('pdAvatarEditBtn').addEventListener('click', function(e){
+  e.stopPropagation();
+  document.getElementById('pdAvatarFileInput').click();
+});
+document.getElementById('pdAvatarFileInput').addEventListener('change', function(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file || !state.user) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    setAvatarForEmail(state.user.email, ev.target.result);
+    updateProfileMenu();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('pdLogoutBtn').addEventListener('click', function(){
+  document.getElementById('profileDropdown').classList.remove('show');
+  logoutUser();
+});
+
+/* ===== PASSWORD TOGGLE ===== */
+document.querySelectorAll('[data-pwd-toggle]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    const input = document.getElementById(this.dataset.pwdToggle);
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    this.innerHTML = showing
+      ? '<svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none"><path d="M2 2l20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.6 5.1A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.1 3.8M6.6 6.6C3.5 8.5 1 12 1 12s4 7 11 7a10.6 10.6 0 0 0 4.4-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  });
+});
+
+/* ===== MOBILE MENU ===== */
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+function closeMobileMenu(){ hamburgerBtn.classList.remove('open'); mobileMenu.classList.remove('show'); }
+hamburgerBtn.addEventListener('click', function(){
+  this.classList.toggle('open');
+  mobileMenu.classList.toggle('show');
+});
+
+/* ===== CUSTOMER CARE ===== */
+document.getElementById('customerCareLink').addEventListener('click', function(){
+  closeMobileMenu();
+  openModal('customerCareModal');
+});
+document.getElementById('customerCareOkBtn').addEventListener('click', function(){
+  closeModal('customerCareModal');
+});
+
+/* ===== FAQ ===== */
+document.querySelectorAll('.faqq').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    this.closest('.faqitem').classList.toggle('open');
+  });
+});
+
+document.querySelectorAll('.faq-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    const filter = this.dataset.filter;
+    document.querySelectorAll('#faqList .faqitem').forEach(function(item){
+      const match = (filter === 'all' || item.dataset.category === filter);
+      item.classList.toggle('hide', !match);
+    });
+  });
+});
+
+document.getElementById('faqAskAssistantBtn').addEventListener('click', function(){
+  if(window.openEanovaAssistant) window.openEanovaAssistant();
+});
+
+/* ===== PRICING REGION TOGGLE ===== */
+(function(){
+  const buttons = document.querySelectorAll('.region-btn');
+  const cards = document.querySelectorAll('.pricecard');
+  function setRegion(region){
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.region === region));
+    document.querySelectorAll('#priceGrid [data-in]').forEach(function(el){
+      el.textContent = region === 'in' ? el.dataset.in : el.dataset.intl;
+    });
+    cards.forEach(c => c.setAttribute('data-currency', region));
+  }
+  buttons.forEach(b => b.addEventListener('click', function(){ setRegion(this.dataset.region); }));
+  setRegion('in');
+})();
+
+/* ===== AI CHAT (মাল্টি-ল্যাঙ্গুয়েজ) ===== */
 (function(){
   const btn = document.getElementById('aiWidgetBtn');
   const panel = document.getElementById('aiChatPanel');
@@ -465,7 +1762,7 @@ const API_BASE = 'https://eanova-backend.onrender.com';
     if(/price|pricing|cost|₹|rupee|fee|দাম|कीमत/.test(q)) return dict.pricing;
     if(/trial|free|ট্রায়াল|फ्री/.test(q)) return dict.trial;
     if(/upload|file|format|csv|excel|xlsx|pdf|আপলোড|फाइल/.test(q)) return dict.upload;
-    if(/secur|safe|encrypt|privacy|data|সুরক্ষा|सुरक्षा/.test(q)) return dict.security;
+    if(/secur|safe|encrypt|privacy|data|সুরক্ষা|सुरक्षा/.test(q)) return dict.security;
     if(/reconcil|mismatch|match|রিকনসিল|मिलान/.test(q)) return dict.reconcile;
     if(/report|download|export|রিপোর্ট|डाउनलोड/.test(q)) return dict.report;
     if(/demo|sample|try it|ডেমো|ट्राई/.test(q)) return dict.demo;
@@ -476,7 +1773,6 @@ const API_BASE = 'https://eanova-backend.onrender.com';
     return dict.fallback;
   }
 
-  // UI handlers
   btn.addEventListener('click', () => { panel.classList.toggle('show'); if(panel.classList.contains('show')) input.focus(); });
   closeBtn.addEventListener('click', () => panel.classList.remove('show'));
   window.openEanovaAssistant = () => { panel.classList.add('show'); input.focus(); };
@@ -511,22 +1807,83 @@ const API_BASE = 'https://eanova-backend.onrender.com';
   });
 })();
 
-// =============================
-// ২. ইমেইল ভ্যালিডেশন (দ্রুত)
-// =============================
-function isValidEmail(email){
-  if(!email) return false;
-  if(!email.includes('@')) return false;
-  const parts = email.split('@');
-  if(parts.length !== 2) return false;
-  if(parts[0].length < 1) return false;
-  if(!parts[1].includes('.')) return false;
-  return true;
-}
+/* ===== LANDING DEMO ===== */
+(function(){
+  const state2 = { prFile: null, gstrFile: null };
+  const prInput = document.getElementById('demoPRFile');
+  const bInput = document.getElementById('demoBFile');
+  const runBtn = document.getElementById('demoRunBtn');
+  const errBox = document.getElementById('demoError');
 
-// =============================
-// ৩. প্রোফাইল ও সাবস্ক্রিপশন সিঙ্ক (ব্যাকএন্ড থেকে)
-// =============================
+  function checkReady(){ runBtn.disabled = !(state2.prFile && state2.gstrFile); }
+
+  prInput.addEventListener('change', function(){
+    state2.prFile = this.files[0] || null;
+    document.getElementById('demoPRFname').textContent = state2.prFile ? ('✓ ' + state2.prFile.name) : '';
+    document.getElementById('demoUploadCardPR').classList.toggle('filled', !!state2.prFile);
+    checkReady();
+  });
+  bInput.addEventListener('change', function(){
+    state2.gstrFile = this.files[0] || null;
+    document.getElementById('demoBFname').textContent = state2.gstrFile ? ('✓ ' + state2.gstrFile.name) : '';
+    document.getElementById('demoUploadCard2B').classList.toggle('filled', !!state2.gstrFile);
+    checkReady();
+  });
+
+  runBtn.addEventListener('click', async function(){
+    errBox.style.display = 'none';
+    document.getElementById('demoResult').classList.remove('show');
+    document.getElementById('demoSpinner').classList.add('show');
+    runBtn.disabled = true;
+    try {
+      const r = await runRealReconciliation(state2.prFile, state2.gstrFile);
+      document.getElementById('demoSummary').innerHTML = `
+        <div class="sumcard"><div class="n">${r.matched}</div><div class="l">Matched</div></div>
+        <div class="sumcard partial"><div class="n">${r.partialCount}</div><div class="l">Partial match</div></div>
+        <div class="sumcard mismatch"><div class="n">${r.mismatchCount}</div><div class="l">Mismatch</div></div>
+        <div class="sumcard missing"><div class="n">${r.missingCount}</div><div class="l">Missing in 2B</div></div>
+      `;
+      document.getElementById('demoSpinner').classList.remove('show');
+      document.getElementById('demoResult').classList.add('show');
+    } catch(err){
+      document.getElementById('demoSpinner').classList.remove('show');
+      runBtn.disabled = false;
+      errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
+      errBox.style.display = 'block';
+    }
+  });
+})();
+
+/* ===== ADD CLIENT ===== */
+document.getElementById('addClientBtnTop').addEventListener('click', function(){
+  openModal('addClientModal');
+});
+document.getElementById('addClientBtnEmpty').addEventListener('click', function(){
+  openModal('addClientModal');
+});
+document.getElementById('addClientForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('nc-name').value.trim();
+  const gstin = document.getElementById('nc-gstin').value.trim();
+  const contact = document.getElementById('nc-contact').value.trim();
+  const invoiceCount = parseInt(document.getElementById('nc-invoices').value) || 250;
+  if(!name || !gstin || !contact){
+    alert('Please fill all fields.');
+    return;
+  }
+  state.clients.push({
+    id: state._nextClientId++,
+    name, gstin, contact, invoiceCount,
+    uploadedPR: false, uploaded2B: false, prFileObj: null, gstrFileObj: null,
+    reconciled: false, results: null
+  });
+  persistCurrentAccount();
+  closeModal('addClientModal');
+  renderDashboard();
+  document.getElementById('addClientForm').reset();
+});
+
+/* ===== সিঙ্ক ফাংশন – ব্যাকএন্ড থেকে ডেটা আনা ===== */
 async function syncUserData(){
   if(!state.user) return;
   try {
@@ -548,83 +1905,17 @@ async function syncUserData(){
   } catch(e){ console.warn('Sync failed:', e); }
 }
 
-// =============================
-// ৪. সেশন ঠিক করা (রিফ্রেশে লগআউট যাবে না)
-// =============================
-// আপনার existing loadSessionOnBoot() ইতিমধ্যে localStorage চেক করে, ঠিক আছে।
+/* ===== INIT ===== */
+loadSessionOnBoot();
+updateNavState();
+if(state.user) showView('dashboard');
 
-// =============================
-// ৫. প্রাইসিং প্ল্যান – সব প্ল্যানে আপগ্রেড
-// =============================
-function renderCheckout(plan){
-  const p = currentPlanPrice(plan);
-  document.getElementById('payBtnAmount').textContent = p.currency + p.amount;
-  document.getElementById('orderPlanLabel').textContent = 'EANOVA — ' + p.label + ' plan';
-  document.getElementById('orderPlanAmount').textContent = p.currency + p.amount;
-  document.getElementById('orderTotalAmount').textContent = p.currency + p.amount;
-  document.getElementById('checkoutForm').style.display = 'block';
-  document.getElementById('checkoutSuccess').style.display = 'none';
-}
-
-function currentPlanPrice(plan){
-  const region = (state.user && state.user.region) || 'in';
-  const rates = {
-    'first': { in: { currency: '₹', amount: '99', period: '/mo', label: 'First Month' }, intl: { currency: '$', amount: '9', period: '/mo', label: 'First Month' } },
-    'monthly': { in: { currency: '₹', amount: '199', period: '/mo', label: 'Monthly' }, intl: { currency: '$', amount: '25', period: '/mo', label: 'Monthly' } },
-    'annual': { in: { currency: '₹', amount: '150', period: '/mo', label: 'Annual' }, intl: { currency: '$', amount: '19', period: '/mo', label: 'Annual' } }
-  };
-  const p = rates[plan] || rates.monthly;
-  return p[region] || p.in;
-}
-
-// চেকআউট বাটনে ক্লিক – আপনার HTML-এ data-plan যোগ করতে হবে
-document.querySelectorAll('[data-plan]').forEach(btn => {
-  btn.addEventListener('click', function(e){
-    e.preventDefault();
-    const plan = this.dataset.plan;
-    window._selectedPlan = plan;
-    showView('checkout');
-    renderCheckout(plan);
-  });
-});
-
-// Pay বাটন
-document.getElementById('payBtn').addEventListener('click', function(e){
-  e.preventDefault();
-  document.getElementById('checkoutForm').style.display = 'none';
-  document.getElementById('checkoutSuccess').style.display = 'block';
-  state.subscriptionActive = true;
-  if(state.user) state.user.hasPaidBefore = true;
-  persistCurrentAccount();
-});
-
-// =============================
-// ৬. ফেক ইমেইল চেক – signup ফর্মে যুক্ত
-// =============================
-// আমরা signup ফর্মের submit handler override করছি না, বরং আগের handler-এ যুক্ত করছি।
-// কিন্তু যেহেতু আমরা পুরো ফাইল দিচ্ছি, আমরা নিশ্চিত করব signup handler-এ ভ্যালিডেশন আছে।
-
-// =============================
-// ৭. অন্যান্য ফাংশন – আগের মতোই থাকবে
-// =============================
-// আপনার state, loadAccounts, saveAccounts, etc. সব আগের মতো থাকবে।
-
-// =============================
-// ৮. পেজ লোড হলে সিঙ্ক
-// =============================
+// পেজ লোড হলে সিঙ্ক
 window.addEventListener('load', function(){
   if(state.user){
     syncUserData();
   }
 });
-
-// =============================
-// ৯. লোগো ফিক্স – OG ট্যাগ যোগ করা হয়েছে (হেডে)
-// =============================
-
-// =============================
-// ১০. সব বাটন ও মোবাইল ঠিক থাকবে – কোনো পরিবর্তন হয়নি
-// =============================
 
 console.log('✅ EANOVA fixes applied successfully.');
 </script>
