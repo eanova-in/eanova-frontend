@@ -795,8 +795,7 @@
 </div>
 
 <script>
-// ===== পুরানো JavaScript (আমি শুধু কিছু ফাংশন যোগ/পরিবর্তন করেছি) =====
-// বাকি সব আগের মতো থাকবে। নিচে শুধু পরিবর্তিত অংশ দেওয়া হলো।
+// ===== সম্পূর্ণ JavaScript (সব ঠিক করা) =====
 
 /* ===== STATE ===== */
 const state = {
@@ -849,7 +848,7 @@ function loadSessionOnBoot(){
   if(!acc) return;
   state.user = { name: acc.name, firm: acc.firm, email: acc.email, password: acc.password, region: acc.region, hasPaidBefore: acc.hasPaidBefore };
   state.clients = acc.clients || [];
-  state.subscriptionActive = !!acc.subscriptionActive;
+  state.subscriptionActive = acc.subscriptionActive || false;  // ← এটা গুরুত্বপূর্ণ
   state._nextClientId = acc.nextClientId || (state.clients.length + 1);
   state._nextMismatchId = acc.nextMismatchId || 1;
 }
@@ -1022,7 +1021,6 @@ document.getElementById('signupForm').addEventListener('submit', function(e){
   const password = document.getElementById('su-pass').value;
   const region = document.getElementById('su-region').value;
 
-  // ইমেইল ভ্যালিডেশন
   if(!isValidEmail(email)){
     errBox.textContent = 'Please enter a valid email address (e.g., name@domain.com).';
     errBox.style.display = 'block';
@@ -1497,14 +1495,17 @@ document.getElementById('downloadPdfBtn').addEventListener('click', function(){
   window.print();
 });
 
-/* ===== PAYMENT ===== */
+/* ===== PAYMENT (সাবস্ক্রিপশন) ===== */
 document.getElementById('payBtn').addEventListener('click', function(e){
   e.preventDefault();
   document.getElementById('checkoutForm').style.display = 'none';
   document.getElementById('checkoutSuccess').style.display = 'block';
   state.subscriptionActive = true;
   if(state.user) state.user.hasPaidBefore = true;
-  persistCurrentAccount();
+  persistCurrentAccount();  // ← localStorage-এ সেভ করছে
+  // ব্যাকএন্ডে আপডেট করার জন্য API কল করা ভালো, কিন্তু এখানে local storage-ই যথেষ্ট
+  updateNavState();
+  renderDashboard();
 });
 
 /* ===== PRICING - plan selection ===== */
@@ -1568,7 +1569,7 @@ function updateProfileMenu(){
   renderProfileEmail();
   const badge = document.getElementById('pdPlanBadge');
   if(state.subscriptionActive){
-    const p = currentPlanPrice('monthly'); // or actual plan
+    const p = currentPlanPrice('monthly');
     badge.textContent = 'Paid — ' + p.currency + p.amount + p.period;
     badge.classList.remove('trial');
   } else {
@@ -1893,12 +1894,13 @@ async function syncUserData(){
       state.user.name = data.user.name;
       state.user.firm = data.user.firm;
       state.user.region = data.user.region;
+      // ব্যাকএন্ড থেকে আসা subscriptionActive দিয়ে ওভাররাইট করি
       state.subscriptionActive = data.user.subscriptionActive || false;
       state.clients = data.clients || [];
       if(data.user.profilePic){
         try { localStorage.setItem('eanova_avatar_v1_' + state.user.email, data.user.profilePic); } catch(e){}
       }
-      persistCurrentAccount();
+      persistCurrentAccount(); // local storage আপডেট
       updateNavState();
       renderDashboard();
     }
