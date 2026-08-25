@@ -2233,7 +2233,7 @@
       </div>
       <div class="price-grid" id="priceGrid">
         <!-- First Month -->
-        <div class="pricecard">
+        <div class="pricecard" id="firstMonthPriceCard">
           <div class="pc-label">First Month</div>
           <div class="pc-price"><span class="pc-num" data-in="99" data-intl="9">99</span></div>
           <div class="pc-sub">New accounts only, one-time introductory price</div>
@@ -2722,6 +2722,13 @@
     });
 
     function renderCheckout() {
+      // The First Month price is a one-time, new-accounts-only offer.
+      // If this account has already paid before, don't let a stale
+      // selection (or a reloaded checkout view) sell it to them again —
+      // fall back to the Monthly plan instead.
+      if (window._selectedPlan === 'first' && state.user && state.user.hasPaidBefore) {
+        window._selectedPlan = 'monthly';
+      }
       const plan = window._selectedPlan || 'monthly';
       const p = currentPlanPrice(plan);
       document.getElementById('payBtnAmount').textContent = p.currency + p.amount;
@@ -2780,6 +2787,13 @@
         ctaM.dataset.nav = 'signup';
       }
       updateProfileMenu();
+      // First Month is a one-time, new-accounts-only introductory price —
+      // hide it on the public pricing section once this account has
+      // already paid before, so it can't be bought again.
+      var firstCard = document.getElementById('firstMonthPriceCard');
+      if (firstCard) {
+        firstCard.style.display = (loggedIn && state.user.hasPaidBefore) ? 'none' : '';
+      }
     }
 
     function logoutUser() {
@@ -3018,6 +3032,8 @@
           };
           state.clients = userData.clients || [];
           state.subscriptionActive = userData.subscriptionActive || false;
+          state.activePlan = userData.activePlan || state.activePlan;
+          state.user.hasPaidBefore = userData.hasPaidBefore || false;
           if (userData.profilePic) {
             try { localStorage.setItem('eanova_avatar_v1_' + email, userData.profilePic); } catch (_) {}
           }
@@ -3155,10 +3171,15 @@
         var firstP = currentPlanPrice('first');
         var monthlyP = currentPlanPrice('monthly');
         var annualP = currentPlanPrice('annual');
+        // First Month is a one-time, new-accounts-only offer — don't show
+        // it again to an account that has already paid before.
+        var alreadyPaidBefore = !!(state.user && state.user.hasPaidBefore);
+        var firstCardHtml = alreadyPaidBefore ? '' :
+            '<div class="dash-plan-card"><div class="dash-plan-name">First Month</div><div class="dash-plan-price">' + firstP.currency + firstP.amount + firstP.period + '</div><button class="btn btn-sm btn-outline" data-plan="first" data-nav="checkout" type="button">Choose</button></div>';
         banner.innerHTML =
           '<div class="msg" style="margin-bottom:12px;">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial. Choose a plan to continue after your trial:</div>' +
           '<div class="dash-plan-grid">' +
-            '<div class="dash-plan-card"><div class="dash-plan-name">First Month</div><div class="dash-plan-price">' + firstP.currency + firstP.amount + firstP.period + '</div><button class="btn btn-sm btn-outline" data-plan="first" data-nav="checkout" type="button">Choose</button></div>' +
+            firstCardHtml +
             '<div class="dash-plan-card"><div class="dash-plan-name">Monthly</div><div class="dash-plan-price">' + monthlyP.currency + monthlyP.amount + monthlyP.period + '</div><button class="btn btn-sm btn-outline" data-plan="monthly" data-nav="checkout" type="button">Choose</button></div>' +
             '<div class="dash-plan-card"><div class="dash-plan-name">Annual</div><div class="dash-plan-price">' + annualP.currency + annualP.amount + annualP.period + '</div><button class="btn btn-sm btn-gold" data-plan="annual" data-nav="checkout" type="button">Choose</button></div>' +
           '</div>';
@@ -3420,9 +3441,20 @@
     });
 
     document.getElementById('markResolvedBtn').addEventListener('click', function() {
+      var mid = parseInt(this.dataset.mid, 10);
       var c = getCurrentClient();
-      var issue = c.results.issues.find(function(i) { return i.id === parseInt(this.dataset.mid, 10); });
-      if (issue) { issue.resolved = true; }
+      if (!c || !c.results || !Array.isArray(c.results.issues)) {
+        console.warn('Mark Resolved: no current client/results found.');
+        closeModal('detailModal');
+        return;
+      }
+      var issue = c.results.issues.find(function(i) { return i.id === mid; });
+      if (!issue) {
+        console.warn('Mark Resolved: issue not found for id', mid);
+        closeModal('detailModal');
+        return;
+      }
+      issue.resolved = true;
       persistCurrentAccount();
       closeModal('detailModal');
       renderResults(c);
@@ -3605,6 +3637,13 @@
       reader.onload = function(ev) {
         setAvatarForEmail(state.user.email, ev.target.result);
         updateProfileMenu();
+        // Also push to the backend so the picture shows up on other devices
+        // logged into the same account, not just this browser's storage.
+        fetch(API_BASE + '/api/update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: state.user.email, profilePic: ev.target.result })
+        }).catch(function(err) { console.warn('Could not sync profile picture to server:', err); });
       };
       reader.readAsDataURL(file);
       e.target.value = '';
@@ -3972,6 +4011,7 @@
           }
           persistCurrentAccount();
           updateNavState();
+          updateProfileMenu();
           renderDashboard();
         }
       } catch (e) { console.warn('Sync failed:', e); }
