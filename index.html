@@ -2695,7 +2695,7 @@
     /********************************************************************
      *  VIEW NAVIGATION
      ********************************************************************/
-    function showView(name) {
+    function showView(name, fromPopState) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       const el = document.getElementById('view-' + name);
       if (el) el.classList.add('active');
@@ -2704,7 +2704,22 @@
       if (name === 'checkout') renderCheckout();
       updateNavState();
       closeMobileMenu();
+      // Push each view change onto browser history so a single back-press
+      // (on mobile / installed PWA) moves between in-app views first,
+      // instead of immediately exiting the app. Skip this when we're
+      // already responding to a popstate event (back button), or we'd
+      // push a new entry on top of the one the user just went back to.
+      if (!fromPopState) {
+        try { history.pushState({ eanovaView: name }, '', '#' + name); } catch (_) {}
+      }
     }
+
+    window.addEventListener('popstate', function(e) {
+      var name = (e.state && e.state.eanovaView) || (location.hash ? location.hash.slice(1) : null);
+      if (name && document.getElementById('view-' + name)) {
+        showView(name, true);
+      }
+    });
 
     function renderCheckout() {
       const plan = window._selectedPlan || 'monthly';
@@ -2713,8 +2728,28 @@
       document.getElementById('orderPlanLabel').textContent = 'EANOVA — ' + p.label + ' plan';
       document.getElementById('orderPlanAmount').textContent = p.currency + p.amount;
       document.getElementById('orderTotalAmount').textContent = p.currency + p.amount;
+      // If a plan is already active, don't let the person pay again by
+      // mistake — reuse the existing success box (unchanged markup) but
+      // swap its text to say the plan is already running, instead of
+      // showing the payment form.
+      var successBox = document.getElementById('checkoutSuccess');
+      var successHeading = successBox.querySelector('h2');
+      var successText = successBox.querySelector('p');
+      if (state.subscriptionActive) {
+        var activeInfo = currentPlanPrice(state.activePlan || 'monthly');
+        var planNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
+        document.getElementById('checkoutForm').style.display = 'none';
+        successBox.style.display = 'block';
+        successHeading.textContent = 'Your plan is already running';
+        successText.textContent = (planNames[state.activePlan] || 'Monthly') + ' plan (' +
+          activeInfo.currency + activeInfo.amount + activeInfo.period +
+          ') is currently active — no need to purchase again.';
+        return;
+      }
+      successHeading.textContent = 'Payment successful';
+      successText.textContent = 'Your subscription is now active. Unlimited clients, every month.';
       document.getElementById('checkoutForm').style.display = 'block';
-      document.getElementById('checkoutSuccess').style.display = 'none';
+      successBox.style.display = 'none';
     }
 
     function currentPlanPrice(plan) {
@@ -3335,6 +3370,20 @@
         c.reconciled = true;
         persistCurrentAccount();
         renderClientDetail();
+        // Push this client's match results to the backend too — otherwise
+        // reconciliation done on one device (e.g. mobile) never appears on
+        // another device (e.g. desktop), since save-client was previously
+        // only called when a client was first created, not after matching.
+        if (state.user) {
+          var clientForServer = Object.assign({}, c);
+          delete clientForServer.prFileObj;
+          delete clientForServer.gstrFileObj;
+          fetch(API_BASE + '/api/save-client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+          }).catch(function(err) { console.warn('Could not sync reconciliation result to server:', err); });
+        }
       } catch (err) {
         document.getElementById('reconSpinner').classList.remove('show');
         document.getElementById('runReconBtn').disabled = false;
@@ -3377,6 +3426,16 @@
       persistCurrentAccount();
       closeModal('detailModal');
       renderResults(c);
+      if (state.user && c) {
+        var clientForServer = Object.assign({}, c);
+        delete clientForServer.prFileObj;
+        delete clientForServer.gstrFileObj;
+        fetch(API_BASE + '/api/save-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+        }).catch(function(err) { console.warn('Could not sync resolved status to server:', err); });
+      }
     });
 
     document.getElementById('downloadCsvBtn').addEventListener('click', function() {
@@ -3822,7 +3881,14 @@
         return;
       }
       var newClient = {
-        id: state._nextClientId++,
+        // Was a simple locally-incrementing counter (_nextClientId), which
+        // could produce the same id on two different devices under the same
+        // account (each device starts counting from its own local state).
+        // That's why a second client created on mobile could collide with
+        // and overwrite/merge into the first client on desktop. Using
+        // timestamp + a random suffix makes collisions effectively
+        // impossible across devices.
+        id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
         name: name,
         gstin: gstin,
         contact: contact,
@@ -3865,15 +3931,41 @@
           state.user.name = data.user.name;
           state.user.firm = data.user.firm;
           state.user.region = data.user.region;
-          // Trust the server for subscription status and client list only when it
-          // actually has that data — an empty/false response here just means the
-          // server hasn't caught up yet (e.g. the save-client/update-profile call
-          // is still in flight), so don't let it erase what's already on screen.
+          // Trust the server for subscription status only when it actually has
+          // that data — an empty/false response here just means the server
+          // hasn't caught up yet (e.g. the update-profile call is still in
+          // flight), so don't let it erase what's already on screen.
           if (data.user.subscriptionActive) {
             state.subscriptionActive = true;
+            // The plan itself (first/monthly/annual) can change independently
+            // of the boolean flag — e.g. bought on one device, checked on
+            // another — so always take the server's value once we know a
+            // subscription is active.
+            if (data.user.activePlan) {
+              state.activePlan = data.user.activePlan;
+            }
           }
-          if (Array.isArray(data.clients) && data.clients.length > state.clients.length) {
-            state.clients = data.clients;
+          // Merge clients by id instead of only replacing when the server
+          // array is longer — that comparison missed updates made on another
+          // device to a client that already exists locally (e.g. a match run
+          // there), and could also silently drop a client added locally but
+          // not yet synced. Server copy wins per-client since it's the
+          // cross-device source of truth for match results.
+          if (Array.isArray(data.clients)) {
+            var merged = state.clients.slice();
+            data.clients.forEach(function(serverClient) {
+              var idx = merged.findIndex(function(c) { return c.id === serverClient.id; });
+              if (idx >= 0) {
+                var local = merged[idx];
+                merged[idx] = Object.assign({}, local, serverClient, {
+                  prFileObj: local.prFileObj,
+                  gstrFileObj: local.gstrFileObj
+                });
+              } else {
+                merged.push(serverClient);
+              }
+            });
+            state.clients = merged;
           }
           if (data.user.profilePic) {
             try { localStorage.setItem('eanova_avatar_v1_' + state.user.email, data.user.profilePic); } catch (_) {}
