@@ -3040,6 +3040,11 @@
           try { localStorage.setItem(SESSION_KEY, email); } catch (_) {}
           persistCurrentAccount();
           showView('dashboard');
+          // The login response can lag behind a subscription bought on
+          // another device, so immediately follow up with a full sync —
+          // this is the same call that already reconciles subscription
+          // status correctly on page reload.
+          syncUserData();
         } else {
           errBox.textContent = result.body.message || 'Login failed.';
           errBox.style.display = 'block';
@@ -3513,7 +3518,7 @@
         fetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: state.activePlan })
+          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: state.activePlan, hasPaidBefore: true })
         }).catch(function() {});
       }
     });
@@ -3970,6 +3975,9 @@
           state.user.name = data.user.name;
           state.user.firm = data.user.firm;
           state.user.region = data.user.region;
+          if (data.user.hasPaidBefore) {
+            state.user.hasPaidBefore = true;
+          }
           // Trust the server for subscription status only when it actually has
           // that data — an empty/false response here just means the server
           // hasn't caught up yet (e.g. the update-profile call is still in
