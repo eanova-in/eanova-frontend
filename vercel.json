@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/((?!entry\\.html|eanova-logo\\.png).*)", "destination": "/index.html" }
   ]
 }
