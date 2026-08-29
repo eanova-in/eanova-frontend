@@ -2662,6 +2662,7 @@
         hasPaidBefore: state.user.hasPaidBefore || false,
         subscriptionActive: state.subscriptionActive,
         activePlan: state.activePlan,
+        subscriptionExpiry: state.subscriptionExpiry,
         clients: cleanClients,
         nextClientId: state._nextClientId,
         nextMismatchId: state._nextMismatchId
@@ -2688,6 +2689,7 @@
       state.clients = acc.clients || [];
       state.subscriptionActive = !!acc.subscriptionActive;
       state.activePlan = acc.activePlan || (state.subscriptionActive ? 'monthly' : null);
+      state.subscriptionExpiry = acc.subscriptionExpiry || null;
       state._nextClientId = acc.nextClientId || (state.clients.length + 1);
       state._nextMismatchId = acc.nextMismatchId || 1;
     }
@@ -2771,8 +2773,11 @@
 
     function updateNavState() {
       const loggedIn = !!state.user;
-      document.getElementById('navDashLink').style.display = loggedIn ? 'inline-block' : 'none';
-      document.getElementById('navDashLinkM').style.display = loggedIn ? 'block' : 'none';
+      // The ghost "Dashboard" nav link is intentionally kept hidden even
+      // when logged in — the solid navCtaBtn below already becomes a
+      // "Dashboard" button, and showing both duplicated the label.
+      document.getElementById('navDashLink').style.display = 'none';
+      document.getElementById('navDashLinkM').style.display = 'none';
       const cta = document.getElementById('navCtaBtn');
       const ctaM = document.getElementById('navCtaBtnM');
       if (loggedIn) {
@@ -3033,6 +3038,7 @@
           state.clients = userData.clients || [];
           state.subscriptionActive = userData.subscriptionActive || false;
           state.activePlan = userData.activePlan || state.activePlan;
+          state.subscriptionExpiry = userData.subscriptionExpiry || null;
           state.user.hasPaidBefore = userData.hasPaidBefore || false;
           if (userData.profilePic) {
             try { localStorage.setItem('eanova_avatar_v1_' + email, userData.profilePic); } catch (_) {}
@@ -3473,11 +3479,25 @@
       return reconcileRows(prRows, gstrRows);
     }
 
+    // A plan is only valid for one month from purchase. subscriptionActive
+    // alone can be stale (e.g. a year-old local cache), so anything that
+    // requires an active plan should check this instead of the raw flag.
+    function isSubscriptionValid() {
+      if (!state.subscriptionActive) return false;
+      if (!state.subscriptionExpiry) return true; // legacy accounts with no expiry recorded yet
+      return Date.now() < state.subscriptionExpiry;
+    }
+
     async function runReconciliation() {
       var c = getCurrentClient();
       if (!c) return;
       var errBox = document.getElementById('reconError');
       errBox.style.display = 'none';
+      if (!isSubscriptionValid()) {
+        errBox.textContent = '⚠️ Your plan has expired. Please renew your subscription to run file matching.';
+        errBox.style.display = 'block';
+        return;
+      }
       document.getElementById('reconSpinner').classList.add('show');
       document.getElementById('runReconBtn').disabled = true;
       try {
@@ -3601,6 +3621,10 @@
       document.getElementById('checkoutSuccess').style.display = 'block';
       state.subscriptionActive = true;
       state.activePlan = window._selectedPlan || 'monthly';
+      // Every plan is valid for one month from the purchase date. After
+      // that, subscriptionActive alone isn't enough — isSubscriptionValid()
+      // also checks this expiry before allowing reconciliation to run.
+      state.subscriptionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
       if (state.user) state.user.hasPaidBefore = true;
       persistCurrentAccount();
       // optionally sync with backend
@@ -3608,7 +3632,7 @@
         fetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: state.activePlan })
+          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: state.activePlan, subscriptionExpiry: state.subscriptionExpiry, hasPaidBefore: true })
         }).catch(function() {});
       }
     });
@@ -4077,6 +4101,9 @@
             // subscription is active.
             if (data.user.activePlan) {
               state.activePlan = data.user.activePlan;
+            }
+            if (data.user.subscriptionExpiry) {
+              state.subscriptionExpiry = data.user.subscriptionExpiry;
             }
           }
           // Merge clients by id instead of only replacing when the server
