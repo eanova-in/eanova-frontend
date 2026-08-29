@@ -2692,21 +2692,46 @@
       try { email = localStorage.getItem(SESSION_KEY); } catch (_) { return; }
       if (!email) return;
       const acc = findAccount(email);
-      if (!acc) return;
-      state.user = {
-        name: acc.name,
-        firm: acc.firm,
-        email: acc.email,
-        password: acc.password,
-        region: acc.region,
-        hasPaidBefore: acc.hasPaidBefore || false
-      };
-      state.clients = acc.clients || [];
-      state.subscriptionActive = !!acc.subscriptionActive;
-      state.activePlan = acc.activePlan || (state.subscriptionActive ? 'monthly' : null);
-      state.subscriptionExpiry = acc.subscriptionExpiry || null;
-      state._nextClientId = acc.nextClientId || (state.clients.length + 1);
-      state._nextMismatchId = acc.nextMismatchId || 1;
+      if (acc) {
+        // Local cache exists on this device (it's been used before) — use it
+        // as a fast first paint so the dashboard isn't empty while the
+        // network call below is in flight. syncUserData() (called right
+        // after boot) will overwrite subscriptionActive / activePlan /
+        // subscriptionExpiry with the server's copy a moment later, so a
+        // plan bought or renewed on another device still shows up here.
+        state.user = {
+          name: acc.name,
+          firm: acc.firm,
+          email: acc.email,
+          password: acc.password,
+          region: acc.region,
+          hasPaidBefore: acc.hasPaidBefore || false
+        };
+        state.clients = acc.clients || [];
+        state.subscriptionActive = !!acc.subscriptionActive;
+        state.activePlan = acc.activePlan || (state.subscriptionActive ? 'monthly' : null);
+        state.subscriptionExpiry = acc.subscriptionExpiry || null;
+        state._nextClientId = acc.nextClientId || (state.clients.length + 1);
+        state._nextMismatchId = acc.nextMismatchId || 1;
+        return;
+      }
+      // No local cache — this is a new device / browser for this account
+      // (this is why "name shows but plan doesn't": without this branch,
+      // the function used to just `return` here and leave state.user null,
+      // so the app fell back to the logged-out landing page and never even
+      // asked the server for the subscription status). Seed state.user with
+      // just the session email so the boot code below treats us as logged
+      // in and calls syncUserData(), which fetches the real name, plan,
+      // activePlan and subscriptionExpiry from the backend — the actual
+      // source of truth — instead of a local cache that doesn't exist yet
+      // on this device.
+      state.user = { name: '', firm: '', email: email, region: 'in', hasPaidBefore: false };
+      state.clients = [];
+      state.subscriptionActive = false;
+      state.activePlan = null;
+      state.subscriptionExpiry = null;
+      state._nextClientId = 1;
+      state._nextMismatchId = 1;
     }
 
     /********************************************************************
@@ -4151,23 +4176,19 @@
           state.user.name = data.user.name;
           state.user.firm = data.user.firm;
           state.user.region = data.user.region;
-          // Trust the server for subscription status only when it actually has
-          // that data — an empty/false response here just means the server
-          // hasn't caught up yet (e.g. the update-profile call is still in
-          // flight), so don't let it erase what's already on screen.
-          if (data.user.subscriptionActive) {
-            state.subscriptionActive = true;
-            // The plan itself (first/monthly/annual) can change independently
-            // of the boolean flag — e.g. bought on one device, checked on
-            // another — so always take the server's value once we know a
-            // subscription is active.
-            if (data.user.activePlan) {
-              state.activePlan = data.user.activePlan;
-            }
-            if (data.user.subscriptionExpiry) {
-              state.subscriptionExpiry = data.user.subscriptionExpiry;
-            }
-          }
+          state.user.hasPaidBefore = data.user.hasPaidBefore || state.user.hasPaidBefore || false;
+          // The server is the cross-device source of truth for subscription
+          // status. A freshly-seeded session on a new device starts with
+          // subscriptionActive: false locally, so once we hear back from
+          // the server we always take its value — both to turn a plan ON
+          // (bought on another device) and to turn it OFF (expired or
+          // cancelled elsewhere) — rather than only ever being able to set
+          // it to true. "user" key existing in the response is what tells
+          // us the server actually answered (vs. a network error, which
+          // lands in the catch block below and leaves state untouched).
+          state.subscriptionActive = !!data.user.subscriptionActive;
+          state.activePlan = data.user.activePlan || null;
+          state.subscriptionExpiry = data.user.subscriptionExpiry || null;
           // Merge clients by id instead of only replacing when the server
           // array is longer — that comparison missed updates made on another
           // device to a client that already exists locally (e.g. a match run
