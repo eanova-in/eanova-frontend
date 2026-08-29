@@ -2548,6 +2548,7 @@
               <div style="flex:1;"><label>CVV</label><input type="text" placeholder="123" maxlength="3" /></div>
             </div>
             <button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button>
+            <div class="auth-error" id="checkoutError" style="display:none;margin-top:12px;"></div>
           </div>
           <div class="ordercard">
             <h3 style="color:var(--paper);font-size:17px;">Order summary</h3>
@@ -3667,24 +3668,77 @@
      ********************************************************************/
     document.getElementById('payBtn').addEventListener('click', function(e) {
       e.preventDefault();
-      document.getElementById('checkoutForm').style.display = 'none';
-      document.getElementById('checkoutSuccess').style.display = 'block';
-      state.subscriptionActive = true;
-      state.activePlan = window._selectedPlan || 'monthly';
-      // Every plan is valid for one month from the purchase date. After
-      // that, subscriptionActive alone isn't enough — isSubscriptionValid()
-      // also checks this expiry before allowing reconciliation to run.
-      state.subscriptionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
-      if (state.user) state.user.hasPaidBefore = true;
-      persistCurrentAccount();
-      // optionally sync with backend
-      if (state.user) {
+      var payBtnEl = this;
+      var plan = window._selectedPlan || 'monthly';
+      var expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+
+      if (!state.user) return;
+
+      // This write is the one that matters most in the whole app — it's the
+      // only thing standing between "customer paid" and "customer can use
+      // what they paid for on every device". The previous version set
+      // state.subscriptionActive = true locally and fired this same request
+      // with .catch(function(){}) — meaning if the backend save failed for
+      // *any* reason (cold start on Render's free tier, a dropped request,
+      // a validation error), the purchase would still show "Payment
+      // successful" and work perfectly on the buyer's own phone (because
+      // persistCurrentAccount() had already cached it locally), while the
+      // server — and therefore every other device — never learned the plan
+      // was bought at all. That silent gap is what this was doing. Now we
+      // wait for a real 200 from the server, retry a couple of times if the
+      // first attempt fails (Render free-tier instances can take 10-20s to
+      // wake from a cold start), and only then reveal "Payment successful"
+      // and update local state. If it still fails after retries, the buyer
+      // is told plainly rather than being shown a false success screen.
+      payBtnEl.disabled = true;
+      var originalBtnText = payBtnEl.textContent;
+      payBtnEl.textContent = 'Confirming payment…';
+
+      function attemptSave(retriesLeft) {
         fetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: state.activePlan, subscriptionExpiry: state.subscriptionExpiry, hasPaidBefore: true })
-        }).catch(function() {});
+          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: plan, subscriptionExpiry: expiry, hasPaidBefore: true })
+        })
+        .then(function(res) {
+          if (!res.ok) throw new Error('save failed: ' + res.status);
+          return res.json().catch(function() { return {}; });
+        })
+        .then(function() {
+          // Confirmed saved on the server — now it's safe to reflect the
+          // purchase locally and show the success screen.
+          state.subscriptionActive = true;
+          state.activePlan = plan;
+          state.subscriptionExpiry = expiry;
+          if (state.user) state.user.hasPaidBefore = true;
+          persistCurrentAccount();
+          payBtnEl.disabled = false;
+          payBtnEl.textContent = originalBtnText;
+          document.getElementById('checkoutForm').style.display = 'none';
+          document.getElementById('checkoutSuccess').style.display = 'block';
+          updateProfileMenu();
+        })
+        .catch(function(err) {
+          if (retriesLeft > 0) {
+            // Likely a Render cold start — give the backend a moment to
+            // wake up and try again before giving up.
+            setTimeout(function() { attemptSave(retriesLeft - 1); }, 4000);
+            return;
+          }
+          console.warn('Could not save subscription to server:', err);
+          payBtnEl.disabled = false;
+          payBtnEl.textContent = originalBtnText;
+          var errBox = document.getElementById('checkoutError');
+          if (errBox) {
+            errBox.textContent = 'Payment could not be confirmed with our server. Please don\'t retry the payment — instead refresh and try again in a minute, or contact support so we can activate your plan manually.';
+            errBox.style.display = 'block';
+          } else {
+            alert('Payment could not be confirmed with our server. Please refresh and try again in a minute, or contact support so we can activate your plan manually.');
+          }
+        });
       }
+
+      attemptSave(2);
     });
 
     /********************************************************************
