@@ -2517,7 +2517,8 @@
           <div class="btnrow">
             <button class="btn btn-outline btn-sm" id="rerunBtn">Re-run Reconciliation</button>
             <button class="btn btn-outline btn-sm" id="downloadCsvBtn">Download Excel Report</button>
-            <button class="btn btn-outline btn-sm" id="downloadPdfBtn">Download PDF Report</button>
+            <button class="btn btn-outline btn-sm" id="downloadPdfBrandedBtn">Download PDF (With Logo)</button>
+            <button class="btn btn-outline btn-sm" id="downloadPdfPlainBtn">Download PDF (No Logo)</button>
           </div>
         </div>
         <div class="table-wrap" style="margin-top:18px;">
@@ -3549,6 +3550,39 @@
         errBox.style.display = 'block';
         return;
       }
+
+      // Free trial: one reconciliation per calendar day. Paid plans skip
+      // this entirely (checked server-side too, so it can't be bypassed by
+      // editing localStorage — the /api/check-reconciliation-limit route
+      // returns { allowed: true, reason: 'paid' } immediately for paid users).
+      if (state.user) {
+        document.getElementById('runReconBtn').disabled = true;
+        var originalRunBtnText = document.getElementById('runReconBtn').textContent;
+        document.getElementById('runReconBtn').textContent = 'Checking trial limit…';
+        try {
+          var limitRes = await fetch(API_BASE + '/api/check-reconciliation-limit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: state.user.email })
+          });
+          var limitData = await limitRes.json();
+          document.getElementById('runReconBtn').disabled = false;
+          document.getElementById('runReconBtn').textContent = originalRunBtnText;
+          if (!limitData.allowed) {
+            errBox.textContent = "⚠️ You've used today's free reconciliation. Your trial allows one file match per day — upgrade to a paid plan to run reconciliations without a daily limit.";
+            errBox.style.display = 'block';
+            return;
+          }
+        } catch (limitErr) {
+          // If the limit check itself fails (network hiccup), don't block a
+          // trial user's only workflow over it — fail open, same as the
+          // server does on its side.
+          document.getElementById('runReconBtn').disabled = false;
+          document.getElementById('runReconBtn').textContent = originalRunBtnText;
+          console.warn('Could not verify trial limit, proceeding:', limitErr);
+        }
+      }
+
       document.getElementById('reconSpinner').classList.add('show');
       document.getElementById('runReconBtn').disabled = true;
       try {
@@ -3654,12 +3688,48 @@
       URL.revokeObjectURL(url);
     });
 
-    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+    function buildReportTableHtml(c, r) {
+      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + i.type + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
+    }
+
+    document.getElementById('downloadPdfPlainBtn').addEventListener('click', function() {
       var c = getCurrentClient();
       if (!c || !c.results) return;
       var r = c.results;
-      var rows = r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + i.type + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
-      document.getElementById('print-report').innerHTML = '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2><p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p><p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p><table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      var rows = buildReportTableHtml(c, r);
+      document.getElementById('print-report').innerHTML =
+        '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
+        '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      window.print();
+    });
+
+    document.getElementById('downloadPdfBrandedBtn').addEventListener('click', function() {
+      var c = getCurrentClient();
+      if (!c || !c.results) return;
+      var r = c.results;
+      var rows = buildReportTableHtml(c, r);
+      var now = new Date();
+      var dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      // Same EANOVA data-URI logo used elsewhere on this page (brand-logo /
+      // favicon) — reused here so the branded report doesn't need a separate
+      // image file to be deployed alongside index.html.
+      var logoImg = document.querySelector('.brand-logo');
+      var logoSrc = logoImg ? logoImg.src : '';
+      document.getElementById('print-report').innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #14213D;padding-bottom:14px;margin-bottom:18px;">' +
+          (logoSrc ? '<img src="' + logoSrc + '" style="width:48px;height:48px;border-radius:50%;">' : '') +
+          '<div><div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#14213D;">EANOVA</div><div style="font-size:11px;color:#666;">GST Reconciliation Report — eanova.in</div></div>' +
+        '</div>' +
+        '<h2 style="font-family:Georgia,serif;margin-top:0;">Reconciliation Report</h2>' +
+        '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-size:10px;color:#888;">Generated by EANOVA — eanova.in — this report reflects the two files uploaded by the account holder and is not a filing with the GST department.</div>' +
+          '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA VERIFIED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
+        '</div>';
       window.print();
     });
 
