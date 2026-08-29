@@ -295,6 +295,17 @@
       background: rgba(192, 138, 40, 0.16);
       color: var(--gold);
     }
+    .pd-validity-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: rgba(36, 31, 26, 0.75);
+      text-align: right;
+      line-height: 1.5;
+    }
+    .pd-validity-text.pd-validity-warn {
+      color: #b3401f;
+    }
     .pd-footer {
       padding: 12px 18px 16px;
     }
@@ -2090,6 +2101,10 @@
                 <span class="pd-row-label">Current plan</span>
                 <span class="pd-row-value"><span class="pd-plan-badge" id="pdPlanBadge">—</span></span>
               </div>
+              <div class="pd-row" id="pdValidityRow" style="display:none;">
+                <span class="pd-row-label">Valid plan</span>
+                <span class="pd-row-value"><span class="pd-validity-text" id="pdValidityText">—</span></span>
+              </div>
             </div>
             <div class="pd-footer">
               <button type="button" class="pd-logout-btn" id="pdLogoutBtn">Log out</button>
@@ -3717,6 +3732,53 @@
         badge.textContent = 'Free trial';
         badge.classList.add('trial');
       }
+      updatePlanValidity();
+    }
+
+    // Shows exactly how many days are left on the paid plan, with the
+    // purchase date and expiry date, right under "Current plan" in the
+    // profile menu. Since this touches money, the day count is computed
+    // from real elapsed milliseconds (not a naive date-string diff) and
+    // always rounded up (ceil) so the displayed number never overstates
+    // how much time is left.
+    function updatePlanValidity() {
+      var row = document.getElementById('pdValidityRow');
+      var text = document.getElementById('pdValidityText');
+      if (!row || !text) return;
+
+      if (!state.subscriptionActive || !state.subscriptionExpiry) {
+        row.style.display = 'none';
+        return;
+      }
+
+      var expiryMs = Number(state.subscriptionExpiry);
+      if (!expiryMs || isNaN(expiryMs)) {
+        row.style.display = 'none';
+        return;
+      }
+
+      var PLAN_LENGTH_MS = 30 * 24 * 60 * 60 * 1000;
+      var purchaseMs = expiryMs - PLAN_LENGTH_MS;
+      var now = Date.now();
+      var msLeft = expiryMs - now;
+
+      var dateFmt = { day: '2-digit', month: 'short', year: 'numeric' };
+      var purchaseStr = new Date(purchaseMs).toLocaleDateString('en-IN', dateFmt);
+      var expiryStr = new Date(expiryMs).toLocaleDateString('en-IN', dateFmt);
+
+      if (msLeft <= 0) {
+        text.textContent = 'Expired on ' + expiryStr;
+        text.classList.add('pd-validity-warn');
+        row.style.display = 'flex';
+        return;
+      }
+
+      var daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+      text.innerHTML = daysLeft + (daysLeft === 1 ? ' day left' : ' days left') +
+        '<br><span style="font-weight:500;font-size:10px;opacity:0.7;">' +
+        purchaseStr + ' – ' + expiryStr + '</span>';
+      text.classList.toggle('pd-validity-warn', daysLeft <= 3);
+      row.style.display = 'flex';
     }
 
     function renderProfileEmail() {
