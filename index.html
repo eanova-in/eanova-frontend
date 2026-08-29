@@ -3313,6 +3313,27 @@
       return String(v || '').trim().toUpperCase().replace(/[\s\-_/\\.]/g, '');
     }
 
+    // Levenshtein edit distance — used only for the fuzzy second pass below,
+    // to catch invoice numbers that differ by a stray character/typo.
+    function editDistance(a, b) {
+      if (a === b) return 0;
+      var la = a.length, lb = b.length;
+      if (la === 0) return lb;
+      if (lb === 0) return la;
+      var prev = new Array(lb + 1);
+      var curr = new Array(lb + 1);
+      for (var j = 0; j <= lb; j++) prev[j] = j;
+      for (var i = 1; i <= la; i++) {
+        curr[0] = i;
+        for (var k = 1; k <= lb; k++) {
+          var cost = a[i - 1] === b[k - 1] ? 0 : 1;
+          curr[k] = Math.min(prev[k] + 1, curr[k - 1] + 1, prev[k - 1] + cost);
+        }
+        var tmp = prev; prev = curr; curr = tmp;
+      }
+      return prev[lb];
+    }
+
     function normalizeRows(rows) {
       if (!rows || !rows.length) return null;
       var sample = rows[0];
@@ -3321,33 +3342,107 @@
       var amtKey = findColumn(sample, [/taxable.?value/i, /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i]);
       if (!invKey || !gstinKey || !amtKey) return null;
       return rows.map(function(r) {
+        var rawAmt = String(r[amtKey]).trim();
+        // Handle accounting-style negative amounts written as (1,234.00)
+        var isParenNegative = /^\(.*\)$/.test(rawAmt);
+        var amt = parseFloat(rawAmt.replace(/[^0-9.\-]/g, '')) || 0;
+        if (isParenNegative) amt = -Math.abs(amt);
         return {
           invoiceNo: String(r[invKey]).trim(),
           invoiceKey: normalizeInvoiceNo(r[invKey]),
           gstin: String(r[gstinKey]).trim().toUpperCase(),
-          amount: parseFloat(String(r[amtKey]).replace(/[^0-9.\-]/g, '')) || 0
+          amount: amt
         };
       }).filter(function(r) { return r.invoiceKey && r.gstin; });
     }
 
     function reconcileRows(prRows, gstrRows) {
       var gstrMap = new Map();
-      gstrRows.forEach(function(r) { gstrMap.set(r.invoiceKey + '|' + r.gstin, r); });
+      // Also index GSTR rows by GSTIN alone, to support the fuzzy invoice-number
+      // fallback pass below without weakening the exact-match pass above.
+      var gstrByGstin = new Map();
+      var usedGstrKeys = new Set();
+
+      gstrRows.forEach(function(r) {
+        var key = r.invoiceKey + '|' + r.gstin;
+        // Keep the list of rows sharing a key so duplicate invoice numbers
+        // within GSTR-2B don't silently overwrite each other.
+        if (!gstrMap.has(key)) gstrMap.set(key, []);
+        gstrMap.get(key).push(r);
+        if (!gstrByGstin.has(r.gstin)) gstrByGstin.set(r.gstin, []);
+        gstrByGstin.get(r.gstin).push(r);
+      });
 
       var matched = 0,
         partialCount = 0,
         mismatchCount = 0,
-        missingCount = 0;
+        missingCount = 0,
+        fuzzyMatchedCount = 0;
       var issues = [];
 
       prRows.forEach(function(pr) {
         var key = pr.invoiceKey + '|' + pr.gstin;
-        var gstrRow = gstrMap.get(key);
+        var bucket = gstrMap.get(key);
+        var gstrRow = null;
+
+        if (bucket && bucket.length) {
+          // Exact GSTIN + invoice number match. If more than one GSTR row
+          // shares this exact key, pick whichever hasn't been consumed yet
+          // and is closest in amount, so duplicates don't get matched to
+          // the same GSTR row twice.
+          var best = null, bestDiff = Infinity;
+          for (var b = 0; b < bucket.length; b++) {
+            var cand = bucket[b];
+            var candKey = cand.invoiceKey + '|' + cand.gstin + '|' + b;
+            if (usedGstrKeys.has(candKey)) continue;
+            var d = Math.abs(pr.amount - cand.amount);
+            if (d < bestDiff) { bestDiff = d; best = cand; best._usedKey = candKey; }
+          }
+          if (best) {
+            gstrRow = best;
+            usedGstrKeys.add(best._usedKey);
+          }
+        }
+
+        if (!gstrRow) {
+          // Second pass: same GSTIN, no exact invoice-number match yet.
+          // Look for the closest invoice number (small edit distance) with
+          // an amount close enough to plausibly be the same invoice. This
+          // only fires when the exact pass found nothing, so it never
+          // overrides a genuine exact match.
+          var candidates = gstrByGstin.get(pr.gstin);
+          if (candidates && candidates.length) {
+            var fuzzyBest = null, fuzzyScore = Infinity;
+            for (var c = 0; c < candidates.length; c++) {
+              var cRow = candidates[c];
+              var cKey = cRow.invoiceKey + '|' + cRow.gstin + '|gstin-idx-' + c;
+              if (usedGstrKeys.has(cKey)) continue;
+              var dist = editDistance(pr.invoiceKey, cRow.invoiceKey);
+              // Only consider close typos, not unrelated invoice numbers —
+              // at most 2 characters different, and short enough relative
+              // to the invoice number length that it's plausibly a typo.
+              if (dist > 2 || dist > Math.ceil(pr.invoiceKey.length * 0.3)) continue;
+              var amtDiff = Math.abs(pr.amount - cRow.amount);
+              var amtTolerance = Math.max(500, pr.amount * 0.02);
+              if (amtDiff > amtTolerance) continue;
+              // Score favors smaller edit distance, then smaller amount diff.
+              var score = dist * 1000000 + amtDiff;
+              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; fuzzyBest._usedKey = cKey; }
+            }
+            if (fuzzyBest) {
+              gstrRow = fuzzyBest;
+              usedGstrKeys.add(fuzzyBest._usedKey);
+              fuzzyMatchedCount++;
+            }
+          }
+        }
+
         if (!gstrRow) {
           missingCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false });
           return;
         }
+
         var diff = Math.abs(pr.amount - gstrRow.amount);
         var tolerance = Math.max(500, pr.amount * 0.02);
         if (diff < 1) {
@@ -3361,7 +3456,7 @@
         }
       });
 
-      return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, issues: issues };
+      return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount, issues: issues };
     }
 
     async function runRealReconciliation(prFile, gstrFile) {

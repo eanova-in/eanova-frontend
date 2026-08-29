@@ -1,0 +1,22 @@
+{
+  "name": "EANOVA - GST Reconciliation",
+  "short_name": "EANOVA",
+  "start_url": "/entry.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05080f",
+  "theme_color": "#05080f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/eanova-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/eanova-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
