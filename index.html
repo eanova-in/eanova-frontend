@@ -2001,6 +2001,71 @@
       border-radius: 8px;
       padding: 32px;
     }
+    /* Payment method tabs (UPI / Credit Card / CryptoPay) — built from the
+       same palette, radius and type scale as the rest of this page, no new
+       colors or fonts introduced. */
+    .pay-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+    .pay-tab {
+      flex: 1;
+      min-width: 96px;
+      text-align: center;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--navy);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .pay-tab.active {
+      background: var(--navy);
+      color: var(--paper);
+      border-color: var(--navy);
+    }
+    .pay-panel { display: none; }
+    .pay-panel.active { display: block; }
+    .upi-app-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .upi-app-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--navy);
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+    .upi-app-btn.selected {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 1px var(--navy);
+    }
+    .crypto-soon {
+      margin-top: 20px;
+      padding: 24px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      color: rgba(36,31,26,0.6);
+      font-size: 14px;
+    }
     .ordercard {
       background: var(--navy);
       color: var(--paper);
@@ -2542,12 +2607,33 @@
         <div class="checkoutwrap">
           <div class="paycard">
             <h3 style="font-size:17px;">Payment details <span style="font-size:12px;color:rgba(36,31,26,0.5);font-weight:400;">(demo — no real charge)</span></h3>
-            <div class="field"><label>Name on card</label><input type="text" id="pay-name" placeholder="Priya Sharma" /></div>
-            <div class="field"><label>Card number</label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="19" /></div>
-            <div class="field" style="display:flex;gap:12px;">
-              <div style="flex:1;"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5" /></div>
-              <div style="flex:1;"><label>CVV</label><input type="text" placeholder="123" maxlength="3" /></div>
+            <div class="pay-tabs" role="tablist">
+              <button type="button" class="pay-tab active" data-pay-tab="upi">UPI</button>
+              <button type="button" class="pay-tab" data-pay-tab="card">Credit Card</button>
+              <button type="button" class="pay-tab" data-pay-tab="crypto">CryptoPay</button>
             </div>
+
+            <div class="pay-panel active" id="payPanelUpi">
+              <div class="field"><label>UPI ID</label><input type="text" id="pay-upi-id" placeholder="yourname@upi" /></div>
+              <div class="upi-app-row">
+                <button type="button" class="upi-app-btn selected" data-upi-app="phonepe">📱 PhonePe</button>
+                <button type="button" class="upi-app-btn" data-upi-app="gpay">📱 Google Pay</button>
+              </div>
+            </div>
+
+            <div class="pay-panel" id="payPanelCard">
+              <div class="field"><label>Name on card</label><input type="text" id="pay-name" placeholder="Priya Sharma" /></div>
+              <div class="field"><label>Card number <span style="font-weight:400;text-transform:none;color:rgba(36,31,26,0.5);">(Visa, Mastercard, RuPay, Amex accepted)</span></label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="19" /></div>
+              <div class="field" style="display:flex;gap:12px;">
+                <div style="flex:1;"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5" /></div>
+                <div style="flex:1;"><label>CVV</label><input type="text" placeholder="123" maxlength="3" /></div>
+              </div>
+            </div>
+
+            <div class="pay-panel" id="payPanelCrypto">
+              <div class="crypto-soon">🔒 CryptoPay is coming soon.</div>
+            </div>
+
             <button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button>
             <div class="auth-error" id="checkoutError" style="display:none;margin-top:12px;"></div>
           </div>
@@ -2565,7 +2651,10 @@
           <div class="check">✅</div>
           <h2 style="margin-top:16px;">Payment successful</h2>
           <p style="color:rgba(36,31,26,0.65);margin-top:8px;">Your subscription is now active. Unlimited clients, every month.</p>
-          <button class="btn" style="margin-top:24px;" data-nav="dashboard">Go to Dashboard</button>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
+            <button class="btn" data-nav="dashboard">Go to Dashboard</button>
+            <button class="btn" style="background:var(--navy);" id="downloadReceiptBtn" type="button">Download Receipt (PDF)</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3087,17 +3176,26 @@
             email: userData.email,
             region: userData.region
           };
-          state.clients = userData.clients || [];
-          state.subscriptionActive = userData.subscriptionActive || false;
-          state.activePlan = userData.activePlan || state.activePlan;
-          state.subscriptionExpiry = userData.subscriptionExpiry || null;
-          state.user.hasPaidBefore = userData.hasPaidBefore || false;
-          if (userData.profilePic) {
-            try { localStorage.setItem('eanova_avatar_v1_' + email, userData.profilePic); } catch (_) {}
+          // /api/login sends subscriptionActive / activePlan /
+          // subscriptionExpiry / clients / profilePic as TOP-LEVEL fields on
+          // the response (siblings of `user`), not nested inside `user` —
+          // see server.js. Reading them off userData (i.e. result.body.user)
+          // was always undefined, so login unconditionally reset the plan to
+          // "no plan" every time, even right after a successful purchase.
+          // This was the actual bug behind the plan disappearing on login/
+          // refresh — reading the correct top-level fields fixes it.
+          state.clients = result.body.clients || [];
+          state.subscriptionActive = result.body.subscriptionActive || false;
+          state.activePlan = result.body.activePlan || null;
+          state.subscriptionExpiry = result.body.subscriptionExpiry || null;
+          state.user.hasPaidBefore = state.subscriptionActive || state.user.hasPaidBefore || false;
+          if (result.body.profilePic) {
+            try { localStorage.setItem('eanova_avatar_v1_' + email, result.body.profilePic); } catch (_) {}
           }
           try { localStorage.setItem(SESSION_KEY, email); } catch (_) {}
           persistCurrentAccount();
           showView('dashboard');
+          syncUserData();
         } else {
           errBox.textContent = result.body.message || 'Login failed.';
           errBox.style.display = 'block';
@@ -3734,13 +3832,47 @@
     });
 
     /********************************************************************
+     *  PAYMENT (SUBSCRIPTION) — method tabs
+     ********************************************************************/
+    var _selectedPayMethod = 'upi';
+    var _selectedUpiApp = 'phonepe';
+    document.querySelectorAll('[data-pay-tab]').forEach(function(tabBtn) {
+      tabBtn.addEventListener('click', function() {
+        _selectedPayMethod = this.getAttribute('data-pay-tab');
+        document.querySelectorAll('[data-pay-tab]').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        document.querySelectorAll('.pay-panel').forEach(function(p) { p.classList.remove('active'); });
+        var panelId = _selectedPayMethod === 'upi' ? 'payPanelUpi' : (_selectedPayMethod === 'card' ? 'payPanelCard' : 'payPanelCrypto');
+        document.getElementById(panelId).classList.add('active');
+        var payBtnEl = document.getElementById('payBtn');
+        // CryptoPay isn't a real payment option yet — no charge should be
+        // possible to trigger while that tab is open.
+        payBtnEl.disabled = (_selectedPayMethod === 'crypto');
+      });
+    });
+    document.querySelectorAll('[data-upi-app]').forEach(function(appBtn) {
+      appBtn.addEventListener('click', function() {
+        _selectedUpiApp = this.getAttribute('data-upi-app');
+        document.querySelectorAll('[data-upi-app]').forEach(function(b) { b.classList.remove('selected'); });
+        this.classList.add('selected');
+      });
+    });
+
+    /********************************************************************
      *  PAYMENT (SUBSCRIPTION)
      ********************************************************************/
     document.getElementById('payBtn').addEventListener('click', function(e) {
       e.preventDefault();
+      if (_selectedPayMethod === 'crypto') return; // guarded, but belt-and-braces
       var payBtnEl = this;
       var plan = window._selectedPlan || 'monthly';
       var expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+      // A receipt-friendly transaction id — not a real payment gateway
+      // reference (this checkout is still the existing demo flow, no real
+      // charge), just a stable id so the downloadable receipt has something
+      // concrete to show under "Transaction ID".
+      var txnId = 'EANOVA-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+      var methodLabel = _selectedPayMethod === 'upi' ? (_selectedUpiApp === 'phonepe' ? 'UPI — PhonePe' : 'UPI — Google Pay') : 'Credit Card';
 
       if (!state.user) return;
 
@@ -3782,6 +3914,19 @@
           state.subscriptionExpiry = expiry;
           if (state.user) state.user.hasPaidBefore = true;
           persistCurrentAccount();
+          // Kept only in memory for this session, purely so the receipt
+          // buttons on the success screen have something to render — not
+          // persisted anywhere, since it's not sensitive payment data, just
+          // a display id.
+          window._lastReceipt = {
+            txnId: txnId,
+            plan: plan,
+            amount: document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '',
+            method: methodLabel,
+            name: (state.user && state.user.name) || '',
+            email: (state.user && state.user.email) || '',
+            date: Date.now()
+          };
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
           document.getElementById('checkoutForm').style.display = 'none';
@@ -3810,6 +3955,46 @@
 
       attemptSave(2);
     });
+
+    /********************************************************************
+     *  PAYMENT RECEIPT (PDF, via print) — same pattern as the branded
+     *  reconciliation report above: fill #print-report and window.print(),
+     *  so no separate PDF library or file is needed.
+     ********************************************************************/
+    var downloadReceiptBtnEl = document.getElementById('downloadReceiptBtn');
+    if (downloadReceiptBtnEl) {
+      downloadReceiptBtnEl.addEventListener('click', function() {
+        var rcpt = window._lastReceipt;
+        if (!rcpt) return;
+        var dateStr = new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        var planLabel = rcpt.plan === 'annual' ? 'Annual plan' : (rcpt.plan === 'first' ? 'First month' : 'Monthly plan');
+        var logoImg = document.querySelector('.brand-logo');
+        var logoSrc = logoImg ? logoImg.src : '';
+        document.getElementById('print-report').innerHTML =
+          '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #14213D;padding-bottom:14px;margin-bottom:18px;">' +
+            (logoSrc ? '<img src="' + logoSrc + '" style="width:48px;height:48px;border-radius:50%;">' : '') +
+            '<div><div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#14213D;">EANOVA</div><div style="font-size:11px;color:#666;">eanova.in — GST Reconciliation</div></div>' +
+          '</div>' +
+          '<h2 style="font-family:Georgia,serif;margin-top:0;">Payment Receipt</h2>' +
+          '<table cellpadding="6" cellspacing="0" style="width:100%;font-size:13px;margin-top:10px;">' +
+            '<tr><td style="color:#666;width:180px;">Name</td><td><strong>' + (rcpt.name || '—') + '</strong></td></tr>' +
+            '<tr><td style="color:#666;">Email</td><td>' + (rcpt.email || '—') + '</td></tr>' +
+            '<tr><td style="color:#666;">Plan</td><td>' + planLabel + '</td></tr>' +
+            '<tr><td style="color:#666;">Payment method</td><td>' + rcpt.method + '</td></tr>' +
+            '<tr><td style="color:#666;">Transaction ID</td><td style="font-family:\'Courier New\',monospace;">' + rcpt.txnId + '</td></tr>' +
+            '<tr><td style="color:#666;">Date &amp; time</td><td>' + dateStr + '</td></tr>' +
+            '<tr><td style="color:#666;">Amount charged</td><td style="font-size:18px;font-weight:700;color:#14213D;">' + rcpt.amount + '</td></tr>' +
+          '</table>' +
+          '<div style="margin-top:36px;padding-top:16px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:flex-end;">' +
+            '<div>' +
+              '<div style="font-size:13px;color:#241F1A;margin-bottom:4px;">Thank you for trust and choice, Eanova.</div>' +
+              '<div style="font-size:10px;color:#888;">This receipt is generated by EANOVA — eanova.in — and confirms a completed subscription payment.</div>' +
+            '</div>' +
+            '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA APPROVED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
+          '</div>';
+        window.print();
+      });
+    }
 
     /********************************************************************
      *  PRICING PLAN SELECTION
