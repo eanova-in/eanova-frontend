@@ -4489,7 +4489,13 @@
     async function syncUserData() {
       if (!state.user) return;
       try {
-        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email));
+        // cache: 'no-store' forces a real network request every time —
+        // without it, the browser could serve a cached response from
+        // before a purchase (visible as an HTTP 304 in DevTools), showing
+        // an out-of-date plan status even though the server itself had
+        // already saved the correct one. This is a belt-and-braces
+        // safety net alongside the no-store header server.js now sends.
+        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
         var data = await res.json();
         if (data.user) {
           state.user.name = data.user.name;
