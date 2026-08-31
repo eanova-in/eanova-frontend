@@ -3906,7 +3906,7 @@
           if (!res.ok) throw new Error('save failed: ' + res.status);
           return res.json().catch(function() { return {}; });
         })
-        .then(function() {
+        .then(function(saveResponseBody) {
           // Confirmed saved on the server — now it's safe to reflect the
           // purchase locally and show the success screen.
           state.subscriptionActive = true;
@@ -3925,13 +3925,42 @@
             method: methodLabel,
             name: (state.user && state.user.name) || '',
             email: (state.user && state.user.email) || '',
-            date: Date.now()
+            date: Date.now(),
+            expiry: expiry
           };
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
           document.getElementById('checkoutForm').style.display = 'none';
           document.getElementById('checkoutSuccess').style.display = 'block';
           updateProfileMenu();
+
+          // --- TEMPORARY DIAGNOSTIC ---
+          // This exists only to pin down exactly where the subscription
+          // value is getting lost. It shows, in plain text right on the
+          // success screen, exactly what the save endpoint said it stored
+          // and exactly what an immediate re-read of /api/user-data says a
+          // moment later — no DevTools needed. Safe to remove once the bug
+          // is confirmed and fixed.
+          var diagBox = document.getElementById('subscriptionDiagBox');
+          if (!diagBox) {
+            diagBox = document.createElement('div');
+            diagBox.id = 'subscriptionDiagBox';
+            diagBox.style.cssText = 'margin-top:20px;padding:14px;border:2px dashed #A63D40;border-radius:6px;font-family:monospace;font-size:12px;text-align:left;white-space:pre-wrap;background:#fff;color:#241F1A;';
+            var successBox = document.querySelector('#checkoutSuccess .successbox');
+            if (successBox) successBox.appendChild(diagBox);
+          }
+          var savedSubActive = saveResponseBody && saveResponseBody.user ? saveResponseBody.user.subscriptionActive : '(no user object in response)';
+          diagBox.textContent = 'DIAGNOSTIC — update-profile response said subscriptionActive: ' + JSON.stringify(savedSubActive) + '\n\nChecking /api/user-data now...';
+          fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(freshData) {
+              var freshSubActive = freshData && freshData.user ? freshData.user.subscriptionActive : '(no user object)';
+              diagBox.textContent += '\n\nImmediate /api/user-data re-check said subscriptionActive: ' + JSON.stringify(freshSubActive) + '\n\nIf the second value is false while the first is true, the save and the read are reaching different data — screenshot this box and send it.';
+            })
+            .catch(function(err) {
+              diagBox.textContent += '\n\nRe-check failed: ' + err.message;
+            });
+          // --- END TEMPORARY DIAGNOSTIC ---
         })
         .catch(function(err) {
           if (retriesLeft > 0) {
@@ -3967,6 +3996,7 @@
         var rcpt = window._lastReceipt;
         if (!rcpt) return;
         var dateStr = new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        var expiryStr = rcpt.expiry ? new Date(rcpt.expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
         var planLabel = rcpt.plan === 'annual' ? 'Annual plan' : (rcpt.plan === 'first' ? 'First month' : 'Monthly plan');
         var logoImg = document.querySelector('.brand-logo');
         var logoSrc = logoImg ? logoImg.src : '';
@@ -3984,6 +4014,7 @@
             '<tr><td style="color:#666;">Transaction ID</td><td style="font-family:\'Courier New\',monospace;">' + rcpt.txnId + '</td></tr>' +
             '<tr><td style="color:#666;">Date &amp; time</td><td>' + dateStr + '</td></tr>' +
             '<tr><td style="color:#666;">Amount charged</td><td style="font-size:18px;font-weight:700;color:#14213D;">' + rcpt.amount + '</td></tr>' +
+            '<tr><td style="color:#666;">Valid until</td><td><strong>' + expiryStr + '</strong></td></tr>' +
           '</table>' +
           '<div style="margin-top:36px;padding-top:16px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:flex-end;">' +
             '<div>' +
@@ -4489,7 +4520,13 @@
     async function syncUserData() {
       if (!state.user) return;
       try {
-        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email));
+        // cache: 'no-store' forces a real network request every time —
+        // without it, the browser could serve a cached response from
+        // before a purchase (visible as an HTTP 304 in DevTools), showing
+        // an out-of-date plan status even though the server itself had
+        // already saved the correct one. This is a belt-and-braces
+        // safety net alongside the no-store header server.js now sends.
+        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
         var data = await res.json();
         if (data.user) {
           state.user.name = data.user.name;
