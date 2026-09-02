@@ -1933,6 +1933,12 @@
     .sumcard.missing {
       border-top-color: #7A2C2E;
     }
+    .sumcard.duplicate {
+      border-top-color: var(--red);
+    }
+    .sumcard.invalidgstin {
+      border-top-color: #8a5a00;
+    }
     .sumcard .n {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 30px;
@@ -1985,6 +1991,28 @@
       background: rgba(122, 44, 46, 0.14);
       color: #7A2C2E;
     }
+    .typebadge.duplicate {
+      background: rgba(166, 61, 64, 0.22);
+      color: var(--red);
+    }
+    .typebadge.invalid_gstin {
+      background: rgba(192, 138, 40, 0.22);
+      color: #8a5a00;
+    }
+    .riskbadge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .riskbadge.low { background: rgba(60,130,90,0.14); color: #2f6e4d; }
+    .riskbadge.medium { background: rgba(192,138,40,0.14); color: var(--gold); }
+    .riskbadge.high { background: rgba(166,61,64,0.14); color: var(--red); }
+    .riskbadge.critical { background: rgba(122,44,46,0.9); color: #fff; }
     .resolved-row td {
       opacity: 0.42;
       text-decoration: line-through;
@@ -2576,6 +2604,8 @@
           <div class="sumcard partial"><div class="n" id="sumPartial">0</div><div class="l">Partial match</div></div>
           <div class="sumcard mismatch"><div class="n" id="sumMismatch">0</div><div class="l">Mismatch</div></div>
           <div class="sumcard missing"><div class="n" id="sumMissing">0</div><div class="l">Missing in 2B</div></div>
+          <div class="sumcard duplicate"><div class="n" id="sumDuplicate">0</div><div class="l">Duplicate invoices</div></div>
+          <div class="sumcard invalidgstin"><div class="n" id="sumInvalidGstin">0</div><div class="l">Invalid GSTIN</div></div>
         </div>
         <div class="resultbar">
           <h3 id="issuesTitle">Issues to review</h3>
@@ -3488,6 +3518,145 @@
       });
     }
 
+    // ============================================================
+    // GSTIN checksum validation (Prompt-requested upgrade)
+    // Full 15-character structure + state code + PAN pattern + the
+    // official Luhn-style check character. This does NOT reject rows —
+    // Purchase Registers legitimately contain typos — it only flags
+    // rows so the UI can surface them for review.
+    // ============================================================
+    var GSTIN_VALID_STATE_CODES = new Set([
+      '01','02','03','04','05','06','07','08','09','10',
+      '11','12','13','14','15','16','17','18','19','20',
+      '21','22','23','24','25','26','27','28','29','30',
+      '31','32','33','34','35','36','37','38','97','99'
+    ]);
+    var GSTIN_FORMAT_REGEX = /^(\d{2})([A-Z]{5}\d{4}[A-Z]{1})[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    var GSTIN_CHECKSUM_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    function gstinChecksumValid(g) {
+      var sum = 0;
+      for (var i = 0; i < 14; i++) {
+        var v = GSTIN_CHECKSUM_CHARS.indexOf(g[i]);
+        if (v < 0) return false;
+        if (i % 2 !== 0) v *= 2;
+        sum += v > 35 ? (v % 36 + Math.floor(v / 36)) : v;
+      }
+      var check = (36 - (sum % 36)) % 36;
+      return GSTIN_CHECKSUM_CHARS[check] === g[14];
+    }
+
+    function validateGSTIN(gstinRaw) {
+      if (!gstinRaw) return { valid: false, reason: 'empty' };
+      var g = String(gstinRaw).trim().toUpperCase();
+      if (g.length !== 15) return { valid: false, reason: 'length' };
+      var m = g.match(GSTIN_FORMAT_REGEX);
+      if (!m) return { valid: false, reason: 'format' };
+      if (!GSTIN_VALID_STATE_CODES.has(m[1])) return { valid: false, reason: 'state_code' };
+      if (!gstinChecksumValid(g)) return { valid: false, reason: 'checksum' };
+      return { valid: true, stateCode: m[1] };
+    }
+
+    // ============================================================
+    // Duplicate invoice detection (Prompt-requested upgrade)
+    // Same invoice number appearing more than once for the same GSTIN
+    // within ONE file (usually the Purchase Register) — a real risk of
+    // double ITC claim. This runs independently of the matching pass
+    // above, so it never changes which GSTR-2B row a PR row matches to.
+    // ============================================================
+    function findDuplicateInvoices(rows) {
+      var seen = new Map();
+      var dupeGroups = [];
+      rows.forEach(function(row, idx) {
+        var key = row.invoiceKey + '|' + row.gstin;
+        if (!key || key === '|') return;
+        if (!seen.has(key)) {
+          seen.set(key, [idx]);
+        } else {
+          seen.get(key).push(idx);
+        }
+      });
+      seen.forEach(function(indexes, key) {
+        if (indexes.length > 1) {
+          dupeGroups.push({
+            invoiceNo: rows[indexes[0]].invoiceNo,
+            gstin: rows[indexes[0]].gstin,
+            rowIndexes: indexes,
+            occurrences: indexes.length,
+            totalAmount: indexes.reduce(function(sum, i) { return sum + rows[i].amount; }, 0)
+          });
+        }
+      });
+      return dupeGroups;
+    }
+
+    // ============================================================
+    // Rule-based mismatch classifier (free, no external API — mirrors
+    // the classification rules a CA would apply manually). Runs after
+    // reconcileRows() and annotates each issue with a plain-English
+    // suggested action, a risk level, and whether it looks safe to
+    // auto-resolve. This is intentionally conservative: it only ever
+    // labels an issue, never changes the match itself.
+    // ============================================================
+    function classifyIssue(issue) {
+      var prAmt = issue.purchaseAmt, gstrAmt = issue.gstrAmt;
+      var pctDiff = prAmt ? Math.abs(issue.diff) / Math.abs(prAmt) * 100 : 100;
+
+      if (issue.type === 'duplicate') {
+        return {
+          classification: 'double_itc',
+          risk: 'critical',
+          suggestedAction: 'Same invoice appears more than once in your Purchase Register — remove the duplicate before filing to avoid claiming ITC twice.',
+          autoResolvable: false
+        };
+      }
+
+      if (issue.gstinFlag && !issue.gstinFlag.valid) {
+        return {
+          classification: 'wrong_gstin',
+          risk: 'high',
+          suggestedAction: 'GSTIN failed the official checksum check (' + issue.gstinFlag.reason + ') — verify the supplier\u2019s GSTIN before claiming ITC on this invoice.',
+          autoResolvable: false
+        };
+      }
+
+      if (issue.type === 'missing') {
+        return {
+          classification: 'timing_diff',
+          risk: 'medium',
+          suggestedAction: 'In your Purchase Register but not yet in GSTR-2B — likely the supplier hasn\u2019t filed yet, or it belongs to a different tax period. Check the invoice date and follow up with the vendor if it doesn\u2019t appear next month.',
+          autoResolvable: false
+        };
+      }
+
+      if (issue.type === 'partial' || issue.type === 'mismatch') {
+        if (pctDiff < 1) {
+          return {
+            classification: 'rounding',
+            risk: 'low',
+            suggestedAction: 'Difference is under 1% — most likely a rounding difference. Safe to auto-resolve.',
+            autoResolvable: true
+          };
+        }
+        if (pctDiff <= 10) {
+          return {
+            classification: 'tax_error',
+            risk: 'medium',
+            suggestedAction: 'Amounts differ by ' + pctDiff.toFixed(1) + '% — check whether the tax rate or HSN code was applied differently between your books and the supplier\u2019s filing.',
+            autoResolvable: false
+          };
+        }
+        return {
+          classification: 'escalate',
+          risk: 'high',
+          suggestedAction: 'Amounts differ by ' + pctDiff.toFixed(1) + '% — too large to be a rounding or rate issue. Escalate to CA review before claiming ITC on this invoice.',
+          autoResolvable: false
+        };
+      }
+
+      return { classification: 'escalate', risk: 'medium', suggestedAction: 'Review manually.', autoResolvable: false };
+    }
+
     function findColumn(row, patterns) {
       var keys = Object.keys(row);
       for (var i = 0; i < patterns.length; i++) {
@@ -3540,6 +3709,7 @@
           invoiceNo: String(r[invKey]).trim(),
           invoiceKey: normalizeInvoiceNo(r[invKey]),
           gstin: String(r[gstinKey]).trim().toUpperCase(),
+          gstinFlag: validateGSTIN(r[gstinKey]),
           amount: amt
         };
       }).filter(function(r) { return r.invoiceKey && r.gstin; });
@@ -3552,7 +3722,13 @@
       var gstrByGstin = new Map();
       var usedGstrKeys = new Set();
 
-      gstrRows.forEach(function(r) {
+      // Give every GSTR row one stable identity (its absolute position) so the
+      // exact-match pass and the fuzzy fallback pass mark consumption using the
+      // SAME key scheme. Previously they used different bucket-relative key
+      // strings, so a GSTR row consumed by the exact pass could still be
+      // re-matched by the fuzzy pass — causing over-counted "matched" results.
+      gstrRows.forEach(function(r, absIdx) {
+        r._absIdx = absIdx;
         var key = r.invoiceKey + '|' + r.gstin;
         // Keep the list of rows sharing a key so duplicate invoice numbers
         // within GSTR-2B don't silently overwrite each other.
@@ -3582,14 +3758,13 @@
           var best = null, bestDiff = Infinity;
           for (var b = 0; b < bucket.length; b++) {
             var cand = bucket[b];
-            var candKey = cand.invoiceKey + '|' + cand.gstin + '|' + b;
-            if (usedGstrKeys.has(candKey)) continue;
+            if (usedGstrKeys.has(cand._absIdx)) continue;
             var d = Math.abs(pr.amount - cand.amount);
-            if (d < bestDiff) { bestDiff = d; best = cand; best._usedKey = candKey; }
+            if (d < bestDiff) { bestDiff = d; best = cand; }
           }
           if (best) {
             gstrRow = best;
-            usedGstrKeys.add(best._usedKey);
+            usedGstrKeys.add(best._absIdx);
           }
         }
 
@@ -3604,8 +3779,7 @@
             var fuzzyBest = null, fuzzyScore = Infinity;
             for (var c = 0; c < candidates.length; c++) {
               var cRow = candidates[c];
-              var cKey = cRow.invoiceKey + '|' + cRow.gstin + '|gstin-idx-' + c;
-              if (usedGstrKeys.has(cKey)) continue;
+              if (usedGstrKeys.has(cRow._absIdx)) continue;
               var dist = editDistance(pr.invoiceKey, cRow.invoiceKey);
               // Only consider close typos, not unrelated invoice numbers —
               // at most 2 characters different, and short enough relative
@@ -3616,11 +3790,11 @@
               if (amtDiff > amtTolerance) continue;
               // Score favors smaller edit distance, then smaller amount diff.
               var score = dist * 1000000 + amtDiff;
-              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; fuzzyBest._usedKey = cKey; }
+              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; }
             }
             if (fuzzyBest) {
               gstrRow = fuzzyBest;
-              usedGstrKeys.add(fuzzyBest._usedKey);
+              usedGstrKeys.add(fuzzyBest._absIdx);
               fuzzyMatchedCount++;
             }
           }
@@ -3648,6 +3822,69 @@
       return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount, issues: issues };
     }
 
+    // ============================================================
+    // Post-processing pass: duplicate invoices + GSTIN validity +
+    // rule-based classification. Runs AFTER reconcileRows() so the
+    // core matching logic above (exact + fuzzy, duplicate-safe via
+    // usedGstrKeys) is completely untouched.
+    // ============================================================
+    function enrichReconciliation(result, prRows) {
+      // --- Duplicate invoices within the Purchase Register ---
+      var dupeGroups = findDuplicateInvoices(prRows);
+      dupeGroups.forEach(function(dg) {
+        result.issues.push({
+          id: state._nextMismatchId++,
+          invoiceNo: dg.invoiceNo,
+          gstin: dg.gstin,
+          purchaseAmt: dg.totalAmount,
+          gstrAmt: 0,
+          diff: dg.totalAmount,
+          type: 'duplicate',
+          occurrences: dg.occurrences,
+          resolved: false
+        });
+      });
+      result.duplicateCount = dupeGroups.length;
+
+      // --- Invalid-GSTIN rows in the Purchase Register (checksum failed) ---
+      // Only flagged if not already surfaced as an issue above, so we don't
+      // show the same invoice twice for two different reasons.
+      var flaggedKeys = new Set(result.issues.map(function(i) { return i.invoiceNo + '|' + i.gstin; }));
+      var invalidGstinCount = 0;
+      prRows.forEach(function(pr) {
+        if (pr.gstinFlag && !pr.gstinFlag.valid) {
+          invalidGstinCount++;
+          var k = pr.invoiceNo + '|' + pr.gstin;
+          if (!flaggedKeys.has(k)) {
+            flaggedKeys.add(k);
+            result.issues.push({
+              id: state._nextMismatchId++,
+              invoiceNo: pr.invoiceNo,
+              gstin: pr.gstin,
+              purchaseAmt: pr.amount,
+              gstrAmt: 0,
+              diff: 0,
+              type: 'invalid_gstin',
+              gstinFlag: pr.gstinFlag,
+              resolved: false
+            });
+          }
+        }
+      });
+      result.invalidGstinCount = invalidGstinCount;
+
+      // --- Classify every issue (duplicate, invalid_gstin, missing, partial, mismatch) ---
+      result.issues.forEach(function(issue) {
+        var c = classifyIssue(issue);
+        issue.classification = c.classification;
+        issue.risk = c.risk;
+        issue.suggestedAction = c.suggestedAction;
+        issue.autoResolvable = c.autoResolvable;
+      });
+
+      return result;
+    }
+
     async function runRealReconciliation(prFile, gstrFile) {
       var prRowsRaw = await readFileAsRows(prFile);
       var gstrRowsRaw = await readFileAsRows(gstrFile);
@@ -3659,7 +3896,8 @@
       if (prRows.length === 0 || gstrRows.length === 0) {
         throw new Error('One of the files has no readable rows once the header is removed.');
       }
-      return reconcileRows(prRows, gstrRows);
+      var result = reconcileRows(prRows, gstrRows);
+      return enrichReconciliation(result, prRows);
     }
 
     // A plan is only valid for one month from purchase. subscriptionActive
@@ -3750,11 +3988,15 @@
       document.getElementById('sumPartial').textContent = r.partialCount;
       document.getElementById('sumMismatch').textContent = r.mismatchCount;
       document.getElementById('sumMissing').textContent = r.missingCount;
+      document.getElementById('sumDuplicate').textContent = r.duplicateCount || 0;
+      document.getElementById('sumInvalidGstin').textContent = r.invalidGstinCount || 0;
       var unresolved = r.issues.filter(function(i) { return !i.resolved; }).length;
       document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved === 1 ? '' : 's') + ' to review';
       var tbody = document.getElementById('mismatchTableBody');
       tbody.innerHTML = r.issues.map(function(i) {
-        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + (i.type === 'missing' ? 'Missing in 2B' : i.type) + '</span></td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
+        var typeLabel = i.type === 'missing' ? 'Missing in 2B' : i.type === 'invalid_gstin' ? 'Invalid GSTIN' : i.type;
+        var riskHtml = i.risk ? '<span class="riskbadge ' + i.risk + '">' + i.risk + '</span>' : '';
+        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + typeLabel + '</span>' + riskHtml + '</td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
       }).join('');
     }
 
@@ -3764,7 +4006,7 @@
         var c = getCurrentClient();
         var issue = c.results.issues.find(function(i) { return i.id === parseInt(viewBtn.dataset.mid, 10); });
         if (!issue) return;
-        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>';
+        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>' + (issue.suggestedAction ? '<div style="margin-top:14px;padding:12px;border-radius:6px;background:rgba(36,31,26,0.04);border-left:3px solid var(--gold);"><strong>Suggested action' + (issue.risk ? ' <span class="riskbadge ' + issue.risk + '">' + issue.risk + ' risk</span>' : '') + ':</strong><br/>' + issue.suggestedAction + '</div>' : '');
         document.getElementById('markResolvedBtn').dataset.mid = issue.id;
         document.getElementById('markResolvedBtn').style.display = issue.resolved ? 'none' : 'block';
         openModal('detailModal');
@@ -3804,9 +4046,9 @@
     document.getElementById('downloadCsvBtn').addEventListener('click', function() {
       var c = getCurrentClient();
       if (!c || !c.results) return;
-      var csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Status\n';
+      var csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Risk,Suggested Action,Status\n';
       c.results.issues.forEach(function(i) {
-        csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.resolved ? 'Resolved' : 'Open'].join(',') + '\n';
+        csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.risk || '', '"' + (i.suggestedAction || '').replace(/"/g, '""') + '"', i.resolved ? 'Resolved' : 'Open'].join(',') + '\n';
       });
       var blob = new Blob([csv], { type: 'text/csv' });
       var url = URL.createObjectURL(blob);
@@ -3820,7 +4062,10 @@
     });
 
     function buildReportTableHtml(c, r) {
-      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + i.type + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
+      return r.issues.map(function(i) {
+        var typeLabel = i.type === 'missing' ? 'Missing in 2B' : i.type === 'invalid_gstin' ? 'Invalid GSTIN' : i.type;
+        return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + typeLabel + '</td><td>' + (i.risk || '') + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>';
+      }).join('');
     }
 
     document.getElementById('downloadPdfPlainBtn').addEventListener('click', function() {
@@ -3831,8 +4076,8 @@
       document.getElementById('print-report').innerHTML =
         '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Duplicates:</strong> ' + (r.duplicateCount || 0) + ' &nbsp; <strong>Invalid GSTIN:</strong> ' + (r.invalidGstinCount || 0) + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Risk</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
       window.print();
     });
 
@@ -3855,8 +4100,8 @@
         '</div>' +
         '<h2 style="font-family:Georgia,serif;margin-top:0;">Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Duplicates:</strong> ' + (r.duplicateCount || 0) + ' &nbsp; <strong>Invalid GSTIN:</strong> ' + (r.invalidGstinCount || 0) + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Risk</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="font-size:10px;color:#888;">Generated by EANOVA — eanova.in — this report reflects the two files uploaded by the account holder and is not a filing with the GST department.</div>' +
           '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA VERIFIED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
@@ -4461,7 +4706,7 @@
         runBtn.disabled = true;
         try {
           var r = await runRealReconciliation(demoState.prFile, demoState.gstrFile);
-          document.getElementById('demoSummary').innerHTML = '<div class="sumcard"><div class="n">' + r.matched + '</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n">' + r.partialCount + '</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n">' + r.mismatchCount + '</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n">' + r.missingCount + '</div><div class="l">Missing in 2B</div></div>';
+          document.getElementById('demoSummary').innerHTML = '<div class="sumcard"><div class="n">' + r.matched + '</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n">' + r.partialCount + '</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n">' + r.mismatchCount + '</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n">' + r.missingCount + '</div><div class="l">Missing in 2B</div></div><div class="sumcard duplicate"><div class="n">' + (r.duplicateCount || 0) + '</div><div class="l">Duplicate invoices</div></div><div class="sumcard invalidgstin"><div class="n">' + (r.invalidGstinCount || 0) + '</div><div class="l">Invalid GSTIN</div></div>';
           document.getElementById('demoSpinner').classList.remove('show');
           document.getElementById('demoResult').classList.add('show');
         } catch (err) {
