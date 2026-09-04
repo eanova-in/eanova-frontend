@@ -2872,6 +2872,42 @@
       });
     }
 
+    // Every save-client call site used to just fire-and-forget with a bare
+    // .catch() — fetch() only rejects on a genuine NETWORK failure, never on
+    // an HTTP error status (400/403/500 etc.), so a save that failed on the
+    // server (a dropped connection mid-request, a brief Render cold-start
+    // hiccup, a validation error) looked identical to a successful one from
+    // the browser's point of view. The client stayed visible locally
+    // (already pushed into state.clients before this ever ran) while the
+    // server silently never received it — which is exactly why a client
+    // added on one device could be completely invisible on another. This
+    // helper actually checks the response, retries once on failure (mirrors
+    // the payment-save retry logic), and — only if it still fails — tells
+    // the person plainly instead of pretending it worked.
+    function saveClientToServer(clientObj, retriesLeft) {
+      if (!state.user) return;
+      var clientForServer = Object.assign({}, clientObj);
+      delete clientForServer.prFileObj;
+      delete clientForServer.gstrFileObj;
+      if (retriesLeft === undefined) retriesLeft = 2;
+      authFetch(API_BASE + '/api/save-client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('save-client failed: ' + res.status);
+      })
+      .catch(function(err) {
+        if (retriesLeft > 0) {
+          setTimeout(function() { saveClientToServer(clientObj, retriesLeft - 1); }, 2000);
+        } else {
+          console.warn('Could not sync client to server after retries:', err);
+          showToast('⚠ Could not sync this client to the server — check your connection');
+        }
+      });
+    }
+
     function loadAccounts() {
       try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || []; } catch (_) { return []; }
     }
@@ -4337,14 +4373,7 @@
         // another device (e.g. desktop), since save-client was previously
         // only called when a client was first created, not after matching.
         if (state.user) {
-          var clientForServer = Object.assign({}, c);
-          delete clientForServer.prFileObj;
-          delete clientForServer.gstrFileObj;
-          authFetch(API_BASE + '/api/save-client', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
-          }).catch(function(err) { console.warn('Could not sync reconciliation result to server:', err); });
+          saveClientToServer(c);
         }
       } catch (err) {
         document.getElementById('reconSpinner').classList.remove('show');
@@ -4406,14 +4435,7 @@
       closeModal('detailModal');
       renderResults(c);
       if (state.user && c) {
-        var clientForServer = Object.assign({}, c);
-        delete clientForServer.prFileObj;
-        delete clientForServer.gstrFileObj;
-        authFetch(API_BASE + '/api/save-client', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
-        }).catch(function(err) { console.warn('Could not sync resolved status to server:', err); });
+        saveClientToServer(c);
       }
     });
 
@@ -4528,6 +4550,15 @@
 
       if (!state.user) return;
 
+      // Capture the amount text BEFORE the button's own textContent gets
+      // overwritten below — payBtnAmount is a <span> nested inside the pay
+      // button, so setting payBtnEl.textContent = '...' wipes that span out
+      // of the DOM entirely. Every place further down that used to re-read
+      // document.getElementById('payBtnAmount') after this point was
+      // silently getting null (the element no longer existed), which is
+      // why the receipt's "Amount charged" field was showing blank.
+      var payAmountText = document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '';
+
       // This write is the one that matters most in the whole app — it's the
       // only thing standing between "customer paid" and "customer can use
       // what they paid for on every device". The previous version set
@@ -4562,7 +4593,7 @@
             plan: plan,
             receipt: {
               txnId: txnId,
-              amount: document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '',
+              amount: payAmountText,
               method: methodLabel
             }
           })
@@ -4590,7 +4621,7 @@
           state.lastReceipt = (serverUser && serverUser.lastReceipt) || {
             txnId: txnId,
             plan: plan,
-            amount: document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '',
+            amount: payAmountText,
             method: methodLabel,
             name: (state.user && state.user.name) || '',
             email: (state.user && state.user.email) || '',
@@ -5182,14 +5213,7 @@
 
       // Save to backend so this client survives a refresh and shows on other devices.
       if (state.user) {
-        var clientForServer = Object.assign({}, newClient);
-        delete clientForServer.prFileObj;
-        delete clientForServer.gstrFileObj;
-        authFetch(API_BASE + '/api/save-client', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
-        }).catch(function(err) { console.warn('Could not sync client to server:', err); });
+        saveClientToServer(newClient);
       }
     });
 
