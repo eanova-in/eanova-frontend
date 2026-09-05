@@ -2748,7 +2748,38 @@
 
     const ACCOUNTS_KEY = 'eanova_accounts_v1';
     const SESSION_KEY = 'eanova_session_v1';
+    const TOKEN_KEY = 'eanova_token_v1';
     const API_BASE = 'https://eanova-backend.onrender.com';
+
+    // লগইন করলে সার্ভার একটা JWT টোকেন দেয় — সেটা এখানে সংরক্ষণ/ব্যবহার
+    // করা হয়, যাতে dashboard/profile/client-related সব রিকোয়েস্টে
+    // পরিচয় যাচাই হয় (কেউ শুধু email পাঠিয়ে অন্য কারো ডেটা দেখতে/বদলাতে
+    // না পারে)। UI বা ব্যবহারকারীর কোনো experience এতে বদলায় না —
+    // এটা সম্পূর্ণ ব্যাকগ্রাউন্ডে কাজ করে।
+    function getAuthToken() {
+      try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (_) { return ''; }
+    }
+    function setAuthToken(token) {
+      try {
+        if (token) localStorage.setItem(TOKEN_KEY, token);
+        else localStorage.removeItem(TOKEN_KEY);
+      } catch (_) {}
+    }
+    function authFetch(url, options) {
+      options = options || {};
+      var headers = Object.assign({}, options.headers || {});
+      var token = getAuthToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      options.headers = headers;
+      return fetch(url, options).then(function(res) {
+        if (res.status === 401) {
+          // টোকেন মেয়াদোত্তীর্ণ বা অবৈধ — সেশন সাফ করে লগইন স্ক্রিনে পাঠানো হচ্ছে
+          setAuthToken('');
+          try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+        }
+        return res;
+      });
+    }
 
     function loadAccounts() {
       try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || []; } catch (_) { return []; }
@@ -2945,6 +2976,7 @@
     function logoutUser() {
       persistCurrentAccount();
       try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+      setAuthToken('');
       state.user = null;
       state.subscriptionActive = false;
       state.clients = [];
@@ -3192,6 +3224,7 @@
           if (result.body.profilePic) {
             try { localStorage.setItem('eanova_avatar_v1_' + email, result.body.profilePic); } catch (_) {}
           }
+          setAuthToken(result.body.token || '');
           try { localStorage.setItem(SESSION_KEY, email); } catch (_) {}
           persistCurrentAccount();
           showView('dashboard');
@@ -3658,7 +3691,7 @@
         var originalRunBtnText = document.getElementById('runReconBtn').textContent;
         document.getElementById('runReconBtn').textContent = 'Checking trial limit…';
         try {
-          var limitRes = await fetch(API_BASE + '/api/check-reconciliation-limit', {
+          var limitRes = await authFetch(API_BASE + '/api/check-reconciliation-limit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: state.user.email })
@@ -3697,7 +3730,7 @@
           var clientForServer = Object.assign({}, c);
           delete clientForServer.prFileObj;
           delete clientForServer.gstrFileObj;
-          fetch(API_BASE + '/api/save-client', {
+          authFetch(API_BASE + '/api/save-client', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
@@ -3760,7 +3793,7 @@
         var clientForServer = Object.assign({}, c);
         delete clientForServer.prFileObj;
         delete clientForServer.gstrFileObj;
-        fetch(API_BASE + '/api/save-client', {
+        authFetch(API_BASE + '/api/save-client', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
@@ -3897,10 +3930,15 @@
       payBtnEl.textContent = 'Confirming payment…';
 
       function attemptSave(retriesLeft) {
-        fetch(API_BASE + '/api/update-profile', {
+        // সার্ভারকে শুধু plan-এর নাম পাঠানো হয় — subscriptionActive বা
+        // expiry ক্লায়েন্ট থেকে সরাসরি পাঠানো হয় না, কারণ সার্ভার নিজেই
+        // whitelisted plan অনুযায়ী দাম-নিরপেক্ষভাবে মেয়াদ হিসাব করে ও
+        // সাবস্ক্রিপশন চালু করে। এতে কেউ browser থেকে request বদলে
+        // বিনামূল্যে সাবস্ক্রিপশন অ্যাক্টিভেট করতে পারবে না।
+        authFetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: plan, subscriptionExpiry: expiry, hasPaidBefore: true })
+          body: JSON.stringify({ email: state.user.email, plan: plan })
         })
         .then(function(res) {
           if (!res.ok) throw new Error('save failed: ' + res.status);
@@ -3908,10 +3946,14 @@
         })
         .then(function(saveResponseBody) {
           // Confirmed saved on the server — now it's safe to reflect the
-          // purchase locally and show the success screen.
+          // purchase locally and show the success screen. The expiry shown
+          // comes from the server's response (authoritative), falling back
+          // to the local estimate only if the server didn't include it.
+          var serverUser = saveResponseBody && saveResponseBody.user;
+          var confirmedExpiry = (serverUser && serverUser.subscriptionExpiry) || expiry;
           state.subscriptionActive = true;
           state.activePlan = plan;
-          state.subscriptionExpiry = expiry;
+          state.subscriptionExpiry = confirmedExpiry;
           if (state.user) state.user.hasPaidBefore = true;
           persistCurrentAccount();
           // Kept only in memory for this session, purely so the receipt
@@ -3926,41 +3968,13 @@
             name: (state.user && state.user.name) || '',
             email: (state.user && state.user.email) || '',
             date: Date.now(),
-            expiry: expiry
+            expiry: confirmedExpiry
           };
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
           document.getElementById('checkoutForm').style.display = 'none';
           document.getElementById('checkoutSuccess').style.display = 'block';
           updateProfileMenu();
-
-          // --- TEMPORARY DIAGNOSTIC ---
-          // This exists only to pin down exactly where the subscription
-          // value is getting lost. It shows, in plain text right on the
-          // success screen, exactly what the save endpoint said it stored
-          // and exactly what an immediate re-read of /api/user-data says a
-          // moment later — no DevTools needed. Safe to remove once the bug
-          // is confirmed and fixed.
-          var diagBox = document.getElementById('subscriptionDiagBox');
-          if (!diagBox) {
-            diagBox = document.createElement('div');
-            diagBox.id = 'subscriptionDiagBox';
-            diagBox.style.cssText = 'margin-top:20px;padding:14px;border:2px dashed #A63D40;border-radius:6px;font-family:monospace;font-size:12px;text-align:left;white-space:pre-wrap;background:#fff;color:#241F1A;';
-            var successBox = document.querySelector('#checkoutSuccess .successbox');
-            if (successBox) successBox.appendChild(diagBox);
-          }
-          var savedSubActive = saveResponseBody && saveResponseBody.user ? saveResponseBody.user.subscriptionActive : '(no user object in response)';
-          diagBox.textContent = 'DIAGNOSTIC — update-profile response said subscriptionActive: ' + JSON.stringify(savedSubActive) + '\n\nChecking /api/user-data now...';
-          fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' })
-            .then(function(r) { return r.json(); })
-            .then(function(freshData) {
-              var freshSubActive = freshData && freshData.user ? freshData.user.subscriptionActive : '(no user object)';
-              diagBox.textContent += '\n\nImmediate /api/user-data re-check said subscriptionActive: ' + JSON.stringify(freshSubActive) + '\n\nIf the second value is false while the first is true, the save and the read are reaching different data — screenshot this box and send it.';
-            })
-            .catch(function(err) {
-              diagBox.textContent += '\n\nRe-check failed: ' + err.message;
-            });
-          // --- END TEMPORARY DIAGNOSTIC ---
         })
         .catch(function(err) {
           if (retriesLeft > 0) {
@@ -4195,7 +4209,7 @@
         updateProfileMenu();
         // Also push to the backend so the picture shows up on other devices
         // logged into the same account, not just this browser's storage.
-        fetch(API_BASE + '/api/update-profile', {
+        authFetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: state.user.email, profilePic: ev.target.result })
@@ -4506,7 +4520,7 @@
         var clientForServer = Object.assign({}, newClient);
         delete clientForServer.prFileObj;
         delete clientForServer.gstrFileObj;
-        fetch(API_BASE + '/api/save-client', {
+        authFetch(API_BASE + '/api/save-client', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
@@ -4526,7 +4540,7 @@
         // an out-of-date plan status even though the server itself had
         // already saved the correct one. This is a belt-and-braces
         // safety net alongside the no-store header server.js now sends.
-        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
+        var res = await authFetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
         var data = await res.json();
         if (data.user) {
           state.user.name = data.user.name;
