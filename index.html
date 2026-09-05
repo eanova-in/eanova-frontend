@@ -3244,7 +3244,7 @@
       errBox.style.display = 'none';
       const name = document.getElementById('su-name').value.trim();
       const firm = document.getElementById('su-firm').value.trim();
-      const email = document.getElementById('su-email').value.trim();
+      const email = document.getElementById('su-email').value.trim().toLowerCase();
       const password = document.getElementById('su-pass').value;
       const region = document.getElementById('su-region').value;
 
@@ -3385,7 +3385,7 @@
       e.preventDefault();
       const errBox = document.getElementById('loginError');
       errBox.style.display = 'none';
-      const email = document.getElementById('li-email').value.trim();
+      const email = document.getElementById('li-email').value.trim().toLowerCase();
       const password = document.getElementById('li-pass').value;
       if (!email || !password) {
         errBox.textContent = 'Please fill in both fields.';
@@ -3458,7 +3458,7 @@
       e.preventDefault();
       const errBox = document.getElementById('forgotError1');
       errBox.style.display = 'none';
-      const email = document.getElementById('fp-email').value.trim();
+      const email = document.getElementById('fp-email').value.trim().toLowerCase();
       if (!email) {
         errBox.textContent = 'Please enter your email.';
         errBox.style.display = 'block';
