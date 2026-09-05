@@ -1933,12 +1933,6 @@
     .sumcard.missing {
       border-top-color: #7A2C2E;
     }
-    .sumcard.duplicate {
-      border-top-color: var(--red);
-    }
-    .sumcard.invalidgstin {
-      border-top-color: #8a5a00;
-    }
     .sumcard .n {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 30px;
@@ -1991,69 +1985,6 @@
       background: rgba(122, 44, 46, 0.14);
       color: #7A2C2E;
     }
-    .typebadge.duplicate {
-      background: rgba(166, 61, 64, 0.22);
-      color: var(--red);
-    }
-    .typebadge.invalid_gstin {
-      background: rgba(192, 138, 40, 0.22);
-      color: #8a5a00;
-    }
-    .typebadge.missing_in_books {
-      background: rgba(122, 44, 46, 0.14);
-      color: #7A2C2E;
-    }
-    .typebadge.sign_mismatch {
-      background: rgba(166, 61, 64, 0.22);
-      color: var(--red);
-    }
-    .typebadge.duplicate_in_2b {
-      background: rgba(166, 61, 64, 0.22);
-      color: var(--red);
-    }
-    /* Small top-of-screen confirmation toast (e.g. "OTP sent ✓") — reuses
-       the site's existing green/navy palette, auto-dismisses on its own. */
-    #appToast {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-140%);
-      background: var(--navy, #14213D);
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-      z-index: 9999;
-      transition: transform 0.28s ease;
-      pointer-events: none;
-    }
-    #appToast.show { transform: translateX(-50%) translateY(0); }
-    #appToast .tick {
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--green, #3F6659);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    #appToast .tick svg { width: 10px; height: 10px; }
-    .riskbadge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: 'IBM Plex Mono', monospace;
-      text-transform: uppercase;
-      margin-left: 6px;
-    }
-    .riskbadge.low { background: rgba(60,130,90,0.14); color: #2f6e4d; }
-    .riskbadge.medium { background: rgba(192,138,40,0.14); color: var(--gold); }
-    .riskbadge.high { background: rgba(166,61,64,0.14); color: var(--red); }
-    .riskbadge.critical { background: rgba(122,44,46,0.9); color: #fff; }
     .resolved-row td {
       opacity: 0.42;
       text-decoration: line-through;
@@ -2251,7 +2182,6 @@
               </div>
             </div>
             <div class="pd-footer">
-              <button type="button" class="pd-logout-btn" id="pdDownloadReceiptBtn" style="display:none;margin-bottom:8px;background:transparent;border:1px solid var(--line);color:var(--navy);">Download Receipt (PDF)</button>
               <button type="button" class="pd-logout-btn" id="pdLogoutBtn">Log out</button>
             </div>
           </div>
@@ -2506,11 +2436,8 @@
           <div class="auth-error" id="signupOtpError" style="display:none;"></div>
           <form id="signupOtpForm">
             <div class="field"><label>One-time code</label><input type="text" id="su-otp" placeholder="123456" maxlength="6" inputmode="numeric" required /></div>
-            <button class="btn" type="submit" id="signupOtpSubmitBtn">Verify & Create Account</button>
+            <button class="btn" type="submit">Verify & Create Account</button>
           </form>
-          <div class="authswitch" style="margin-top:10px;">
-            Didn't get it? <button type="button" id="signupResendOtpBtn" disabled>Resend OTP (60s)</button>
-          </div>
         </div>
       </div>
     </div>
@@ -2562,9 +2489,9 @@
           <div class="auth-error" id="forgotError2" style="display:none;"></div>
           <form id="forgotOtpForm">
             <div class="field"><label>One-time code</label><input type="text" id="fp-otp" placeholder="123456" maxlength="6" inputmode="numeric" required /></div>
-            <button class="btn" type="submit" id="forgotOtpSubmitBtn">Verify Code</button>
+            <button class="btn" type="submit">Verify Code</button>
           </form>
-          <div class="authswitch"><button type="button" id="resendOtpLink" disabled>Resend code (60s)</button></div>
+          <div class="authswitch"><button type="button" id="resendOtpLink">Resend code</button></div>
         </div>
         <div id="forgotStep3" style="display:none;">
           <span class="eyebrow">Reset password — step 3 of 3</span>
@@ -2592,7 +2519,7 @@
         <button class="btn" id="addClientBtnTop">+ Add Client</button>
       </div>
       <div class="trialbanner" id="trialBanner">
-        <div class="msg">🎓 <strong>Free trial active</strong> — one free file match per day. Choose a plan for unlimited daily matches.</div>
+        <div class="msg">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial.</div>
         <button class="btn btn-sm btn-gold" data-nav="checkout">Upgrade to Paid — ₹199/mo</button>
       </div>
       <div class="clientbar"><h3>Your clients</h3></div>
@@ -2649,9 +2576,6 @@
           <div class="sumcard partial"><div class="n" id="sumPartial">0</div><div class="l">Partial match</div></div>
           <div class="sumcard mismatch"><div class="n" id="sumMismatch">0</div><div class="l">Mismatch</div></div>
           <div class="sumcard missing"><div class="n" id="sumMissing">0</div><div class="l">Missing in 2B</div></div>
-          <div class="sumcard missing" id="sumMissingInBooksCard"><div class="n" id="sumMissingInBooks">0</div><div class="l">Missing in Books</div></div>
-          <div class="sumcard duplicate"><div class="n" id="sumDuplicate">0</div><div class="l">Duplicate invoices</div></div>
-          <div class="sumcard invalidgstin"><div class="n" id="sumInvalidGstin">0</div><div class="l">Invalid GSTIN</div></div>
         </div>
         <div class="resultbar">
           <h3 id="issuesTitle">Issues to review</h3>
@@ -2818,95 +2742,13 @@
       currentClientId: null,
       subscriptionActive: false,
       activePlan: null,
-      trialActive: true,
-      trialDaysRemaining: 14,
-      lastReceipt: null,
       _nextClientId: 1,
       _nextMismatchId: 1
     };
 
     const ACCOUNTS_KEY = 'eanova_accounts_v1';
     const SESSION_KEY = 'eanova_session_v1';
-    const TOKEN_KEY = 'eanova_token_v1';
     const API_BASE = 'https://eanova-backend.onrender.com';
-
-    // লগইন করলে সার্ভার একটা JWT টোকেন দেয় — সেটা এখানে সংরক্ষণ/ব্যবহার
-    // করা হয়, যাতে dashboard/profile/client-related সব রিকোয়েস্টে
-    // পরিচয় যাচাই হয় (কেউ শুধু email পাঠিয়ে অন্য কারো ডেটা দেখতে/বদলাতে
-    // না পারে)। UI বা ব্যবহারকারীর কোনো experience এতে বদলায় না —
-    // এটা সম্পূর্ণ ব্যাকগ্রাউন্ডে কাজ করে।
-    function getAuthToken() {
-      try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (_) { return ''; }
-    }
-    function setAuthToken(token) {
-      try {
-        if (token) localStorage.setItem(TOKEN_KEY, token);
-        else localStorage.removeItem(TOKEN_KEY);
-      } catch (_) {}
-    }
-    function authFetch(url, options) {
-      options = options || {};
-      var headers = Object.assign({}, options.headers || {});
-      var token = getAuthToken();
-      if (token) headers['Authorization'] = 'Bearer ' + token;
-      options.headers = headers;
-      return fetch(url, options).then(function(res) {
-        if (res.status === 401 && token) {
-          // টোকেন মেয়াদোত্তীর্ণ বা অবৈধ হয়ে গেছে (৭ দিন পর, অথবা সার্ভার
-          // রিস্টার্ট/রিডিপ্লয়ের সময় কখনো)। শুধু সাইলেন্টলি সেশন সাফ করলে
-          // ড্যাশবোর্ড খালি/ভুল অবস্থায় দেখা যেত এবং মনে হতো প্ল্যান হারিয়ে
-          // গেছে — আসলে প্ল্যান নিরাপদে ডাটাবেসেই আছে, শুধু সেশন আবার লগইন
-          // করতে হবে। তাই এখন স্পষ্টভাবে লগইন স্ক্রিনে পাঠিয়ে জানানো হচ্ছে।
-          setAuthToken('');
-          try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
-          state.user = null;
-          state.subscriptionActive = false;
-          showView('login');
-          var loginErrBox = document.getElementById('loginError');
-          if (loginErrBox) {
-            loginErrBox.textContent = 'Your session expired — please log in again. Your plan and data are safe and will reappear once you sign back in.';
-            loginErrBox.style.display = 'block';
-          }
-        }
-        return res;
-      });
-    }
-
-    // Every save-client call site used to just fire-and-forget with a bare
-    // .catch() — fetch() only rejects on a genuine NETWORK failure, never on
-    // an HTTP error status (400/403/500 etc.), so a save that failed on the
-    // server (a dropped connection mid-request, a brief Render cold-start
-    // hiccup, a validation error) looked identical to a successful one from
-    // the browser's point of view. The client stayed visible locally
-    // (already pushed into state.clients before this ever ran) while the
-    // server silently never received it — which is exactly why a client
-    // added on one device could be completely invisible on another. This
-    // helper actually checks the response, retries once on failure (mirrors
-    // the payment-save retry logic), and — only if it still fails — tells
-    // the person plainly instead of pretending it worked.
-    function saveClientToServer(clientObj, retriesLeft) {
-      if (!state.user) return;
-      var clientForServer = Object.assign({}, clientObj);
-      delete clientForServer.prFileObj;
-      delete clientForServer.gstrFileObj;
-      if (retriesLeft === undefined) retriesLeft = 2;
-      authFetch(API_BASE + '/api/save-client', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
-      })
-      .then(function(res) {
-        if (!res.ok) throw new Error('save-client failed: ' + res.status);
-      })
-      .catch(function(err) {
-        if (retriesLeft > 0) {
-          setTimeout(function() { saveClientToServer(clientObj, retriesLeft - 1); }, 2000);
-        } else {
-          console.warn('Could not sync client to server after retries:', err);
-          showToast('⚠ Could not sync this client to the server — check your connection');
-        }
-      });
-    }
 
     function loadAccounts() {
       try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || []; } catch (_) { return []; }
@@ -2937,10 +2779,6 @@
         subscriptionActive: state.subscriptionActive,
         activePlan: state.activePlan,
         subscriptionExpiry: state.subscriptionExpiry,
-        // Last purchase receipt, kept so "Download Receipt" still works
-        // after a reload or from the account/security page — not just in
-        // the same in-memory tab right after checkout.
-        lastReceipt: state.lastReceipt || null,
         clients: cleanClients,
         nextClientId: state._nextClientId,
         nextMismatchId: state._nextMismatchId
@@ -2974,7 +2812,6 @@
         state.subscriptionActive = !!acc.subscriptionActive;
         state.activePlan = acc.activePlan || (state.subscriptionActive ? 'monthly' : null);
         state.subscriptionExpiry = acc.subscriptionExpiry || null;
-        state.lastReceipt = acc.lastReceipt || null;
         state._nextClientId = acc.nextClientId || (state.clients.length + 1);
         state._nextMismatchId = acc.nextMismatchId || 1;
         return;
@@ -3057,19 +2894,6 @@
         successText.textContent = (planNames[state.activePlan] || 'Monthly') + ' plan (' +
           activeInfo.currency + activeInfo.amount + activeInfo.period +
           ') is currently active — no need to purchase again.';
-        // Make sure the receipt for the ACTIVE plan is loaded before the
-        // person can click "Download Receipt" — this screen can be reached
-        // straight from a fresh page load/login, before syncUserData() has
-        // necessarily finished, so state.lastReceipt might still be empty
-        // even though a receipt genuinely exists on the server.
-        if (!state.lastReceipt && state.user && state.user.email) {
-          authFetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-              if (data && data.user && data.user.lastReceipt) state.lastReceipt = data.user.lastReceipt;
-            })
-            .catch(function() { /* printReceipt's own fallback will retry on click */ });
-        }
         return;
       }
       successHeading.textContent = 'Payment successful';
@@ -3121,7 +2945,6 @@
     function logoutUser() {
       persistCurrentAccount();
       try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
-      setAuthToken('');
       state.user = null;
       state.subscriptionActive = false;
       state.clients = [];
@@ -3244,7 +3067,7 @@
       errBox.style.display = 'none';
       const name = document.getElementById('su-name').value.trim();
       const firm = document.getElementById('su-firm').value.trim();
-      const email = document.getElementById('su-email').value.trim().toLowerCase();
+      const email = document.getElementById('su-email').value.trim();
       const password = document.getElementById('su-pass').value;
       const region = document.getElementById('su-region').value;
 
@@ -3261,15 +3084,6 @@
 
       window.pendingSignupData = { name, firm, email, password, region };
 
-      // Disable the button the instant it's clicked, before the network
-      // request even starts. Previously nothing stopped someone from
-      // tapping "Create Account" two or three times while waiting for the
-      // response — each tap fired its own /api/send-otp call, so 2-3 OTP
-      // emails could go out before the verification screen ever appeared.
-      var submitBtn = e.target.querySelector('button[type="submit"]');
-      var originalBtnText = submitBtn ? submitBtn.textContent : '';
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending code…'; }
-
       fetch(API_BASE + '/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3281,8 +3095,6 @@
           document.getElementById('signupStep1').style.display = 'none';
           document.getElementById('signupStep2').style.display = 'block';
           document.getElementById('signupOtpSentTo').textContent = 'We\'ve sent a 6-digit code to ' + email + '.';
-          showToast('Your OTP has been sent');
-          startResendCooldown(document.getElementById('signupResendOtpBtn'), 60);
         } else {
           errBox.textContent = result.body.message || 'Failed to send OTP.';
           errBox.style.display = 'block';
@@ -3291,11 +3103,6 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
-      })
-      .finally(function() {
-        // Re-enable regardless of outcome — a failed send (bad email,
-        // server error) needs to be retry-able, not permanently stuck.
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
       });
     });
 
@@ -3306,10 +3113,6 @@
       const otp = document.getElementById('su-otp').value.trim();
       const data = window.pendingSignupData;
       if (!data || !otp) return;
-
-      var verifyBtn = document.getElementById('signupOtpSubmitBtn');
-      var originalVerifyText = verifyBtn ? verifyBtn.textContent : '';
-      if (verifyBtn) { verifyBtn.disabled = true; verifyBtn.textContent = 'Verifying…'; }
 
       fetch(API_BASE + '/api/verify-otp', {
         method: 'POST',
@@ -3335,46 +3138,11 @@
         } else {
           errBox.textContent = result.body.message || 'OTP verification failed.';
           errBox.style.display = 'block';
-          if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.textContent = originalVerifyText; }
         }
       })
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
-        if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.textContent = originalVerifyText; }
-      });
-    });
-
-    document.getElementById('signupResendOtpBtn').addEventListener('click', function() {
-      var data = window.pendingSignupData;
-      if (!data) return;
-      var errBox = document.getElementById('signupOtpError');
-      errBox.style.display = 'none';
-      var resendBtn = this;
-      resendBtn.disabled = true; // stays disabled through the request too, not just during the cooldown
-      fetch(API_BASE + '/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: data.email })
-      })
-      .then(res => res.json().then(body => ({ status: res.status, body: body })))
-      .then(result => {
-        if (result.status === 200) {
-          showToast('Your OTP has been sent');
-          startResendCooldown(resendBtn, 60);
-        } else {
-          errBox.textContent = result.body.message || 'Failed to resend OTP.';
-          errBox.style.display = 'block';
-          // Still start the cooldown on a rate-limit response, so the
-          // person isn't tempted to immediately hammer the button again.
-          startResendCooldown(resendBtn, 60);
-        }
-      })
-      .catch(function() {
-        errBox.textContent = 'Server error. Please try again.';
-        errBox.style.display = 'block';
-        resendBtn.disabled = false;
-        resendBtn.textContent = 'Resend OTP';
       });
     });
 
@@ -3385,7 +3153,7 @@
       e.preventDefault();
       const errBox = document.getElementById('loginError');
       errBox.style.display = 'none';
-      const email = document.getElementById('li-email').value.trim().toLowerCase();
+      const email = document.getElementById('li-email').value.trim();
       const password = document.getElementById('li-pass').value;
       if (!email || !password) {
         errBox.textContent = 'Please fill in both fields.';
@@ -3421,13 +3189,9 @@
           state.activePlan = result.body.activePlan || null;
           state.subscriptionExpiry = result.body.subscriptionExpiry || null;
           state.user.hasPaidBefore = state.subscriptionActive || state.user.hasPaidBefore || false;
-          if (typeof result.body.trialActive === 'boolean') state.trialActive = result.body.trialActive;
-          if (typeof result.body.trialDaysRemaining === 'number') state.trialDaysRemaining = result.body.trialDaysRemaining;
-          if (result.body.lastReceipt) state.lastReceipt = result.body.lastReceipt;
           if (result.body.profilePic) {
             try { localStorage.setItem('eanova_avatar_v1_' + email, result.body.profilePic); } catch (_) {}
           }
-          setAuthToken(result.body.token || '');
           try { localStorage.setItem(SESSION_KEY, email); } catch (_) {}
           persistCurrentAccount();
           showView('dashboard');
@@ -3458,16 +3222,12 @@
       e.preventDefault();
       const errBox = document.getElementById('forgotError1');
       errBox.style.display = 'none';
-      const email = document.getElementById('fp-email').value.trim().toLowerCase();
+      const email = document.getElementById('fp-email').value.trim();
       if (!email) {
         errBox.textContent = 'Please enter your email.';
         errBox.style.display = 'block';
         return;
       }
-
-      var submitBtn = e.target.querySelector('button[type="submit"]');
-      var originalBtnText = submitBtn ? submitBtn.textContent : '';
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending code…'; }
 
       fetch(API_BASE + '/api/forgot-password-otp', {
         method: 'POST',
@@ -3481,8 +3241,6 @@
           document.getElementById('forgotStep2').style.display = 'block';
           document.getElementById('forgotOtpSentTo').textContent = 'We\'ve sent a 6-digit code to ' + email + '.';
           document.getElementById('fp-otp').dataset.email = email;
-          showToast('Your OTP has been sent');
-          startResendCooldown(document.getElementById('resendOtpLink'), 60);
         } else {
           errBox.textContent = result.body.message || 'Failed to send OTP.';
           errBox.style.display = 'block';
@@ -3491,40 +3249,6 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
-      })
-      .finally(function() {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
-      });
-    });
-
-    document.getElementById('resendOtpLink').addEventListener('click', function() {
-      var email = document.getElementById('fp-otp').dataset.email;
-      if (!email) return;
-      var errBox = document.getElementById('forgotError2');
-      errBox.style.display = 'none';
-      var resendBtn = this;
-      resendBtn.disabled = true;
-      fetch(API_BASE + '/api/forgot-password-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      })
-      .then(res => res.json().then(body => ({ status: res.status, body: body })))
-      .then(result => {
-        if (result.status === 200) {
-          showToast('Your OTP has been sent');
-          startResendCooldown(resendBtn, 60);
-        } else {
-          errBox.textContent = result.body.message || 'Failed to resend OTP.';
-          errBox.style.display = 'block';
-          startResendCooldown(resendBtn, 60);
-        }
-      })
-      .catch(function() {
-        errBox.textContent = 'Server error. Please try again.';
-        errBox.style.display = 'block';
-        resendBtn.disabled = false;
-        resendBtn.textContent = 'Resend code';
       });
     });
 
@@ -3608,18 +3332,8 @@
         var alreadyPaidBefore = !!(state.user && state.user.hasPaidBefore);
         var firstCardHtml = alreadyPaidBefore ? '' :
             '<div class="dash-plan-card"><div class="dash-plan-name">First Month</div><div class="dash-plan-price">' + firstP.currency + firstP.amount + firstP.period + '</div><button class="btn btn-sm btn-outline" data-plan="first" data-nav="checkout" type="button">Choose</button></div>';
-        // Real trial state from the server (accountCreatedAt-based), not a
-        // hardcoded placeholder. Once the 14-day window is over, the daily
-        // free reconciliation stops entirely — this banner reflects that.
-        var trialMsgHtml;
-        if (state.trialActive === false) {
-          trialMsgHtml = '<div class="msg" style="margin-bottom:12px;">⏳ <strong>Free trial ended</strong> — upgrade to a paid plan to keep running reconciliations.</div>';
-        } else {
-          var daysLeft = (typeof state.trialDaysRemaining === 'number') ? state.trialDaysRemaining : 14;
-          trialMsgHtml = '<div class="msg" style="margin-bottom:12px;">🎓 <strong>Free trial active</strong> — ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' remaining. Unlimited clients, one free file match per day during trial. Choose a plan to continue after your trial:</div>';
-        }
         banner.innerHTML =
-          trialMsgHtml +
+          '<div class="msg" style="margin-bottom:12px;">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial. Choose a plan to continue after your trial:</div>' +
           '<div class="dash-plan-grid">' +
             firstCardHtml +
             '<div class="dash-plan-card"><div class="dash-plan-name">Monthly</div><div class="dash-plan-price">' + monthlyP.currency + monthlyP.amount + monthlyP.period + '</div><button class="btn btn-sm btn-outline" data-plan="monthly" data-nav="checkout" type="button">Choose</button></div>' +
@@ -3741,210 +3455,6 @@
       });
     }
 
-    // ============================================================
-    // GSTIN checksum validation (Prompt-requested upgrade)
-    // Full 15-character structure + state code + PAN pattern + the
-    // official Luhn-style check character. This does NOT reject rows —
-    // Purchase Registers legitimately contain typos — it only flags
-    // rows so the UI can surface them for review.
-    // ============================================================
-    var GSTIN_VALID_STATE_CODES = new Set([
-      '01','02','03','04','05','06','07','08','09','10',
-      '11','12','13','14','15','16','17','18','19','20',
-      '21','22','23','24','25','26','27','28','29','30',
-      '31','32','33','34','35','36','37','38','97','99'
-    ]);
-    var GSTIN_FORMAT_REGEX = /^(\d{2})([A-Z]{5}\d{4}[A-Z]{1})[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    var GSTIN_CHECKSUM_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    function gstinChecksumValid(g) {
-      var sum = 0;
-      for (var i = 0; i < 14; i++) {
-        var v = GSTIN_CHECKSUM_CHARS.indexOf(g[i]);
-        if (v < 0) return false;
-        if (i % 2 !== 0) v *= 2;
-        sum += v > 35 ? (v % 36 + Math.floor(v / 36)) : v;
-      }
-      var check = (36 - (sum % 36)) % 36;
-      return GSTIN_CHECKSUM_CHARS[check] === g[14];
-    }
-
-    function validateGSTIN(gstinRaw) {
-      if (!gstinRaw) return { valid: false, reason: 'empty' };
-      var g = String(gstinRaw).trim().toUpperCase();
-      if (g.length !== 15) return { valid: false, reason: 'length' };
-      var m = g.match(GSTIN_FORMAT_REGEX);
-      if (!m) return { valid: false, reason: 'format' };
-      if (!GSTIN_VALID_STATE_CODES.has(m[1])) return { valid: false, reason: 'state_code' };
-      if (!gstinChecksumValid(g)) return { valid: false, reason: 'checksum' };
-      return { valid: true, stateCode: m[1] };
-    }
-
-    // ============================================================
-    // Duplicate invoice detection (Prompt-requested upgrade)
-    // Same invoice number appearing more than once for the same GSTIN
-    // within ONE file (usually the Purchase Register) — a real risk of
-    // double ITC claim. This runs independently of the matching pass
-    // above, so it never changes which GSTR-2B row a PR row matches to.
-    // ============================================================
-    function findDuplicateInvoices(rows) {
-      var seen = new Map();
-      var dupeGroups = [];
-      rows.forEach(function(row, idx) {
-        var key = row.invoiceKey + '|' + row.gstin;
-        if (!key || key === '|') return;
-        if (!seen.has(key)) {
-          seen.set(key, [idx]);
-        } else {
-          seen.get(key).push(idx);
-        }
-      });
-      seen.forEach(function(indexes, key) {
-        if (indexes.length > 1) {
-          dupeGroups.push({
-            invoiceNo: rows[indexes[0]].invoiceNo,
-            gstin: rows[indexes[0]].gstin,
-            rowIndexes: indexes,
-            occurrences: indexes.length,
-            totalAmount: indexes.reduce(function(sum, i) { return sum + rows[i].amount; }, 0)
-          });
-        }
-      });
-      return dupeGroups;
-    }
-
-    // ============================================================
-    // Rule-based mismatch classifier (free, no external API — mirrors
-    // the classification rules a CA would apply manually). Runs after
-    // reconcileRows() and annotates each issue with a plain-English
-    // suggested action, a risk level, and whether it looks safe to
-    // auto-resolve. This is intentionally conservative: it only ever
-    // labels an issue, never changes the match itself.
-    // ============================================================
-    function classifyIssue(issue) {
-      var prAmt = issue.purchaseAmt, gstrAmt = issue.gstrAmt;
-      var pctDiff = prAmt ? Math.abs(issue.diff) / Math.abs(prAmt) * 100 : 100;
-
-      if (issue.type === 'duplicate') {
-        return {
-          classification: 'double_itc',
-          risk: 'critical',
-          suggestedAction: 'Same invoice appears more than once in your Purchase Register — remove the duplicate before filing to avoid claiming ITC twice.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.type === 'duplicate_in_2b') {
-        if (issue.reconciledCleanly) {
-          return {
-            classification: 'unbooked',
-            risk: 'low',
-            suggestedAction: 'This invoice number was filed as ' + issue.occurrences + ' separate rows in GSTR-2B, and the combined total matches your Purchase Register — likely a legitimate split invoice (e.g. across HSN codes). Worth a quick check with the supplier, but not urgent.',
-            autoResolvable: false
-          };
-        }
-        return {
-          classification: 'double_itc',
-          risk: 'critical',
-          suggestedAction: 'This invoice number was filed more than once in GSTR-2B for the same GSTIN — verify with the supplier before claiming ITC, as this could mean the invoice was reported twice.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.type === 'missing_in_books') {
-        return {
-          classification: 'unbooked',
-          risk: 'medium',
-          suggestedAction: (prAmt === 0 && gstrAmt < 0 ? 'A credit note ' : 'An invoice ') + 'appears in GSTR-2B but not in your Purchase Register — check whether it was left out of your books, or whether the wrong file was uploaded.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.type === 'sign_mismatch') {
-        return {
-          classification: 'sign_error',
-          risk: 'high',
-          suggestedAction: 'Same invoice, same amount, but opposite sign between your books (' + (prAmt < 0 ? 'credit note' : 'debit') + ') and GSTR-2B (' + (gstrAmt < 0 ? 'credit note' : 'debit') + ') — this looks like a bookkeeping sign error rather than a genuine value mismatch. Check whether this should be recorded as a credit note.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.gstinFlag && !issue.gstinFlag.valid) {
-        return {
-          classification: 'wrong_gstin',
-          risk: 'high',
-          suggestedAction: 'GSTIN failed the official checksum check (' + issue.gstinFlag.reason + ') — verify the supplier\u2019s GSTIN before claiming ITC on this invoice.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.type === 'missing') {
-        return {
-          classification: 'timing_diff',
-          risk: 'medium',
-          suggestedAction: 'In your Purchase Register but not yet in GSTR-2B — likely the supplier hasn\u2019t filed yet, or it belongs to a different tax period. Check the invoice date and follow up with the vendor if it doesn\u2019t appear next month.',
-          autoResolvable: false
-        };
-      }
-
-      if (issue.type === 'partial' || issue.type === 'mismatch') {
-        var rowCountNote = issue.gstrRowCount && issue.gstrRowCount > 1 ? ' (GSTR-2B has this invoice split across ' + issue.gstrRowCount + ' rows, summed for this comparison)' : '';
-        // When GSTR-2B had multiple rows for this invoice AND the combined
-        // total is roughly a whole multiple of the PR amount, this almost
-        // certainly isn't a rate/rounding issue at all — it's the supplier
-        // having filed the same invoice more than once. Flag it as the
-        // double-ITC risk it actually is, instead of a generic "check the
-        // tax rate" message that would send a CA looking in the wrong place.
-        if (issue.gstrRowCount && issue.gstrRowCount > 1 && prAmt !== 0) {
-          var ratio = Math.abs(gstrAmt) / Math.abs(prAmt);
-          if (Math.abs(ratio - Math.round(ratio)) < 0.01 && Math.round(ratio) >= 2) {
-            return {
-              classification: 'double_itc',
-              risk: 'critical',
-              suggestedAction: 'GSTR-2B has this invoice number filed ' + issue.gstrRowCount + ' times for a combined total of ' + Math.round(ratio) + '\u00d7 the Purchase Register amount — this looks like the supplier filed the same invoice more than once, not a genuine split invoice. Verify with the supplier before claiming ITC.',
-              autoResolvable: false
-            };
-          }
-        }
-        if (pctDiff < 1) {
-          return {
-            classification: 'rounding',
-            risk: 'low',
-            suggestedAction: 'Difference is under 1%' + rowCountNote + ' — most likely a rounding difference. Safe to auto-resolve.',
-            autoResolvable: true
-          };
-        }
-        if (pctDiff <= 10) {
-          return {
-            classification: 'tax_error',
-            risk: 'medium',
-            suggestedAction: 'Amounts differ by ' + pctDiff.toFixed(1) + '%' + rowCountNote + ' — check whether the tax rate or HSN code was applied differently between your books and the supplier\u2019s filing.',
-            autoResolvable: false
-          };
-        }
-        return {
-          classification: 'escalate',
-          risk: 'high',
-          suggestedAction: 'Amounts differ by ' + pctDiff.toFixed(1) + '%' + rowCountNote + ' — too large to be a rounding or rate issue. Escalate to CA review before claiming ITC on this invoice.',
-          autoResolvable: false
-        };
-      }
-
-      return { classification: 'escalate', risk: 'medium', suggestedAction: 'Review manually.', autoResolvable: false };
-    }
-
-    // Shared display labels for every reconciliation issue type — used by
-    // both the on-screen results table and the exported PDF/Excel reports,
-    // so the wording never drifts between the two.
-    var TYPE_LABELS = {
-      missing: 'Missing in 2B',
-      missing_in_books: 'Missing in Books',
-      invalid_gstin: 'Invalid GSTIN',
-      sign_mismatch: 'Sign Mismatch',
-      duplicate_in_2b: 'Duplicate in 2B',
-      duplicate: 'Duplicate in PR'
-    };
-
     function findColumn(row, patterns) {
       var keys = Object.keys(row);
       for (var i = 0; i < patterns.length; i++) {
@@ -3985,19 +3495,7 @@
       var sample = rows[0];
       var invKey = findColumn(sample, [/invoice.?no/i, /inv.?no/i, /bill.?no/i, /^invoice$/i, /^inv$/i]);
       var gstinKey = findColumn(sample, [/gstin/i]);
-      // Amount column: the tax-INCLUSIVE total is what actually gets compared
-      // for ITC purposes, so headers naming the full/gross/total amount are
-      // tried first. "Taxable Value" is checked last on purpose — it's the
-      // pre-tax base, which stays identical between books and GSTR-2B even
-      // when the GST rate applied is wrong, so preferring it over the total
-      // silently hid rate mismatches (a real bug — the taxable value matched
-      // in both files while the tax-inclusive total, which is what actually
-      // differed, was never looked at).
-      var amtKey = findColumn(sample, [
-        /total.?amount.*(gst|tax)/i, /amount.*incl.*(gst|tax)/i, /gross.?amount/i,
-        /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i,
-        /taxable.?value/i
-      ]);
+      var amtKey = findColumn(sample, [/taxable.?value/i, /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i]);
       if (!invKey || !gstinKey || !amtKey) return null;
       return rows.map(function(r) {
         var rawAmt = String(r[amtKey]).trim();
@@ -4009,7 +3507,6 @@
           invoiceNo: String(r[invKey]).trim(),
           invoiceKey: normalizeInvoiceNo(r[invKey]),
           gstin: String(r[gstinKey]).trim().toUpperCase(),
-          gstinFlag: validateGSTIN(r[gstinKey]),
           amount: amt
         };
       }).filter(function(r) { return r.invoiceKey && r.gstin; });
@@ -4022,13 +3519,7 @@
       var gstrByGstin = new Map();
       var usedGstrKeys = new Set();
 
-      // Give every GSTR row one stable identity (its absolute position) so the
-      // exact-match pass and the fuzzy fallback pass mark consumption using the
-      // SAME key scheme. Previously they used different bucket-relative key
-      // strings, so a GSTR row consumed by the exact pass could still be
-      // re-matched by the fuzzy pass — causing over-counted "matched" results.
-      gstrRows.forEach(function(r, absIdx) {
-        r._absIdx = absIdx;
+      gstrRows.forEach(function(r) {
         var key = r.invoiceKey + '|' + r.gstin;
         // Keep the list of rows sharing a key so duplicate invoice numbers
         // within GSTR-2B don't silently overwrite each other.
@@ -4048,27 +3539,28 @@
       prRows.forEach(function(pr) {
         var key = pr.invoiceKey + '|' + pr.gstin;
         var bucket = gstrMap.get(key);
-        var gstrRow = null;         // representative row, used for display (date/first row)
-        var gstrTotal = null;       // summed amount actually compared against pr.amount
-        var gstrRowCount = 0;       // how many GSTR-2B rows were combined for this invoice
+        var gstrRow = null;
 
         if (bucket && bucket.length) {
-          // Exact GSTIN + invoice number match. GSTR-2B can legitimately list
-          // one invoice as several rows (e.g. a supplier splitting one invoice
-          // across HSN codes or tax rates) — comparing against only ONE of
-          // those rows made a perfectly reconciled split invoice look like a
-          // mismatch. So every not-yet-used row sharing this exact key is
-          // summed together and compared as a whole against the PR amount.
-          var unusedInBucket = bucket.filter(function(r) { return !usedGstrKeys.has(r._absIdx); });
-          if (unusedInBucket.length) {
-            gstrTotal = unusedInBucket.reduce(function(sum, r) { return sum + r.amount; }, 0);
-            gstrRow = unusedInBucket[0];
-            gstrRowCount = unusedInBucket.length;
-            unusedInBucket.forEach(function(r) { usedGstrKeys.add(r._absIdx); });
+          // Exact GSTIN + invoice number match. If more than one GSTR row
+          // shares this exact key, pick whichever hasn't been consumed yet
+          // and is closest in amount, so duplicates don't get matched to
+          // the same GSTR row twice.
+          var best = null, bestDiff = Infinity;
+          for (var b = 0; b < bucket.length; b++) {
+            var cand = bucket[b];
+            var candKey = cand.invoiceKey + '|' + cand.gstin + '|' + b;
+            if (usedGstrKeys.has(candKey)) continue;
+            var d = Math.abs(pr.amount - cand.amount);
+            if (d < bestDiff) { bestDiff = d; best = cand; best._usedKey = candKey; }
+          }
+          if (best) {
+            gstrRow = best;
+            usedGstrKeys.add(best._usedKey);
           }
         }
 
-        if (gstrRow === null) {
+        if (!gstrRow) {
           // Second pass: same GSTIN, no exact invoice-number match yet.
           // Look for the closest invoice number (small edit distance) with
           // an amount close enough to plausibly be the same invoice. This
@@ -4079,201 +3571,48 @@
             var fuzzyBest = null, fuzzyScore = Infinity;
             for (var c = 0; c < candidates.length; c++) {
               var cRow = candidates[c];
-              if (usedGstrKeys.has(cRow._absIdx)) continue;
+              var cKey = cRow.invoiceKey + '|' + cRow.gstin + '|gstin-idx-' + c;
+              if (usedGstrKeys.has(cKey)) continue;
               var dist = editDistance(pr.invoiceKey, cRow.invoiceKey);
               // Only consider close typos, not unrelated invoice numbers —
               // at most 2 characters different, and short enough relative
               // to the invoice number length that it's plausibly a typo.
               if (dist > 2 || dist > Math.ceil(pr.invoiceKey.length * 0.3)) continue;
               var amtDiff = Math.abs(pr.amount - cRow.amount);
-              var amtTolerance = Math.max(500, Math.abs(pr.amount) * 0.02);
+              var amtTolerance = Math.max(500, pr.amount * 0.02);
               if (amtDiff > amtTolerance) continue;
               // Score favors smaller edit distance, then smaller amount diff.
               var score = dist * 1000000 + amtDiff;
-              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; }
+              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; fuzzyBest._usedKey = cKey; }
             }
             if (fuzzyBest) {
               gstrRow = fuzzyBest;
-              gstrTotal = fuzzyBest.amount;
-              gstrRowCount = 1;
-              usedGstrKeys.add(fuzzyBest._absIdx);
+              usedGstrKeys.add(fuzzyBest._usedKey);
               fuzzyMatchedCount++;
             }
           }
         }
 
-        if (gstrRow === null) {
+        if (!gstrRow) {
           missingCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false });
           return;
         }
 
-        // Sign mismatch: same magnitude, opposite sign (e.g. a credit note
-        // recorded as +8,200 in the books but correctly filed as -8,200 in
-        // GSTR-2B, or vice versa). A plain Math.abs(pr - gstr) treats these
-        // as ADDING — a ₹8,200 credit note would show as a ₹16,400
-        // difference, hiding what is actually a bookkeeping sign error, not
-        // a real value mismatch. This is called out as its own issue type so
-        // a CA sees "sign error" immediately, not a confusing large diff.
-        if (pr.amount !== 0 && gstrTotal !== 0 && (pr.amount > 0) !== (gstrTotal > 0) &&
-            Math.abs(Math.abs(pr.amount) - Math.abs(gstrTotal)) < Math.max(500, Math.abs(pr.amount) * 0.02)) {
-          mismatchCount++;
-          issues.push({
-            id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin,
-            purchaseAmt: pr.amount, gstrAmt: gstrTotal, diff: Math.abs(pr.amount) + Math.abs(gstrTotal),
-            type: 'sign_mismatch', resolved: false
-          });
-          return;
-        }
-
-        var diff = Math.abs(pr.amount - gstrTotal);
-        var tolerance = Math.max(500, Math.abs(pr.amount) * 0.02);
+        var diff = Math.abs(pr.amount - gstrRow.amount);
+        var tolerance = Math.max(500, pr.amount * 0.02);
         if (diff < 1) {
           matched++;
         } else if (diff <= tolerance) {
           partialCount++;
-          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrTotal, diff: diff, type: 'partial', gstrRowCount: gstrRowCount, resolved: false });
+          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial', resolved: false });
         } else {
           mismatchCount++;
-          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrTotal, diff: diff, type: 'mismatch', gstrRowCount: gstrRowCount, resolved: false });
+          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch', resolved: false });
         }
       });
 
-      // ------------------------------------------------------------
-      // Reverse pass: any GSTR-2B row never consumed by a PR match above
-      // is an invoice (or credit note) the supplier filed that never made
-      // it into the Purchase Register — a real risk (unbooked ITC, or a
-      // credit note that was never recorded to reduce a claim). The
-      // forward pass above only ever asks "where did each PR row go?" —
-      // it can never notice a GSTR-2B row that no PR row ever pointed at.
-      // ------------------------------------------------------------
-      var missingInBooksCount = 0;
-      gstrRows.forEach(function(g) {
-        if (!usedGstrKeys.has(g._absIdx)) {
-          missingInBooksCount++;
-          issues.push({
-            id: state._nextMismatchId++, invoiceNo: g.invoiceNo, gstin: g.gstin,
-            purchaseAmt: 0, gstrAmt: g.amount, diff: g.amount,
-            type: 'missing_in_books', resolved: false
-          });
-        }
-      });
-
-      return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, missingInBooksCount: missingInBooksCount, fuzzyMatchedCount: fuzzyMatchedCount, issues: issues };
-    }
-
-    // ============================================================
-    // Post-processing pass: duplicate invoices + GSTIN validity +
-    // rule-based classification. Runs AFTER reconcileRows() so the
-    // core matching logic above (exact + fuzzy, duplicate-safe via
-    // usedGstrKeys) is completely untouched.
-    // ============================================================
-    function enrichReconciliation(result, prRows, gstrRows) {
-      // --- Duplicate invoices within the Purchase Register ---
-      var dupeGroups = findDuplicateInvoices(prRows);
-      dupeGroups.forEach(function(dg) {
-        result.issues.push({
-          id: state._nextMismatchId++,
-          invoiceNo: dg.invoiceNo,
-          gstin: dg.gstin,
-          purchaseAmt: dg.totalAmount,
-          gstrAmt: 0,
-          diff: dg.totalAmount,
-          type: 'duplicate',
-          occurrences: dg.occurrences,
-          resolved: false
-        });
-      });
-      result.duplicateCount = dupeGroups.length;
-
-      // --- Duplicate/multiple filings of the same invoice within GSTR-2B ---
-      // A supplier filing the same invoice number twice against the same
-      // GSTIN (whether as an exact repeat, or split across rows that don't
-      // actually reconcile to the PR total) is worth a CA's attention even
-      // when the combined total happens to match the books — GST audit
-      // practice treats any multi-row filing of one invoice number as
-      // something to verify with the supplier, not assume is fine.
-      // reconcileRows() already sums same-key GSTR-2B rows together when
-      // matching (so a genuine, correctly split invoice still reconciles
-      // cleanly and counts as matched) — this check runs independently to
-      // additionally note WHEN that grouping contained more than one row.
-      var prTotalsByKey = new Map();
-      prRows.forEach(function(pr) {
-        var k = pr.invoiceKey + '|' + pr.gstin;
-        prTotalsByKey.set(k, (prTotalsByKey.get(k) || 0) + pr.amount);
-      });
-      var gstrDupeGroups = gstrRows && gstrRows.length ? findDuplicateInvoices(gstrRows) : [];
-      var gstrDupeFlagged = new Set(result.issues.filter(function(i) { return i.type !== 'missing'; }).map(function(i) { return normalizeInvoiceNo(i.invoiceNo) + '|' + i.gstin; }));
-      gstrDupeGroups.forEach(function(dg) {
-        // dg.invoiceNo is the raw display string (e.g. "INV-202"), but
-        // prTotalsByKey and gstrDupeFlagged are both keyed by the NORMALIZED
-        // invoice number (e.g. "INV202") — using the raw string here meant
-        // the lookup below almost never matched, so a genuinely
-        // clean-reconciling split invoice (like a real "INV-202" split into
-        // two GSTR-2B rows that sum to the Purchase Register amount) was
-        // always reported as reconciledCleanly:false and shown as a
-        // critical double-ITC risk instead of a low-risk informational note.
-        var normKey = normalizeInvoiceNo(dg.invoiceNo) + '|' + dg.gstin;
-        // Only add a standalone note if this invoice didn't already surface
-        // as a mismatch/partial/sign_mismatch issue above — in that case the
-        // existing issue's gstrRowCount already shows the multi-row filing,
-        // and we don't want two entries for the same invoice number.
-        if (!gstrDupeFlagged.has(normKey)) {
-          var prTotal = prTotalsByKey.get(normKey);
-          var reconciledCleanly = (typeof prTotal === 'number') && Math.abs(prTotal - dg.totalAmount) < Math.max(500, Math.abs(prTotal) * 0.02);
-          result.issues.push({
-            id: state._nextMismatchId++,
-            invoiceNo: dg.invoiceNo,
-            gstin: dg.gstin,
-            purchaseAmt: reconciledCleanly ? prTotal : 0,
-            gstrAmt: dg.totalAmount,
-            diff: reconciledCleanly ? 0 : dg.totalAmount,
-            type: 'duplicate_in_2b',
-            occurrences: dg.occurrences,
-            reconciledCleanly: reconciledCleanly,
-            resolved: false
-          });
-        }
-      });
-      result.duplicateIn2bCount = gstrDupeGroups.length;
-
-      // --- Invalid-GSTIN rows in the Purchase Register (checksum failed) ---
-      // Only flagged if not already surfaced as an issue above, so we don't
-      // show the same invoice twice for two different reasons.
-      var flaggedKeys = new Set(result.issues.map(function(i) { return i.invoiceNo + '|' + i.gstin; }));
-      var invalidGstinCount = 0;
-      prRows.forEach(function(pr) {
-        if (pr.gstinFlag && !pr.gstinFlag.valid) {
-          invalidGstinCount++;
-          var k = pr.invoiceNo + '|' + pr.gstin;
-          if (!flaggedKeys.has(k)) {
-            flaggedKeys.add(k);
-            result.issues.push({
-              id: state._nextMismatchId++,
-              invoiceNo: pr.invoiceNo,
-              gstin: pr.gstin,
-              purchaseAmt: pr.amount,
-              gstrAmt: 0,
-              diff: 0,
-              type: 'invalid_gstin',
-              gstinFlag: pr.gstinFlag,
-              resolved: false
-            });
-          }
-        }
-      });
-      result.invalidGstinCount = invalidGstinCount;
-
-      // --- Classify every issue (duplicate, invalid_gstin, missing, partial, mismatch) ---
-      result.issues.forEach(function(issue) {
-        var c = classifyIssue(issue);
-        issue.classification = c.classification;
-        issue.risk = c.risk;
-        issue.suggestedAction = c.suggestedAction;
-        issue.autoResolvable = c.autoResolvable;
-      });
-
-      return result;
+      return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount, issues: issues };
     }
 
     async function runRealReconciliation(prFile, gstrFile) {
@@ -4287,8 +3626,7 @@
       if (prRows.length === 0 || gstrRows.length === 0) {
         throw new Error('One of the files has no readable rows once the header is removed.');
       }
-      var result = reconcileRows(prRows, gstrRows);
-      return enrichReconciliation(result, prRows, gstrRows);
+      return reconcileRows(prRows, gstrRows);
     }
 
     // A plan is only valid for one month from purchase. subscriptionActive
@@ -4305,33 +3643,22 @@
       if (!c) return;
       var errBox = document.getElementById('reconError');
       errBox.style.display = 'none';
-
-      // Only block on "plan expired" for accounts that HAVE paid before and
-      // are no longer within a valid paid window — a trial user who has
-      // never subscribed should never see this message; they fall through
-      // to the trial-limit check below instead. Previously this check ran
-      // unconditionally, so every trial user (subscriptionActive: false by
-      // definition) was wrongly told their plan had "expired" even on a
-      // brand-new account that had never purchased anything.
-      var hasEverPaid = !!(state.user && state.user.hasPaidBefore);
-      if (hasEverPaid && !isSubscriptionValid()) {
+      if (!isSubscriptionValid()) {
         errBox.textContent = '⚠️ Your plan has expired. Please renew your subscription to run file matching.';
         errBox.style.display = 'block';
         return;
       }
 
-      // Free trial: one reconciliation per calendar day, for 14 days from
-      // signup. Paid plans skip this entirely (checked server-side too, so
-      // it can't be bypassed by editing localStorage — the
-      // /api/check-reconciliation-limit route returns
-      // { allowed: true, reason: 'paid' } immediately for paid users, and
-      // { allowed: false, reason: 'trial-expired' } once the 14 days are up).
+      // Free trial: one reconciliation per calendar day. Paid plans skip
+      // this entirely (checked server-side too, so it can't be bypassed by
+      // editing localStorage — the /api/check-reconciliation-limit route
+      // returns { allowed: true, reason: 'paid' } immediately for paid users).
       if (state.user) {
         document.getElementById('runReconBtn').disabled = true;
         var originalRunBtnText = document.getElementById('runReconBtn').textContent;
         document.getElementById('runReconBtn').textContent = 'Checking trial limit…';
         try {
-          var limitRes = await authFetch(API_BASE + '/api/check-reconciliation-limit', {
+          var limitRes = await fetch(API_BASE + '/api/check-reconciliation-limit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: state.user.email })
@@ -4339,14 +3666,8 @@
           var limitData = await limitRes.json();
           document.getElementById('runReconBtn').disabled = false;
           document.getElementById('runReconBtn').textContent = originalRunBtnText;
-          if (typeof limitData.trialDaysRemaining === 'number') state.trialDaysRemaining = limitData.trialDaysRemaining;
           if (!limitData.allowed) {
-            if (limitData.reason === 'trial-expired') {
-              state.trialActive = false;
-              errBox.textContent = '⚠️ Your 14-day free trial has ended. Upgrade to a paid plan to keep running reconciliations.';
-            } else {
-              errBox.textContent = "⚠️ You've used today's free reconciliation. Your trial allows one file match per day — upgrade to a paid plan to run reconciliations without a daily limit.";
-            }
+            errBox.textContent = "⚠️ You've used today's free reconciliation. Your trial allows one file match per day — upgrade to a paid plan to run reconciliations without a daily limit.";
             errBox.style.display = 'block';
             return;
           }
@@ -4373,7 +3694,14 @@
         // another device (e.g. desktop), since save-client was previously
         // only called when a client was first created, not after matching.
         if (state.user) {
-          saveClientToServer(c);
+          var clientForServer = Object.assign({}, c);
+          delete clientForServer.prFileObj;
+          delete clientForServer.gstrFileObj;
+          fetch(API_BASE + '/api/save-client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+          }).catch(function(err) { console.warn('Could not sync reconciliation result to server:', err); });
         }
       } catch (err) {
         document.getElementById('reconSpinner').classList.remove('show');
@@ -4389,17 +3717,11 @@
       document.getElementById('sumPartial').textContent = r.partialCount;
       document.getElementById('sumMismatch').textContent = r.mismatchCount;
       document.getElementById('sumMissing').textContent = r.missingCount;
-      document.getElementById('sumMissingInBooks').textContent = r.missingInBooksCount || 0;
-      document.getElementById('sumDuplicate').textContent = (r.duplicateCount || 0) + (r.duplicateIn2bCount || 0);
-      document.getElementById('sumInvalidGstin').textContent = r.invalidGstinCount || 0;
       var unresolved = r.issues.filter(function(i) { return !i.resolved; }).length;
       document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved === 1 ? '' : 's') + ' to review';
       var tbody = document.getElementById('mismatchTableBody');
       tbody.innerHTML = r.issues.map(function(i) {
-        var typeLabel = TYPE_LABELS[i.type] || i.type;
-        var riskHtml = i.risk ? '<span class="riskbadge ' + i.risk + '">' + i.risk + '</span>' : '';
-        var badgeClass = i.type; // matches the .typebadge.<type> CSS rules added for every issue type
-        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + badgeClass + '">' + typeLabel + '</span>' + riskHtml + '</td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
+        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + (i.type === 'missing' ? 'Missing in 2B' : i.type) + '</span></td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
       }).join('');
     }
 
@@ -4409,7 +3731,7 @@
         var c = getCurrentClient();
         var issue = c.results.issues.find(function(i) { return i.id === parseInt(viewBtn.dataset.mid, 10); });
         if (!issue) return;
-        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>' + (issue.suggestedAction ? '<div style="margin-top:14px;padding:12px;border-radius:6px;background:rgba(36,31,26,0.04);border-left:3px solid var(--gold);"><strong>Suggested action' + (issue.risk ? ' <span class="riskbadge ' + issue.risk + '">' + issue.risk + ' risk</span>' : '') + ':</strong><br/>' + issue.suggestedAction + '</div>' : '');
+        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>';
         document.getElementById('markResolvedBtn').dataset.mid = issue.id;
         document.getElementById('markResolvedBtn').style.display = issue.resolved ? 'none' : 'block';
         openModal('detailModal');
@@ -4435,16 +3757,23 @@
       closeModal('detailModal');
       renderResults(c);
       if (state.user && c) {
-        saveClientToServer(c);
+        var clientForServer = Object.assign({}, c);
+        delete clientForServer.prFileObj;
+        delete clientForServer.gstrFileObj;
+        fetch(API_BASE + '/api/save-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+        }).catch(function(err) { console.warn('Could not sync resolved status to server:', err); });
       }
     });
 
     document.getElementById('downloadCsvBtn').addEventListener('click', function() {
       var c = getCurrentClient();
       if (!c || !c.results) return;
-      var csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Risk,Suggested Action,Status\n';
+      var csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Status\n';
       c.results.issues.forEach(function(i) {
-        csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.risk || '', '"' + (i.suggestedAction || '').replace(/"/g, '""') + '"', i.resolved ? 'Resolved' : 'Open'].join(',') + '\n';
+        csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.resolved ? 'Resolved' : 'Open'].join(',') + '\n';
       });
       var blob = new Blob([csv], { type: 'text/csv' });
       var url = URL.createObjectURL(blob);
@@ -4458,10 +3787,7 @@
     });
 
     function buildReportTableHtml(c, r) {
-      return r.issues.map(function(i) {
-        var typeLabel = TYPE_LABELS[i.type] || i.type;
-        return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + typeLabel + '</td><td>' + (i.risk || '') + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>';
-      }).join('');
+      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + i.type + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
     }
 
     document.getElementById('downloadPdfPlainBtn').addEventListener('click', function() {
@@ -4472,8 +3798,8 @@
       document.getElementById('print-report').innerHTML =
         '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Missing in Books:</strong> ' + (r.missingInBooksCount || 0) + ' &nbsp; <strong>Duplicates:</strong> ' + ((r.duplicateCount || 0) + (r.duplicateIn2bCount || 0)) + ' &nbsp; <strong>Invalid GSTIN:</strong> ' + (r.invalidGstinCount || 0) + '</p>' +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Risk</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
       window.print();
     });
 
@@ -4496,8 +3822,8 @@
         '</div>' +
         '<h2 style="font-family:Georgia,serif;margin-top:0;">Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Missing in Books:</strong> ' + (r.missingInBooksCount || 0) + ' &nbsp; <strong>Duplicates:</strong> ' + ((r.duplicateCount || 0) + (r.duplicateIn2bCount || 0)) + ' &nbsp; <strong>Invalid GSTIN:</strong> ' + (r.invalidGstinCount || 0) + '</p>' +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Risk</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="font-size:10px;color:#888;">Generated by EANOVA — eanova.in — this report reflects the two files uploaded by the account holder and is not a filing with the GST department.</div>' +
           '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA VERIFIED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
@@ -4550,15 +3876,6 @@
 
       if (!state.user) return;
 
-      // Capture the amount text BEFORE the button's own textContent gets
-      // overwritten below — payBtnAmount is a <span> nested inside the pay
-      // button, so setting payBtnEl.textContent = '...' wipes that span out
-      // of the DOM entirely. Every place further down that used to re-read
-      // document.getElementById('payBtnAmount') after this point was
-      // silently getting null (the element no longer existed), which is
-      // why the receipt's "Amount charged" field was showing blank.
-      var payAmountText = document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '';
-
       // This write is the one that matters most in the whole app — it's the
       // only thing standing between "customer paid" and "customer can use
       // what they paid for on every device". The previous version set
@@ -4580,23 +3897,10 @@
       payBtnEl.textContent = 'Confirming payment…';
 
       function attemptSave(retriesLeft) {
-        // সার্ভারকে শুধু plan-এর নাম পাঠানো হয় — subscriptionActive বা
-        // expiry ক্লায়েন্ট থেকে সরাসরি পাঠানো হয় না, কারণ সার্ভার নিজেই
-        // whitelisted plan অনুযায়ী দাম-নিরপেক্ষভাবে মেয়াদ হিসাব করে ও
-        // সাবস্ক্রিপশন চালু করে। এতে কেউ browser থেকে request বদলে
-        // বিনামূল্যে সাবস্ক্রিপশন অ্যাক্টিভেট করতে পারবে না।
-        authFetch(API_BASE + '/api/update-profile', {
+        fetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: state.user.email,
-            plan: plan,
-            receipt: {
-              txnId: txnId,
-              amount: payAmountText,
-              method: methodLabel
-            }
-          })
+          body: JSON.stringify({ email: state.user.email, subscriptionActive: true, activePlan: plan, subscriptionExpiry: expiry, hasPaidBefore: true })
         })
         .then(function(res) {
           if (!res.ok) throw new Error('save failed: ' + res.status);
@@ -4604,36 +3908,59 @@
         })
         .then(function(saveResponseBody) {
           // Confirmed saved on the server — now it's safe to reflect the
-          // purchase locally and show the success screen. The expiry shown
-          // comes from the server's response (authoritative), falling back
-          // to the local estimate only if the server didn't include it.
-          var serverUser = saveResponseBody && saveResponseBody.user;
-          var confirmedExpiry = (serverUser && serverUser.subscriptionExpiry) || expiry;
+          // purchase locally and show the success screen.
           state.subscriptionActive = true;
           state.activePlan = plan;
-          state.subscriptionExpiry = confirmedExpiry;
+          state.subscriptionExpiry = expiry;
           if (state.user) state.user.hasPaidBefore = true;
-          // The receipt is now saved server-side too (see /api/update-profile),
-          // so "Download Receipt" keeps working after logging in on another
-          // device or after a session had to be renewed — not just in this
-          // browser's localStorage. Prefer the server's copy; fall back to a
-          // locally-built one only if the server didn't send one back.
-          state.lastReceipt = (serverUser && serverUser.lastReceipt) || {
+          persistCurrentAccount();
+          // Kept only in memory for this session, purely so the receipt
+          // buttons on the success screen have something to render — not
+          // persisted anywhere, since it's not sensitive payment data, just
+          // a display id.
+          window._lastReceipt = {
             txnId: txnId,
             plan: plan,
-            amount: payAmountText,
+            amount: document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '',
             method: methodLabel,
             name: (state.user && state.user.name) || '',
             email: (state.user && state.user.email) || '',
             date: Date.now(),
-            expiry: confirmedExpiry
+            expiry: expiry
           };
-          persistCurrentAccount();
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
           document.getElementById('checkoutForm').style.display = 'none';
           document.getElementById('checkoutSuccess').style.display = 'block';
           updateProfileMenu();
+
+          // --- TEMPORARY DIAGNOSTIC ---
+          // This exists only to pin down exactly where the subscription
+          // value is getting lost. It shows, in plain text right on the
+          // success screen, exactly what the save endpoint said it stored
+          // and exactly what an immediate re-read of /api/user-data says a
+          // moment later — no DevTools needed. Safe to remove once the bug
+          // is confirmed and fixed.
+          var diagBox = document.getElementById('subscriptionDiagBox');
+          if (!diagBox) {
+            diagBox = document.createElement('div');
+            diagBox.id = 'subscriptionDiagBox';
+            diagBox.style.cssText = 'margin-top:20px;padding:14px;border:2px dashed #A63D40;border-radius:6px;font-family:monospace;font-size:12px;text-align:left;white-space:pre-wrap;background:#fff;color:#241F1A;';
+            var successBox = document.querySelector('#checkoutSuccess .successbox');
+            if (successBox) successBox.appendChild(diagBox);
+          }
+          var savedSubActive = saveResponseBody && saveResponseBody.user ? saveResponseBody.user.subscriptionActive : '(no user object in response)';
+          diagBox.textContent = 'DIAGNOSTIC — update-profile response said subscriptionActive: ' + JSON.stringify(savedSubActive) + '\n\nChecking /api/user-data now...';
+          fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(freshData) {
+              var freshSubActive = freshData && freshData.user ? freshData.user.subscriptionActive : '(no user object)';
+              diagBox.textContent += '\n\nImmediate /api/user-data re-check said subscriptionActive: ' + JSON.stringify(freshSubActive) + '\n\nIf the second value is false while the first is true, the save and the read are reaching different data — screenshot this box and send it.';
+            })
+            .catch(function(err) {
+              diagBox.textContent += '\n\nRe-check failed: ' + err.message;
+            });
+          // --- END TEMPORARY DIAGNOSTIC ---
         })
         .catch(function(err) {
           if (retriesLeft > 0) {
@@ -4663,72 +3990,41 @@
      *  reconciliation report above: fill #print-report and window.print(),
      *  so no separate PDF library or file is needed.
      ********************************************************************/
-
-    function printReceipt(rcpt) {
-      if (!rcpt) {
-        // Previously this just returned silently — clicking "Download
-        // Receipt" appeared to do nothing at all, with no explanation. Now
-        // it tells the person what's happening and tries once to fetch the
-        // receipt from the server before giving up, since a receipt saved
-        // by an earlier purchase (even on another device) should still be
-        // retrievable, not just whatever happens to be in memory right now.
-        if (state.user && state.user.email) {
-          authFetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-              if (data && data.user && data.user.lastReceipt) {
-                state.lastReceipt = data.user.lastReceipt;
-                printReceipt(state.lastReceipt);
-              } else {
-                alert("No receipt found for this account yet. If you just purchased a plan, please try again in a few seconds.");
-              }
-            })
-            .catch(function() {
-              alert("Couldn't load your receipt right now — please check your connection and try again.");
-            });
-        } else {
-          alert("No receipt found for this account yet.");
-        }
-        return;
-      }
-      var dateStr = new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-      var expiryStr = rcpt.expiry ? new Date(rcpt.expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
-      var planLabel = rcpt.plan === 'annual' ? 'Annual plan' : (rcpt.plan === 'first' ? 'First month' : 'Monthly plan');
-      var logoImg = document.querySelector('.brand-logo');
-      var logoSrc = logoImg ? logoImg.src : '';
-      document.getElementById('print-report').innerHTML =
-        '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #14213D;padding-bottom:14px;margin-bottom:18px;">' +
-          (logoSrc ? '<img src="' + logoSrc + '" style="width:48px;height:48px;border-radius:50%;">' : '') +
-          '<div><div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#14213D;">EANOVA</div><div style="font-size:11px;color:#666;">eanova.in — GST Reconciliation</div></div>' +
-        '</div>' +
-        '<h2 style="font-family:Georgia,serif;margin-top:0;">Payment Receipt</h2>' +
-        '<table cellpadding="6" cellspacing="0" style="width:100%;font-size:13px;margin-top:10px;">' +
-          '<tr><td style="color:#666;width:180px;">Name</td><td><strong>' + (rcpt.name || '—') + '</strong></td></tr>' +
-          '<tr><td style="color:#666;">Email</td><td>' + (rcpt.email || '—') + '</td></tr>' +
-          '<tr><td style="color:#666;">Plan</td><td>' + planLabel + '</td></tr>' +
-          '<tr><td style="color:#666;">Payment method</td><td>' + rcpt.method + '</td></tr>' +
-          '<tr><td style="color:#666;">Transaction ID</td><td style="font-family:\'Courier New\',monospace;">' + rcpt.txnId + '</td></tr>' +
-          '<tr><td style="color:#666;">Date &amp; time</td><td>' + dateStr + '</td></tr>' +
-          '<tr><td style="color:#666;">Amount charged</td><td style="font-size:18px;font-weight:700;color:#14213D;">' + rcpt.amount + '</td></tr>' +
-          '<tr><td style="color:#666;">Valid until</td><td><strong>' + expiryStr + '</strong></td></tr>' +
-        '</table>' +
-        '<div style="margin-top:36px;padding-top:16px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:flex-end;">' +
-          '<div>' +
-            '<div style="font-size:13px;color:#241F1A;margin-bottom:4px;">Thank you for trust and choice, Eanova.</div>' +
-            '<div style="font-size:10px;color:#888;">This receipt is generated by EANOVA — eanova.in — and confirms a completed subscription payment.</div>' +
-          '</div>' +
-          '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA APPROVED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
-        '</div>';
-      window.print();
-    }
-
     var downloadReceiptBtnEl = document.getElementById('downloadReceiptBtn');
     if (downloadReceiptBtnEl) {
-      downloadReceiptBtnEl.addEventListener('click', function() { printReceipt(state.lastReceipt); });
-    }
-    var pdDownloadReceiptBtnEl = document.getElementById('pdDownloadReceiptBtn');
-    if (pdDownloadReceiptBtnEl) {
-      pdDownloadReceiptBtnEl.addEventListener('click', function() { printReceipt(state.lastReceipt); });
+      downloadReceiptBtnEl.addEventListener('click', function() {
+        var rcpt = window._lastReceipt;
+        if (!rcpt) return;
+        var dateStr = new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        var expiryStr = rcpt.expiry ? new Date(rcpt.expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+        var planLabel = rcpt.plan === 'annual' ? 'Annual plan' : (rcpt.plan === 'first' ? 'First month' : 'Monthly plan');
+        var logoImg = document.querySelector('.brand-logo');
+        var logoSrc = logoImg ? logoImg.src : '';
+        document.getElementById('print-report').innerHTML =
+          '<div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid #14213D;padding-bottom:14px;margin-bottom:18px;">' +
+            (logoSrc ? '<img src="' + logoSrc + '" style="width:48px;height:48px;border-radius:50%;">' : '') +
+            '<div><div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#14213D;">EANOVA</div><div style="font-size:11px;color:#666;">eanova.in — GST Reconciliation</div></div>' +
+          '</div>' +
+          '<h2 style="font-family:Georgia,serif;margin-top:0;">Payment Receipt</h2>' +
+          '<table cellpadding="6" cellspacing="0" style="width:100%;font-size:13px;margin-top:10px;">' +
+            '<tr><td style="color:#666;width:180px;">Name</td><td><strong>' + (rcpt.name || '—') + '</strong></td></tr>' +
+            '<tr><td style="color:#666;">Email</td><td>' + (rcpt.email || '—') + '</td></tr>' +
+            '<tr><td style="color:#666;">Plan</td><td>' + planLabel + '</td></tr>' +
+            '<tr><td style="color:#666;">Payment method</td><td>' + rcpt.method + '</td></tr>' +
+            '<tr><td style="color:#666;">Transaction ID</td><td style="font-family:\'Courier New\',monospace;">' + rcpt.txnId + '</td></tr>' +
+            '<tr><td style="color:#666;">Date &amp; time</td><td>' + dateStr + '</td></tr>' +
+            '<tr><td style="color:#666;">Amount charged</td><td style="font-size:18px;font-weight:700;color:#14213D;">' + rcpt.amount + '</td></tr>' +
+            '<tr><td style="color:#666;">Valid until</td><td><strong>' + expiryStr + '</strong></td></tr>' +
+          '</table>' +
+          '<div style="margin-top:36px;padding-top:16px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:flex-end;">' +
+            '<div>' +
+              '<div style="font-size:13px;color:#241F1A;margin-bottom:4px;">Thank you for trust and choice, Eanova.</div>' +
+              '<div style="font-size:10px;color:#888;">This receipt is generated by EANOVA — eanova.in — and confirms a completed subscription payment.</div>' +
+            '</div>' +
+            '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA APPROVED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
+          '</div>';
+        window.print();
+      });
     }
 
     /********************************************************************
@@ -4812,13 +4108,6 @@
         badge.classList.add('trial');
       }
       updatePlanValidity();
-
-      // Show "Download Receipt" here too (not just right after checkout)
-      // whenever a receipt from a past purchase is available on this device.
-      var pdReceiptBtn = document.getElementById('pdDownloadReceiptBtn');
-      if (pdReceiptBtn) {
-        pdReceiptBtn.style.display = state.lastReceipt ? 'block' : 'none';
-      }
     }
 
     // Shows exactly how many days are left on the paid plan, with the
@@ -4906,7 +4195,7 @@
         updateProfileMenu();
         // Also push to the backend so the picture shows up on other devices
         // logged into the same account, not just this browser's storage.
-        authFetch(API_BASE + '/api/update-profile', {
+        fetch(API_BASE + '/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: state.user.email, profilePic: ev.target.result })
@@ -5158,7 +4447,7 @@
         runBtn.disabled = true;
         try {
           var r = await runRealReconciliation(demoState.prFile, demoState.gstrFile);
-          document.getElementById('demoSummary').innerHTML = '<div class="sumcard"><div class="n">' + r.matched + '</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n">' + r.partialCount + '</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n">' + r.mismatchCount + '</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n">' + r.missingCount + '</div><div class="l">Missing in 2B</div></div><div class="sumcard missing"><div class="n">' + (r.missingInBooksCount || 0) + '</div><div class="l">Missing in Books</div></div><div class="sumcard duplicate"><div class="n">' + ((r.duplicateCount || 0) + (r.duplicateIn2bCount || 0)) + '</div><div class="l">Duplicate invoices</div></div><div class="sumcard invalidgstin"><div class="n">' + (r.invalidGstinCount || 0) + '</div><div class="l">Invalid GSTIN</div></div>';
+          document.getElementById('demoSummary').innerHTML = '<div class="sumcard"><div class="n">' + r.matched + '</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n">' + r.partialCount + '</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n">' + r.mismatchCount + '</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n">' + r.missingCount + '</div><div class="l">Missing in 2B</div></div>';
           document.getElementById('demoSpinner').classList.remove('show');
           document.getElementById('demoResult').classList.add('show');
         } catch (err) {
@@ -5214,7 +4503,14 @@
 
       // Save to backend so this client survives a refresh and shows on other devices.
       if (state.user) {
-        saveClientToServer(newClient);
+        var clientForServer = Object.assign({}, newClient);
+        delete clientForServer.prFileObj;
+        delete clientForServer.gstrFileObj;
+        fetch(API_BASE + '/api/save-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
+        }).catch(function(err) { console.warn('Could not sync client to server:', err); });
       }
     });
 
@@ -5230,7 +4526,7 @@
         // an out-of-date plan status even though the server itself had
         // already saved the correct one. This is a belt-and-braces
         // safety net alongside the no-store header server.js now sends.
-        var res = await authFetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
+        var res = await fetch(API_BASE + '/api/user-data?email=' + encodeURIComponent(state.user.email), { cache: 'no-store' });
         var data = await res.json();
         if (data.user) {
           state.user.name = data.user.name;
@@ -5266,17 +4562,6 @@
           if (Object.prototype.hasOwnProperty.call(data.user, 'subscriptionActive') && !data.user.subscriptionActive) {
             state.activePlan = null;
             state.subscriptionExpiry = null;
-          }
-          // Real trial countdown from the server (accountCreatedAt-based).
-          if (typeof data.user.trialActive === 'boolean') state.trialActive = data.user.trialActive;
-          if (typeof data.user.trialDaysRemaining === 'number') state.trialDaysRemaining = data.user.trialDaysRemaining;
-          // Receipt is now stored server-side too, so it survives logging in
-          // on another device or after a session renewal — not just this
-          // browser's localStorage. Only overwrite when the server actually
-          // has one, so a purchase made moments ago in this same tab isn't
-          // wiped out by a response that hasn't caught up yet.
-          if (data.user.lastReceipt) {
-            state.lastReceipt = data.user.lastReceipt;
           }
           // Merge clients by id instead of only replacing when the server
           // array is longer — that comparison missed updates made on another
@@ -5328,43 +4613,6 @@
     });
 
     console.log('✅ EANOVA fully functional with persistence.');
-  </script>
-
-  <div id="appToast"><span class="tick"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="appToastText"></span></div>
-  <script>
-    // Small reusable confirmation toast — e.g. "OTP sent to your email ✓".
-    // Auto-dismisses after ~2.5s so it never blocks anything underneath.
-    var _toastTimer = null;
-    function showToast(msg) {
-      var el = document.getElementById('appToast');
-      var textEl = document.getElementById('appToastText');
-      if (!el || !textEl) return;
-      textEl.textContent = msg;
-      el.classList.add('show');
-      if (_toastTimer) clearTimeout(_toastTimer);
-      _toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2500);
-    }
-
-    // Shared 60-second resend cooldown for any "Resend OTP" button — counts
-    // down the button's own label so the person can see exactly when
-    // they're allowed to ask for another code, instead of a plain disabled
-    // button with no explanation.
-    function startResendCooldown(buttonEl, seconds) {
-      if (!buttonEl) return;
-      var remaining = seconds || 60;
-      buttonEl.disabled = true;
-      buttonEl.textContent = 'Resend OTP (' + remaining + 's)';
-      var timer = setInterval(function() {
-        remaining--;
-        if (remaining <= 0) {
-          clearInterval(timer);
-          buttonEl.disabled = false;
-          buttonEl.textContent = 'Resend OTP';
-        } else {
-          buttonEl.textContent = 'Resend OTP (' + remaining + 's)';
-        }
-      }, 1000);
-    }
   </script>
 
 </body>
