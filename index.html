@@ -548,6 +548,42 @@
       background: #8f3437;
       transform: translateY(-1px);
     }
+    /* Generic button loading spinner — added to any button while it is
+       waiting on a server response (signup, OTP verify, login, forgot
+       password, payment, etc.). Purely visual/UX; does not touch any
+       existing button logic, text, or styling otherwise. */
+    .btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: btnSpin 0.65s linear infinite;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    /* The OTP "resend" links sit on a light background with colored text,
+       not a solid dark/colored button — the white spinner above would be
+       invisible there, so they get themed colors + a little left margin
+       (these buttons aren't flex/gap layouts). */
+    .np-resend-row .btn-spinner {
+      border-color: rgba(11, 138, 94, 0.25);
+      border-top-color: #0b8a5e;
+      margin-left: 7px;
+    }
+    .authswitch .btn-spinner {
+      border-color: rgba(166, 61, 64, 0.25);
+      border-top-color: var(--red);
+      margin-left: 7px;
+    }
+    @keyframes btnSpin {
+      to { transform: rotate(360deg); }
+    }
+    button.btn-loading, button[disabled].btn-loading {
+      cursor: wait;
+      opacity: 0.85;
+    }
     .btn-outline {
       background: transparent;
       color: var(--navy);
@@ -1685,6 +1721,7 @@
       box-shadow: 0 0 0 4px rgba(52,211,153,0.10);
     }
     .np-iwrap .np-icon { padding: 0 0 0 13px; color: #8a9db0; font-size: 15px; flex-shrink: 0; line-height: 1; }
+    .np-iwrap.ni input { padding-left: 16px; }
     .np-iwrap input, .np-iwrap select {
       width: 100%;
       padding: 12px 12px 12px 9px;
@@ -2212,6 +2249,47 @@
     .upi-app-btn.selected {
       border-color: var(--navy);
       box-shadow: 0 0 0 1px var(--navy);
+    }
+    /* Card network tabs (Visa / Mastercard / Amex) — same tab pattern as
+       .pay-tabs above, just smaller, sitting above the card detail fields.
+       Selecting one sets the card-number field's max length to that
+       network's real digit count (Visa/Mastercard 16, Amex 15). */
+    .card-network-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .card-network-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-network-tab.active {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 1px var(--navy);
+    }
+    .cn-badge {
+      font-weight: 800;
+      font-size: 13.5px;
+      letter-spacing: 0.02em;
+    }
+    .cn-visa {
+      color: #1A1F71;
+      font-style: italic;
+    }
+    .cn-amex {
+      background: #006FCF;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-style: normal;
     }
     .crypto-soon {
       margin-top: 20px;
@@ -3327,7 +3405,7 @@
           <form id="signupForm">
             <div class="np-field"><label>Your name</label><div class="np-iwrap"><span class="np-icon">👤</span><input type="text" id="su-name" placeholder="Priya Sharma" required /></div></div>
             <div class="np-field"><label>Firm name</label><div class="np-iwrap"><span class="np-icon">🏢</span><input type="text" id="su-firm" placeholder="Sharma &amp; Associates" required /></div></div>
-            <div class="np-field"><label>Email</label><div class="np-iwrap"><span class="np-icon">✉️</span><input type="email" id="su-email" placeholder="priya@sharmaca.in" required /></div></div>
+            <div class="np-field"><label>Email</label><div class="np-iwrap ni"><input type="email" id="su-email" placeholder="priya@sharmaca.in" required /></div></div>
             <div class="np-field"><label>Region</label>
               <div class="np-iwrap"><span class="np-icon">🌐</span><select id="su-region">
                 <option value="in">🇮🇳 India — ₹99 first month</option>
@@ -3336,7 +3414,7 @@
             </div>
             <div class="np-field">
               <label>Password</label>
-              <div class="np-iwrap pwd-field-wrap"><span class="np-icon">🔒</span><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
+              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
               <div class="np-hint">Minimum 6 characters</div>
               <div class="np-pwd-meter" id="signupPwdStrength"><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span></div>
               <div class="np-pwd-label" id="signupPwdLabel"></div>
@@ -3381,10 +3459,10 @@
         <p class="lead">Use the email and password you registered with.</p>
         <div class="auth-error" id="loginError" style="display:none;"></div>
         <form id="loginForm">
-          <div class="np-field"><label>Email</label><div class="np-iwrap"><span class="np-icon">✉️</span><input type="email" id="li-email" placeholder="priya@sharmaca.in" required /></div></div>
+          <div class="np-field"><label>Email</label><div class="np-iwrap ni"><input type="email" id="li-email" placeholder="priya@sharmaca.in" required /></div></div>
           <div class="np-field">
             <label>Password</label>
-            <div class="np-iwrap pwd-field-wrap"><span class="np-icon">🔒</span><input type="password" id="li-pass" placeholder="Your password" required style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="li-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
+            <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="li-pass" placeholder="Your password" required style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="li-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
             <div class="np-forgot-wrap"><button type="button" id="forgotPasswordLink">Forgot password?</button></div>
           </div>
           <button class="btn np-btn" type="submit">Log In</button>
@@ -3409,7 +3487,7 @@
           <p class="lead">Enter the email on your account. We'll send a one-time code to verify it's you.</p>
           <div class="auth-error" id="forgotError1" style="display:none;"></div>
           <form id="forgotEmailForm">
-            <div class="np-field"><label>Email</label><div class="np-iwrap"><span class="np-icon">✉️</span><input type="email" id="fp-email" placeholder="priya@sharmaca.in" required /></div></div>
+            <div class="np-field"><label>Email</label><div class="np-iwrap ni"><input type="email" id="fp-email" placeholder="priya@sharmaca.in" required /></div></div>
             <button class="btn np-btn" type="submit">Send OTP</button>
           </form>
         </div>
@@ -3446,11 +3524,11 @@
           <form id="forgotResetForm">
             <div class="np-field">
               <label>New password</label>
-              <div class="np-iwrap pwd-field-wrap"><span class="np-icon">🔒</span><input type="password" id="fp-newpass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
+              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="fp-newpass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
               <div class="np-pwd-meter" id="newPwdStrength"><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span></div>
               <div class="np-pwd-label" id="newPwdLabel"></div>
             </div>
-            <div class="np-field"><label>Confirm new password</label><div class="np-iwrap pwd-field-wrap"><span class="np-icon">🔒</span><input type="password" id="fp-newpass2" placeholder="Re-enter password" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass2" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+            <div class="np-field"><label>Confirm new password</label><div class="np-iwrap pwd-field-wrap ni"><input type="password" id="fp-newpass2" placeholder="Re-enter password" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass2" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
             <button class="btn np-btn" type="submit">Reset Password</button>
           </form>
         </div>
@@ -3566,17 +3644,28 @@
             <div class="pay-panel active" id="payPanelUpi">
               <div class="field"><label>UPI ID</label><input type="text" id="pay-upi-id" placeholder="yourname@upi" /></div>
               <div class="upi-app-row">
-                <button type="button" class="upi-app-btn selected" data-upi-app="phonepe">📱 PhonePe</button>
-                <button type="button" class="upi-app-btn" data-upi-app="gpay">📱 Google Pay</button>
+                <button type="button" class="upi-app-btn selected" data-upi-app="phonepe"><svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#5F259F"/><path d="M8 6h5.5c2.2 0 3.8 1.4 3.8 3.5 0 2-1.5 3.4-3.6 3.4h-2.4V17H8V6zm3.3 5h1.9c1 0 1.6-.6 1.6-1.5s-.6-1.5-1.6-1.5h-1.9v3z" fill="#fff"/></svg> PhonePe</button>
+                <button type="button" class="upi-app-btn" data-upi-app="gpay"><svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#e2e9f0"/><path d="M17.6 12.23c0-.63-.06-1.25-.16-1.84H12v3.48h3.14a2.7 2.7 0 0 1-1.16 1.77v1.47h1.88c1.1-1.01 1.74-2.5 1.74-4.28z" fill="#4285F4"/><path d="M12 18c1.57 0 2.89-.52 3.86-1.4l-1.88-1.47c-.52.35-1.19.56-1.98.56-1.52 0-2.81-1.03-3.27-2.41H6.79v1.51A6 6 0 0 0 12 18z" fill="#34A853"/><path d="M8.73 13.28a3.6 3.6 0 0 1 0-2.3V9.47H6.79a6 6 0 0 0 0 5.32l1.94-1.51z" fill="#FBBC05"/><path d="M12 8.58c.85 0 1.62.29 2.22.87l1.67-1.67C14.88 6.77 13.56 6.2 12 6.2a6 6 0 0 0-5.21 3.27l1.94 1.51C9.19 9.6 10.48 8.58 12 8.58z" fill="#EA4335"/></svg> Google Pay</button>
               </div>
             </div>
 
             <div class="pay-panel" id="payPanelCard">
+              <div class="card-network-tabs" role="tablist">
+                <button type="button" class="card-network-tab active" data-card-network="visa" data-card-len="16">
+                  <span class="cn-badge cn-visa">VISA</span>
+                </button>
+                <button type="button" class="card-network-tab" data-card-network="mastercard" data-card-len="16">
+                  <span class="cn-badge cn-mastercard"><svg viewBox="0 0 36 22" width="34" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="14" cy="11" r="10" fill="#EB001B"/><circle cx="22" cy="11" r="10" fill="#F79E1B" fill-opacity="0.85"/></svg></span>
+                </button>
+                <button type="button" class="card-network-tab" data-card-network="amex" data-card-len="15">
+                  <span class="cn-badge cn-amex">AMEX</span>
+                </button>
+              </div>
               <div class="field"><label>Name on card</label><input type="text" id="pay-name" placeholder="Priya Sharma" /></div>
-              <div class="field"><label>Card number <span style="font-weight:400;text-transform:none;color:rgba(36,31,26,0.5);">(Visa, Mastercard, RuPay, Amex accepted)</span></label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="19" /></div>
+              <div class="field"><label>Card number <span id="payCardHint" style="font-weight:400;text-transform:none;color:rgba(36,31,26,0.5);">(16 digits)</span></label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="16" inputmode="numeric" /></div>
               <div class="field" style="display:flex;gap:12px;">
-                <div style="flex:1;"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5" /></div>
-                <div style="flex:1;"><label>CVV</label><input type="text" placeholder="123" maxlength="3" /></div>
+                <div style="flex:1;"><label>Expiry</label><input type="text" id="pay-expiry" placeholder="MM/YY" maxlength="5" /></div>
+                <div style="flex:1;"><label>CVV</label><input type="text" id="pay-cvv" placeholder="123" maxlength="3" inputmode="numeric" /></div>
               </div>
             </div>
 
@@ -4182,6 +4271,49 @@
     }
 
     /********************************************************************
+     *  BUTTON LOADING SPINNER — generic helper used by every button that
+     *  waits on a server response, so the person always sees the request
+     *  is in flight instead of a button that looks unresponsive for a
+     *  few seconds. Turns off the instant a response (success or error)
+     *  comes back — never delayed on purpose.
+     ********************************************************************/
+    function setBtnLoading(btn, loading) {
+      if (!btn) return;
+      if (loading) {
+        if (!btn.querySelector('.btn-spinner')) {
+          var sp = document.createElement('span');
+          sp.className = 'btn-spinner';
+          btn.appendChild(sp);
+        }
+        btn.classList.add('btn-loading');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+        var existingSp = btn.querySelector('.btn-spinner');
+        if (existingSp) existingSp.remove();
+      }
+    }
+    // Lighter variant for buttons that manage their own disabled/cooldown
+    // state already (the OTP resend buttons) — only toggles the spinner
+    // visual, never touches .disabled itself.
+    function toggleBtnSpinner(btn, show) {
+      if (!btn) return;
+      if (show) {
+        if (!btn.querySelector('.btn-spinner')) {
+          var sp2 = document.createElement('span');
+          sp2.className = 'btn-spinner';
+          btn.appendChild(sp2);
+        }
+        btn.classList.add('btn-loading');
+      } else {
+        btn.classList.remove('btn-loading');
+        var existingSp2 = btn.querySelector('.btn-spinner');
+        if (existingSp2) existingSp2.remove();
+      }
+    }
+
+    /********************************************************************
      *  SIGNUP
      ********************************************************************/
     window.pendingSignupData = null;
@@ -4209,6 +4341,8 @@
 
       window.pendingSignupData = { name, firm, email, password, region };
 
+      var signupSubmitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(signupSubmitBtn, true);
       fetch(API_BASE + '/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4230,6 +4364,9 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
+      })
+      .finally(function() {
+        setBtnLoading(signupSubmitBtn, false);
       });
     });
 
@@ -4246,6 +4383,8 @@
         return;
       }
 
+      var signupOtpSubmitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(signupOtpSubmitBtn, true);
       fetch(API_BASE + '/api/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4275,6 +4414,9 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
+      })
+      .finally(function() {
+        setBtnLoading(signupOtpSubmitBtn, false);
       });
     });
 
@@ -4293,6 +4435,8 @@
         return;
       }
 
+      var loginSubmitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(loginSubmitBtn, true);
       fetch(API_BASE + '/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4337,6 +4481,9 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
+      })
+      .finally(function() {
+        setBtnLoading(loginSubmitBtn, false);
       });
     });
 
@@ -4362,6 +4509,8 @@
         return;
       }
 
+      var forgotEmailSubmitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(forgotEmailSubmitBtn, true);
       fetch(API_BASE + '/api/forgot-password-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4383,6 +4532,9 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
+      })
+      .finally(function() {
+        setBtnLoading(forgotEmailSubmitBtn, false);
       });
     });
 
@@ -4420,6 +4572,8 @@
       const email = document.getElementById('fp-otp').dataset.email;
       const otp = window._resetOtp;
 
+      var forgotResetSubmitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(forgotResetSubmitBtn, true);
       fetch(API_BASE + '/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4437,6 +4591,9 @@
       .catch(function() {
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
+      })
+      .finally(function() {
+        setBtnLoading(forgotResetSubmitBtn, false);
       });
     });
 
@@ -4549,6 +4706,7 @@
       var errBox = document.getElementById('signupOtpError');
       errBox.style.display = 'none';
       signupResendBtnEl.disabled = true;
+      toggleBtnSpinner(signupResendBtnEl, true);
       fetch(API_BASE + '/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4569,6 +4727,9 @@
         errBox.textContent = 'Server error. Please try again.';
         errBox.style.display = 'block';
         signupResendBtnEl.disabled = false;
+      })
+      .finally(function() {
+        toggleBtnSpinner(signupResendBtnEl, false);
       });
     });
 
@@ -4581,6 +4742,7 @@
       resendOtpLinkEl.disabled = true;
       var originalText = resendOtpLinkEl.textContent;
       resendOtpLinkEl.textContent = 'Sending…';
+      toggleBtnSpinner(resendOtpLinkEl, true);
       fetch(API_BASE + '/api/forgot-password-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4603,6 +4765,9 @@
         errBox.style.display = 'block';
         resendOtpLinkEl.textContent = originalText;
         resendOtpLinkEl.disabled = false;
+      })
+      .finally(function() {
+        toggleBtnSpinner(resendOtpLinkEl, false);
       });
     });
 
@@ -5159,11 +5324,86 @@
     });
 
     /********************************************************************
+     *  CARD NETWORK TABS (Visa / Mastercard / Amex) — selecting one sets
+     *  the card-number field's max length to that network's real digit
+     *  count, so more digits than that network actually uses simply can't
+     *  be typed. Also truncates anything already typed that's now too long.
+     ********************************************************************/
+    var _selectedCardNetwork = 'visa';
+    var _cardNetworkLabels = { visa: 'Visa', mastercard: 'Mastercard', amex: 'American Express' };
+    document.querySelectorAll('[data-card-network]').forEach(function(cnBtn) {
+      cnBtn.addEventListener('click', function() {
+        _selectedCardNetwork = this.getAttribute('data-card-network');
+        var len = parseInt(this.getAttribute('data-card-len'), 10) || 16;
+        document.querySelectorAll('[data-card-network]').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        var cardInput = document.getElementById('pay-card');
+        cardInput.maxLength = len;
+        if (cardInput.value.length > len) cardInput.value = cardInput.value.slice(0, len);
+        var hint = document.getElementById('payCardHint');
+        if (hint) hint.textContent = '(' + len + ' digits)';
+      });
+    });
+    // Card number and CVV should only ever contain digits — this is also
+    // what keeps the max-length limit above meaningful (no spaces/letters
+    // eating into the digit count).
+    document.getElementById('pay-card').addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '');
+    });
+    document.getElementById('pay-cvv').addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '');
+    });
+
+    /********************************************************************
      *  PAYMENT (SUBSCRIPTION)
      ********************************************************************/
+    function validatePaymentFields() {
+      var errBox = document.getElementById('checkoutError');
+      errBox.style.display = 'none';
+      if (_selectedPayMethod === 'upi') {
+        var upiId = document.getElementById('pay-upi-id').value.trim();
+        if (!upiId) {
+          errBox.textContent = 'Please enter your UPI ID.';
+          errBox.style.display = 'block';
+          return false;
+        }
+        return true;
+      }
+      if (_selectedPayMethod === 'card') {
+        var name = document.getElementById('pay-name').value.trim();
+        var cardNum = document.getElementById('pay-card').value.trim();
+        var expiryVal = document.getElementById('pay-expiry').value.trim();
+        var cvv = document.getElementById('pay-cvv').value.trim();
+        var expectedLen = { visa: 16, mastercard: 16, amex: 15 }[_selectedCardNetwork] || 16;
+        if (!name) {
+          errBox.textContent = 'Please enter the name on your card.';
+          errBox.style.display = 'block';
+          return false;
+        }
+        if (cardNum.length !== expectedLen) {
+          errBox.textContent = 'Please enter a valid ' + _cardNetworkLabels[_selectedCardNetwork] + ' card number (' + expectedLen + ' digits).';
+          errBox.style.display = 'block';
+          return false;
+        }
+        if (!/^\d{2}\/\d{2}$/.test(expiryVal)) {
+          errBox.textContent = 'Please enter a valid expiry date (MM/YY).';
+          errBox.style.display = 'block';
+          return false;
+        }
+        if (cvv.length < 3) {
+          errBox.textContent = 'Please enter the CVV.';
+          errBox.style.display = 'block';
+          return false;
+        }
+        return true;
+      }
+      return true;
+    }
+
     document.getElementById('payBtn').addEventListener('click', function(e) {
       e.preventDefault();
       if (_selectedPayMethod === 'crypto') return; // guarded, but belt-and-braces
+      if (!validatePaymentFields()) return;
       var payBtnEl = this;
       var plan = window._selectedPlan || 'monthly';
       var expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
@@ -5172,7 +5412,14 @@
       // charge), just a stable id so the downloadable receipt has something
       // concrete to show under "Transaction ID".
       var txnId = 'EANOVA-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-      var methodLabel = _selectedPayMethod === 'upi' ? (_selectedUpiApp === 'phonepe' ? 'UPI — PhonePe' : 'UPI — Google Pay') : 'Credit Card';
+      var methodLabel;
+      if (_selectedPayMethod === 'upi') {
+        methodLabel = _selectedUpiApp === 'phonepe' ? 'UPI — PhonePe' : 'UPI — Google Pay';
+      } else {
+        var cardNumForReceipt = document.getElementById('pay-card').value.trim();
+        var last4 = cardNumForReceipt.slice(-4);
+        methodLabel = _cardNetworkLabels[_selectedCardNetwork] + ' •• ' + last4;
+      }
 
       if (!state.user) return;
 
@@ -5195,6 +5442,7 @@
       payBtnEl.disabled = true;
       var originalBtnText = payBtnEl.textContent;
       payBtnEl.textContent = 'Confirming payment…';
+      toggleBtnSpinner(payBtnEl, true);
 
       function attemptSave(retriesLeft) {
         // সার্ভারকে শুধু plan-এর নাম পাঠানো হয় — subscriptionActive বা
@@ -5239,6 +5487,7 @@
           };
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
+          toggleBtnSpinner(payBtnEl, false);
           document.getElementById('checkoutForm').style.display = 'none';
           document.getElementById('checkoutSuccess').style.display = 'block';
           var planLabelMap = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
@@ -5263,6 +5512,7 @@
           console.warn('Could not save subscription to server:', err);
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
+          toggleBtnSpinner(payBtnEl, false);
           var errBox = document.getElementById('checkoutError');
           if (errBox) {
             errBox.textContent = 'Payment could not be confirmed with our server. Please don\'t retry the payment — instead refresh and try again in a minute, or contact support so we can activate your plan manually.';
