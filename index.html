@@ -2356,6 +2356,679 @@
   </style>
 </head>
 <body>
+  <!-- ============================================================ -->
+  <!-- ENTRY SPLASH SCREEN — shows on first load / PWA launch          -->
+  <!-- (fully self-contained: scoped CSS + its own IIFE script;        -->
+  <!--  clicking "Launch Workspace" fades this out to reveal the app)  -->
+  <!-- ============================================================ -->
+  <style>
+        /* ====== রিসেট ও বেস (শুধু entrySplash এর ভেতরে স্কোপ করা) ====== */
+        #entrySplash, #entrySplash * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #entrySplash {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            font-family: 'Inter', sans-serif;
+            background: #05080f;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #entrySplash.ent-show {
+            display: flex;
+        }
+
+        /* ====== ক্যানভাস (ব্যাকগ্রাউন্ড ডেটা ফ্লো) ====== */
+        #entDataCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* ====== অ্যাম্বিয়েন্ট লাইট অরব ====== */
+        .ent-ambient {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .ent-ambient-1 {
+            width: 600px;
+            height: 600px;
+            background: #1d4ed8;
+            top: -20%;
+            right: -20%;
+            animation: floatAmb 16s infinite alternate ease-in-out;
+        }
+        .ent-ambient-2 {
+            width: 500px;
+            height: 500px;
+            background: #7c3aed;
+            bottom: -20%;
+            left: -20%;
+            animation: floatAmb 20s infinite alternate-reverse ease-in-out;
+        }
+        @keyframes floatAmb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -50px) scale(1.3); }
+        }
+
+        /* ====== মেইন কার্ড (আল্ট্রা-গ্লাস) ====== */
+        .ent-card {
+            position: relative;
+            z-index: 20;
+            width: 92%;
+            max-width: 420px;
+            padding: 36px 28px 30px;
+            background: rgba(6, 10, 23, 0.55);
+            backdrop-filter: blur(60px) saturate(180%);
+            -webkit-backdrop-filter: blur(60px) saturate(180%);
+            border-radius: 56px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 
+                0 50px 120px rgba(0, 0, 0, 0.9),
+                inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* কার্ডের টপ রিম (গোল্ড লাইন) */
+        .ent-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fbbf24, #f59e0b, #d97706, transparent);
+            border-radius: 100%;
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+
+        /* ====== স্ট্যাটাস বার ====== */
+        .ent-status-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeSlide 0.6s ease 0.2s forwards;
+        }
+        .ent-status-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.25);
+            text-transform: uppercase;
+        }
+        .ent-dot-green {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #22c55e66;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .ent-status-version {
+            font-size: 0.55rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        /* ====== লোগো (অ্যানিমেটেড ড্র) ====== */
+        .ent-logo-wrap {
+            margin-bottom: 18px;
+            opacity: 0;
+            transform: scale(0.9) translateY(15px);
+            animation: fadeSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+        }
+        .ent-logo-svg {
+            width: 80px;
+            height: 80px;
+        }
+        .ent-logo-svg .ent-bg-shield {
+            fill: rgba(255, 255, 255, 0.02);
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 1.5;
+        }
+        .ent-logo-svg .ent-shield-path {
+            fill: none;
+            stroke: url(#entGradGold);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: drawShield 2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+        }
+        .ent-logo-svg .ent-check-path {
+            fill: none;
+            stroke: url(#entGradBlue);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: drawCheck 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.6s forwards;
+        }
+        .ent-logo-svg .ent-line-path {
+            fill: none;
+            stroke: url(#entGradGold);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-dasharray: 40;
+            stroke-dashoffset: 40;
+            animation: drawCheck 0.8s cubic-bezier(0.16, 1, 0.3, 1) 2.0s forwards;
+        }
+
+        @keyframes drawShield { to { stroke-dashoffset: 0; } }
+        @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+        /* ====== টাইপোগ্রাফি ====== */
+        .ent-brand {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            background: linear-gradient(to bottom, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2px;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeSlide 0.7s ease 0.9s forwards;
+        }
+        .ent-tagline {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.06);
+            padding: 5px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.08);
+            display: inline-block;
+            margin-bottom: 18px;
+            opacity: 0;
+            animation: fadeSlide 0.7s ease 1.1s forwards;
+        }
+
+        /* ====== স্ট্যাটস কাউন্টার (প্রফেশনাল টাচ) ====== */
+        .ent-stats-grid {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 24px;
+            width: 100%;
+            opacity: 0;
+            animation: fadeSlide 0.8s ease 1.8s forwards;
+        }
+        .ent-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .ent-stat-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .ent-stat-label {
+            font-size: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 2px;
+        }
+
+        /* ====== টাইপিং এলাকা ====== */
+        .ent-typing-zone {
+            height: 28px;
+            margin-bottom: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.8s ease 2.2s forwards;
+        }
+        #entTypeDisplay {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 2px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ent-cursor-line {
+            display: inline-block;
+            width: 2px;
+            height: 0.9rem;
+            background: #fbbf24;
+            animation: blink 0.9s step-end infinite;
+            border-radius: 2px;
+        }
+
+        /* ====== লঞ্চ বাটন (নিউরাল গ্লো) ====== */
+        .ent-launch-btn {
+            width: 100%;
+            max-width: 220px;
+            padding: 16px 10px;
+            border: none;
+            border-radius: 60px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(29, 78, 216, 0.2);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 3.0s forwards;
+        }
+        .ent-launch-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 60px;
+            padding: 2px;
+            background: conic-gradient(from 0deg, transparent, rgba(251, 191, 36, 0.4), transparent 60%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            animation: spinBorder 4s linear infinite;
+        }
+        @keyframes spinBorder {
+            to { transform: rotate(360deg); }
+        }
+
+        .ent-launch-btn .ent-btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+        .ent-launch-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #fff;
+            stroke-width: 2.5;
+            fill: none;
+            transition: transform 0.3s ease;
+        }
+        .ent-launch-btn:active {
+            transform: scale(0.94) !important;
+            box-shadow: 0 4px 20px rgba(29, 78, 216, 0.1);
+        }
+        .ent-launch-btn:active svg {
+            transform: translateX(5px);
+        }
+
+        /* ====== ফুটার ====== */
+        .ent-footer {
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.5rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.08em;
+            opacity: 0;
+            animation: fadeIn 1.2s ease 3.6s forwards;
+        }
+        .ent-footer .ent-lock {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            position: relative;
+        }
+        .ent-footer .ent-lock::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 1px;
+            width: 4px;
+            height: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-bottom: none;
+        }
+
+        /* ====== অ্যানিমেশন কীফ্রেম ====== */
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(18px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ====== মোবাইল অ্যাডজাস্ট ====== */
+        @media (max-width: 480px) {
+            .ent-card { padding: 28px 18px 24px; border-radius: 40px; }
+            .ent-brand { font-size: 2.5rem; }
+            .ent-logo-svg { width: 68px; height: 68px; }
+            .ent-stats-grid { gap: 20px; }
+            .ent-stat-number { font-size: 1.1rem; }
+            #entTypeDisplay { font-size: 0.75rem; padding: 2px 14px; }
+            .ent-launch-btn { max-width: 180px; padding: 14px 10px; font-size: 0.85rem; }
+        }
+
+        #entrySplash::-webkit-scrollbar { display: none; }
+
+  </style>
+  <div id="entrySplash">
+
+    <!-- ====== ক্যানভাস ====== -->
+    <canvas id="entDataCanvas"></canvas>
+
+    <!-- ====== অ্যাম্বিয়েন্ট লাইট ====== -->
+    <div class="ent-ambient ent-ambient-1"></div>
+    <div class="ent-ambient ent-ambient-2"></div>
+
+    <!-- ====== মেইন কার্ড ====== -->
+    <div class="ent-card">
+
+        <!-- স্ট্যাটাস -->
+        <div class="ent-status-bar">
+            <span class="ent-status-dot"><span class="ent-dot-green"></span> System Ready</span>
+            <span class="ent-status-version">v4.2 · LTS</span>
+        </div>
+
+        <!-- লোগো (অ্যানিমেটেড এসভিজি) -->
+        <div class="ent-logo-wrap">
+            <svg class="ent-logo-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="entGradGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fbbf24" />
+                        <stop offset="100%" stop-color="#d97706" />
+                    </linearGradient>
+                    <linearGradient id="entGradBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" />
+                        <stop offset="100%" stop-color="#8b5cf6" />
+                    </linearGradient>
+                </defs>
+                <!-- শিল্ড বেস -->
+                <rect x="10" y="10" width="60" height="60" rx="18" class="ent-bg-shield" />
+                <!-- শিল্ড বর্ডার (ড্র) -->
+                <path class="ent-shield-path" d="M10 28 L10 40 C10 52 18 60 40 66 C62 60 70 52 70 40 L70 28 L40 16 L10 28Z" />
+                <!-- চেকমার্ক (ড্র) -->
+                <path class="ent-check-path" d="M28 42 L38 52 L56 32" />
+                <!-- ডেটা লাইন (ড্র) -->
+                <path class="ent-line-path" d="M22 58 L30 50 L40 56 L56 44" />
+            </svg>
+        </div>
+
+        <!-- ব্র্যান্ড -->
+        <h1 class="ent-brand">EANOVA</h1>
+        <span class="ent-tagline">✦ GST Reconciliation Suite</span>
+
+        <!-- স্ট্যাটস কাউন্টার -->
+        <div class="ent-stats-grid">
+            <div class="ent-stat-item">
+                <span class="ent-stat-number" id="entCountFirms">0</span>
+                <span class="ent-stat-label">CA Firms</span>
+            </div>
+            <div class="ent-stat-item">
+                <span class="ent-stat-number" id="entCountAccuracy">0</span>
+                <span class="ent-stat-label">Accuracy Rate</span>
+            </div>
+        </div>
+
+        <!-- টাইপিং -->
+        <div class="ent-typing-zone">
+            <div id="entTypeDisplay">
+                <span id="entTypeContent"></span><span class="ent-cursor-line"></span>
+            </div>
+        </div>
+
+        <!-- বাটন -->
+        <button class="ent-launch-btn" id="entLaunchBtn">
+            <span class="ent-btn-content">
+                Launch Workspace
+                <svg viewBox="0 0 24 24">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                </svg>
+            </span>
+        </button>
+
+        <!-- ফুটার -->
+        <div class="ent-footer">
+            <span class="ent-lock"></span> End-to-End Encrypted
+            <span style="opacity:0.2;">|</span> ISO 27001
+        </div>
+    </div>
+
+
+  </div>
+  <script>
+        (function() {
+            'use strict';
+
+            // শুধুমাত্র ইনস্টল করা অ্যাপ (হোমস্ক্রিন/স্ট্যান্ডঅ্যালোন মোড) থেকে
+            // খোলা হলেই এই এন্ট্রি স্প্ল্যাশ দেখাবে — সাধারণ ব্রাউজারে সাইট
+            // ভিজিট করলে এটা দেখাবে না এবং নিচের কোনো অ্যানিমেশনও চলবে না।
+            var isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+            var entrySplashEl = document.getElementById('entrySplash');
+            if (!isStandaloneApp) {
+                if (entrySplashEl && entrySplashEl.parentNode) {
+                    entrySplashEl.parentNode.removeChild(entrySplashEl);
+                }
+                return;
+            }
+            entrySplashEl.classList.add('ent-show');
+
+            // ============================================================
+            // 1. ক্যানভাস - ডেটা নোড ও কানেকশন (আল্ট্রা-স্মুথ)
+            // ============================================================
+            const canvas = document.getElementById('entDataCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, nodes = [];
+            const NODE_COUNT = 40;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Node {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.r = Math.random() * 1.8 + 0.6;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.alpha = Math.random() * 0.4 + 0.1;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < NODE_COUNT; i++) nodes.push(new Node());
+
+            function drawNetwork() {
+                ctx.clearRect(0, 0, W, H);
+                nodes.forEach(n => { n.update(); n.draw(); });
+
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dx = nodes[i].x - nodes[j].x;
+                        const dy = nodes[i].y - nodes[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            const alpha = (1 - dist / 120) * 0.12;
+                            ctx.strokeStyle = `rgba(180, 200, 255, ${alpha})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(drawNetwork);
+            }
+            drawNetwork();
+
+            // ============================================================
+            // 2. কাউন্টার অ্যানিমেশন (১,২০০+ এবং ৯৯.৮%)
+            // ============================================================
+            const entCountFirms = document.getElementById('entCountFirms');
+            const entCountAccuracy = document.getElementById('entCountAccuracy');
+            let firms = 0,
+                acc = 0;
+            const targetFirms = 1250,
+                targetAcc = 998;
+
+            function animateCounters() {
+                let stepFirms = Math.ceil(targetFirms / 60);
+                let stepAcc = Math.ceil(targetAcc / 60);
+                if (firms < targetFirms) {
+                    firms = Math.min(firms + stepFirms, targetFirms);
+                    entCountFirms.textContent = firms.toLocaleString() + '+';
+                }
+                if (acc < targetAcc) {
+                    acc = Math.min(acc + stepAcc, targetAcc);
+                    entCountAccuracy.textContent = (acc / 10).toFixed(1) + '%';
+                }
+                if (firms < targetFirms || acc < targetAcc) {
+                    requestAnimationFrame(animateCounters);
+                }
+            }
+            setTimeout(animateCounters, 1600);
+
+            // ============================================================
+            // 3. টাইপিং ইফেক্ট
+            // ============================================================
+            const phrases = [
+                "AI-powered invoice matching",
+                "Real-time GSTR-2B sync",
+                "Audit-ready reports",
+                "India's fastest reconciliation"
+            ];
+            let pIdx = 0,
+                cIdx = 0,
+                del = false;
+            const typeEl = document.getElementById('entTypeContent');
+
+            function typeLoop() {
+                const current = phrases[pIdx];
+                if (!del) {
+                    typeEl.textContent = current.substring(0, cIdx + 1);
+                    cIdx++;
+                    if (cIdx === current.length) { del = true;
+                        setTimeout(typeLoop, 2500); return; }
+                    setTimeout(typeLoop, 55);
+                } else {
+                    typeEl.textContent = current.substring(0, cIdx - 1);
+                    cIdx--;
+                    if (cIdx === 0) { del = false;
+                        pIdx = (pIdx + 1) % phrases.length;
+                        setTimeout(typeLoop, 350); return; }
+                    setTimeout(typeLoop, 25);
+                }
+            }
+            setTimeout(typeLoop, 2000);
+
+            // ============================================================
+            // 4. বাটন ইন্টারঅ্যাকশন — মূল ওয়েবসাইটে নিয়ে যায়
+            // ============================================================
+            document.getElementById('entLaunchBtn').addEventListener('click', function(e) {
+                this.style.transform = 'scale(0.93)';
+                setTimeout(() => { this.style.transform = ''; }, 200);
+                var splash = document.getElementById('entrySplash');
+                if (splash) {
+                    splash.style.transition = 'opacity 0.5s ease';
+                    splash.style.opacity = '0';
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                    }, 520);
+                }
+            });
+
+            // ============================================================
+            // 5. উইন্ডো রিসাইজে নোড রিসেট
+            // ============================================================
+            window.addEventListener('resize', () => {
+                resize();
+                nodes.forEach(n => n.reset());
+            });
+
+        })();
+
+  </script>
+
 
   <!-- ============================================================ -->
   <!-- TOP NAV -->
