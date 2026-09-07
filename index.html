@@ -2106,7 +2106,7 @@
     }
     .summarygrid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 16px;
       margin-top: 34px;
     }
@@ -2126,6 +2126,12 @@
     .sumcard.missing {
       border-top-color: #7A2C2E;
     }
+    .sumcard.missing-books {
+      border-top-color: #5B3A8E;
+    }
+    .sumcard.needs-review {
+      border-top-color: #1B6E8C;
+    }
     .sumcard .n {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 30px;
@@ -2136,6 +2142,26 @@
       font-size: 12.5px;
       color: rgba(36, 31, 26, 0.6);
       margin-top: 4px;
+    }
+    .auditline {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: rgba(20, 33, 61, 0.04);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: rgba(36, 31, 26, 0.75);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+    }
+    .auditline strong {
+      color: var(--navy);
+    }
+    @media (max-width: 900px) {
+      .summarygrid {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
     @media (max-width: 760px) {
       .summarygrid {
@@ -2177,6 +2203,18 @@
     .typebadge.missing {
       background: rgba(122, 44, 46, 0.14);
       color: #7A2C2E;
+    }
+    .typebadge.missing_in_books {
+      background: rgba(91, 58, 142, 0.14);
+      color: #5B3A8E;
+    }
+    .typebadge.duplicate_2b {
+      background: rgba(91, 58, 142, 0.22);
+      color: #5B3A8E;
+    }
+    .typebadge.needs_review {
+      background: rgba(27, 110, 140, 0.14);
+      color: #1B6E8C;
     }
     .resolved-row td {
       opacity: 0.42;
@@ -3613,12 +3651,15 @@
           <div class="sumcard partial"><div class="n" id="sumPartial">0</div><div class="l">Partial match</div></div>
           <div class="sumcard mismatch"><div class="n" id="sumMismatch">0</div><div class="l">Mismatch</div></div>
           <div class="sumcard missing"><div class="n" id="sumMissing">0</div><div class="l">Missing in 2B</div></div>
+          <div class="sumcard missing-books"><div class="n" id="sumMissingBooks">0</div><div class="l">Missing in Books</div></div>
+          <div class="sumcard needs-review"><div class="n" id="sumNeedsReview">0</div><div class="l">Needs Review</div></div>
         </div>
+        <div class="auditline" id="auditLine"></div>
         <div class="resultbar">
           <h3 id="issuesTitle">Issues to review</h3>
           <div class="btnrow">
             <button class="btn btn-outline btn-sm" id="rerunBtn">Re-run Reconciliation</button>
-            <button class="btn btn-outline btn-sm" id="downloadCsvBtn">Download Excel Report</button>
+            <button class="btn btn-outline btn-sm" id="downloadCsvBtn">Download Full Match Log (CSV)</button>
             <button class="btn btn-outline btn-sm" id="downloadPdfBrandedBtn">Download PDF (With Logo)</button>
             <button class="btn btn-outline btn-sm" id="downloadPdfPlainBtn">Download PDF (No Logo)</button>
           </div>
@@ -4029,7 +4070,14 @@
               method: '—',
               name: (state.user && state.user.name) || '',
               email: (state.user && state.user.email) || '',
-              date: Date.now(),
+              // Genuinely unknown here — this account paid before this
+              // device ever cached a receipt for it (e.g. paid a few days
+              // ago, or paid on another device), so there's no real
+              // purchase timestamp to show. Deliberately left blank
+              // instead of defaulting to "now", which would misleadingly
+              // look like a fresh purchase — see downloadReceiptBtn below,
+              // which prints "—" for a blank date instead of today's date.
+              date: null,
               expiry: state.subscriptionExpiry
             };
           }
@@ -5020,7 +5068,8 @@
       var gstinKey = findColumn(sample, [/gstin/i]);
       var amtKey = findColumn(sample, [/taxable.?value/i, /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i]);
       if (!invKey || !gstinKey || !amtKey) return null;
-      return rows.map(function(r) {
+      var skipped = 0;
+      var parsed = rows.map(function(r) {
         var rawAmt = String(r[amtKey]).trim();
         // Handle accounting-style negative amounts written as (1,234.00)
         var isParenNegative = /^\(.*\)$/.test(rawAmt);
@@ -5032,110 +5081,172 @@
           gstin: String(r[gstinKey]).trim().toUpperCase(),
           amount: amt
         };
-      }).filter(function(r) { return r.invoiceKey && r.gstin; });
+      });
+      // Rows with a blank Invoice No or GSTIN can't be matched on anything,
+      // but must still be counted rather than silently vanishing from the
+      // row totals (they show up in the audit line as "unreadable rows").
+      var valid = parsed.filter(function(r) { return r.invoiceKey && r.gstin; });
+      skipped = parsed.length - valid.length;
+      valid._skippedCount = skipped;
+      return valid;
     }
 
+    // Bumped whenever the matching logic itself changes, independent of the
+    // report's generation timestamp — so an old report can always be traced
+    // back to exactly which version of the logic produced it (requirement:
+    // version/date-stamp the matching logic, not just the report time).
+    var MATCHING_LOGIC_VERSION = 'v2.0 (2026-09-07)';
+
     function reconcileRows(prRows, gstrRows) {
-      var gstrMap = new Map();
-      // Also index GSTR rows by GSTIN alone, to support the fuzzy invoice-number
-      // fallback pass below without weakening the exact-match pass above.
-      var gstrByGstin = new Map();
-      var usedGstrKeys = new Set();
+      var gstrByKey = new Map();   // "invoiceKey|gstin" -> [rows] (tracks exact-key duplicates)
+      var gstrByGstin = new Map(); // gstin -> [rows] (fuzzy-match candidate pool)
 
       gstrRows.forEach(function(r) {
+        r._consumed = false;
         var key = r.invoiceKey + '|' + r.gstin;
-        // Keep the list of rows sharing a key so duplicate invoice numbers
-        // within GSTR-2B don't silently overwrite each other.
-        if (!gstrMap.has(key)) gstrMap.set(key, []);
-        gstrMap.get(key).push(r);
+        if (!gstrByKey.has(key)) gstrByKey.set(key, []);
+        gstrByKey.get(key).push(r);
         if (!gstrByGstin.has(r.gstin)) gstrByGstin.set(r.gstin, []);
         gstrByGstin.get(r.gstin).push(r);
       });
 
-      var matched = 0,
-        partialCount = 0,
-        mismatchCount = 0,
-        missingCount = 0,
-        fuzzyMatchedCount = 0;
+      // Any invoice number + GSTIN combination appearing more than once in
+      // 2B is a duplicate/split candidate — recorded up front so it can be
+      // flagged explicitly later, however it eventually gets matched.
+      var duplicateKeys = new Set();
+      gstrByKey.forEach(function(bucket, key) { if (bucket.length > 1) duplicateKeys.add(key); });
+
+      var matched = 0, partialCount = 0, mismatchCount = 0, missingCount = 0,
+          fuzzyMatchedCount = 0, missingInBooksCount = 0, duplicateCount = 0,
+          needsReviewCount = 0, splitMatchedCount = 0;
       var issues = [];
+      var allRows = []; // full row-by-row decision log — every PR row, plus every 2B row never claimed by a PR row
 
       prRows.forEach(function(pr) {
         var key = pr.invoiceKey + '|' + pr.gstin;
-        var bucket = gstrMap.get(key);
+        var bucket = (gstrByKey.get(key) || []).filter(function(x) { return !x._consumed; });
+        var tolerance = Math.max(500, pr.amount * 0.02);
         var gstrRow = null;
+        var isSplit = false;
+        var splitSum = 0;
+        var splitPieces = 0;
 
-        if (bucket && bucket.length) {
-          // Exact GSTIN + invoice number match. If more than one GSTR row
-          // shares this exact key, pick whichever hasn't been consumed yet
-          // and is closest in amount, so duplicates don't get matched to
-          // the same GSTR row twice.
-          var best = null, bestDiff = Infinity;
-          for (var b = 0; b < bucket.length; b++) {
-            var cand = bucket[b];
-            var candKey = cand.invoiceKey + '|' + cand.gstin + '|' + b;
-            if (usedGstrKeys.has(candKey)) continue;
+        if (bucket.length === 1) {
+          gstrRow = bucket[0];
+        } else if (bucket.length > 1) {
+          // Same invoice no + GSTIN appears more than once, unconsumed, in
+          // 2B. Two real-world explanations: (a) one of them is simply the
+          // right one and the rest are unrelated duplicates the books never
+          // claim, or (b) the books recorded one invoice that GSTR-2B split
+          // into several line entries whose amounts should be summed before
+          // comparing. Compute both possibilities and take whichever is
+          // actually closer to the books amount — always preferring an
+          // exact/near-exact split-sum over a merely-within-tolerance single
+          // row, rather than defaulting to "single" just because it happens
+          // to clear the tolerance bar first.
+          var singleBest = null, singleDiff = Infinity;
+          bucket.forEach(function(cand) {
             var d = Math.abs(pr.amount - cand.amount);
-            if (d < bestDiff) { bestDiff = d; best = cand; best._usedKey = candKey; }
-          }
-          if (best) {
-            gstrRow = best;
-            usedGstrKeys.add(best._usedKey);
+            if (d < singleDiff) { singleDiff = d; singleBest = cand; }
+          });
+          splitSum = bucket.reduce(function(s, x) { return s + x.amount; }, 0);
+          var splitDiff = Math.abs(pr.amount - splitSum);
+          if (splitDiff <= tolerance && splitDiff < singleDiff) {
+            isSplit = true;
+            splitPieces = bucket.length;
+            bucket.forEach(function(x) { x._consumed = true; });
+          } else {
+            gstrRow = singleBest;
           }
         }
 
+        if (gstrRow) gstrRow._consumed = true;
+
+        if (isSplit) {
+          matched++;
+          splitMatchedCount++;
+          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: splitSum, diff: Math.abs(pr.amount - splitSum), type: 'matched', note: 'Split across ' + splitPieces + ' rows in 2B, summed' });
+          return;
+        }
+
         if (!gstrRow) {
-          // Second pass: same GSTIN, no exact invoice-number match yet.
-          // Look for the closest invoice number (small edit distance) with
-          // an amount close enough to plausibly be the same invoice. This
-          // only fires when the exact pass found nothing, so it never
-          // overrides a genuine exact match.
-          var candidates = gstrByGstin.get(pr.gstin);
-          if (candidates && candidates.length) {
-            var fuzzyBest = null, fuzzyScore = Infinity;
-            for (var c = 0; c < candidates.length; c++) {
-              var cRow = candidates[c];
-              var cKey = cRow.invoiceKey + '|' + cRow.gstin + '|gstin-idx-' + c;
-              if (usedGstrKeys.has(cKey)) continue;
-              var dist = editDistance(pr.invoiceKey, cRow.invoiceKey);
-              // Only consider close typos, not unrelated invoice numbers —
-              // at most 2 characters different, and short enough relative
-              // to the invoice number length that it's plausibly a typo.
-              if (dist > 2 || dist > Math.ceil(pr.invoiceKey.length * 0.3)) continue;
-              var amtDiff = Math.abs(pr.amount - cRow.amount);
-              var amtTolerance = Math.max(500, pr.amount * 0.02);
-              if (amtDiff > amtTolerance) continue;
-              // Score favors smaller edit distance, then smaller amount diff.
-              var score = dist * 1000000 + amtDiff;
-              if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; fuzzyBest._usedKey = cKey; }
-            }
-            if (fuzzyBest) {
-              gstrRow = fuzzyBest;
-              usedGstrKeys.add(fuzzyBest._usedKey);
-              fuzzyMatchedCount++;
-            }
+          // Fuzzy fallback: same GSTIN, no exact invoice-number match — look
+          // for a close typo (small edit distance) with a plausible amount.
+          // Only runs when the exact pass above found nothing, so it can
+          // never override a genuine exact match. Anything resolved this
+          // way is inherently uncertain, so it's always surfaced as "Needs
+          // Review" for a human to confirm rather than silently accepted.
+          var candidates = (gstrByGstin.get(pr.gstin) || []).filter(function(x) { return !x._consumed; });
+          var fuzzyBest = null, fuzzyScore = Infinity;
+          candidates.forEach(function(cRow) {
+            var dist = editDistance(pr.invoiceKey, cRow.invoiceKey);
+            if (dist > 2 || dist > Math.ceil(pr.invoiceKey.length * 0.3)) return;
+            var amtDiff = Math.abs(pr.amount - cRow.amount);
+            var amtTol = Math.max(500, pr.amount * 0.02);
+            if (amtDiff > amtTol) return;
+            var score = dist * 1000000 + amtDiff;
+            if (score < fuzzyScore) { fuzzyScore = score; fuzzyBest = cRow; }
+          });
+          if (fuzzyBest) {
+            fuzzyBest._consumed = true;
+            gstrRow = fuzzyBest;
+            fuzzyMatchedCount++;
+            needsReviewCount++;
+            var fDiff = Math.abs(pr.amount - gstrRow.amount);
+            issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review', note: 'Invoice No differs slightly from 2B (possible typo) — confirm before relying on this match.', resolved: false });
+            allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review' });
+            return;
           }
         }
 
         if (!gstrRow) {
           missingCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false });
+          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing' });
           return;
         }
 
         var diff = Math.abs(pr.amount - gstrRow.amount);
-        var tolerance = Math.max(500, pr.amount * 0.02);
         if (diff < 1) {
           matched++;
+          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'matched' });
         } else if (diff <= tolerance) {
           partialCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial', resolved: false });
+          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial' });
         } else {
           mismatchCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch', resolved: false });
+          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch' });
         }
       });
 
-      return { total: prRows.length, matched: matched, partialCount: partialCount, mismatchCount: mismatchCount, missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount, issues: issues };
+      // Reverse pass — two-way reconciliation. Any 2B row no PR row ever
+      // claimed genuinely exists in 2B with nothing corresponding in the
+      // books; it must not just vanish from the report. Rows that were
+      // part of an already-flagged exact-key duplicate group are labelled
+      // as a duplicate rather than a generic "missing in books" line.
+      gstrRows.forEach(function(r) {
+        if (r._consumed) return;
+        var key = r.invoiceKey + '|' + r.gstin;
+        var isDup = duplicateKeys.has(key);
+        if (isDup) duplicateCount++;
+        missingInBooksCount++;
+        issues.push({ id: state._nextMismatchId++, invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books', resolved: false });
+        allRows.push({ invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books' });
+      });
+
+      return {
+        total: prRows.length,
+        matched: matched, partialCount: partialCount, mismatchCount: mismatchCount,
+        missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount,
+        missingInBooksCount: missingInBooksCount, duplicateCount: duplicateCount,
+        needsReviewCount: needsReviewCount, splitMatchedCount: splitMatchedCount,
+        issues: issues, allRows: allRows,
+        totalPrRows: prRows.length, totalGstrRows: gstrRows.length,
+        matchingLogicVersion: MATCHING_LOGIC_VERSION,
+        generatedAt: Date.now()
+      };
     }
 
     async function runRealReconciliation(prFile, gstrFile) {
@@ -5149,7 +5260,12 @@
       if (prRows.length === 0 || gstrRows.length === 0) {
         throw new Error('One of the files has no readable rows once the header is removed.');
       }
-      return reconcileRows(prRows, gstrRows);
+      var result = reconcileRows(prRows, gstrRows);
+      result.prSkippedCount = prRows._skippedCount || 0;
+      result.gstrSkippedCount = gstrRows._skippedCount || 0;
+      result.rawPrRowCount = prRowsRaw.length;
+      result.rawGstrRowCount = gstrRowsRaw.length;
+      return result;
     }
 
     // A plan is only valid for one month from purchase. subscriptionActive
@@ -5263,11 +5379,37 @@
       document.getElementById('sumPartial').textContent = r.partialCount;
       document.getElementById('sumMismatch').textContent = r.mismatchCount;
       document.getElementById('sumMissing').textContent = r.missingCount;
+      document.getElementById('sumMissingBooks').textContent = r.missingInBooksCount || 0;
+      document.getElementById('sumNeedsReview').textContent = r.needsReviewCount || 0;
+
+      // Audit line — every readable row from both files is guaranteed to
+      // land in exactly one outcome bucket by construction: every Purchase
+      // Register row becomes matched/partial/mismatch/missing/needs-review,
+      // and every GSTR-2B row either gets claimed by one of those or shows
+      // up as "Missing in Books"/"Duplicate in 2B" — nothing is silently
+      // dropped. Rows that couldn't be read at all (blank Invoice No or
+      // GSTIN in the source file) are called out separately below instead
+      // of being folded into that guarantee.
+      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0);
+      var totalSkipped = (r.prSkippedCount || 0) + (r.gstrSkippedCount || 0);
+      var skippedNote = totalSkipped
+        ? (' &nbsp;•&nbsp; <strong style="color:var(--red);">' + totalSkipped + ' row(s) skipped</strong> — blank Invoice No/GSTIN in the source file')
+        : '';
+      document.getElementById('auditLine').innerHTML =
+        '<span>Purchase Register rows: <strong>' + (r.totalPrRows || r.total || 0) + '</strong> → <strong>' + prOutcomes + '</strong> accounted for</span>' +
+        '<span>GSTR-2B rows: <strong>' + (r.totalGstrRows || 0) + '</strong></span>' +
+        (r.missingInBooksCount ? '<span><strong style="color:#5B3A8E;">' + r.missingInBooksCount + '</strong> in 2B but missing in Books</span>' : '') +
+        (r.duplicateCount ? '<span><strong style="color:#5B3A8E;">' + r.duplicateCount + '</strong> duplicate invoice(s) in 2B</span>' : '') +
+        (r.splitMatchedCount ? '<span><strong>' + r.splitMatchedCount + '</strong> split-invoice match(es) (summed across multiple 2B rows)</span>' : '') +
+        skippedNote +
+        '<span style="margin-left:auto;color:rgba(36,31,26,0.45);">Matching logic ' + (r.matchingLogicVersion || '—') + '</span>';
+
       var unresolved = r.issues.filter(function(i) { return !i.resolved; }).length;
       document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved === 1 ? '' : 's') + ' to review';
+      var typeLabels = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial' };
       var tbody = document.getElementById('mismatchTableBody');
       tbody.innerHTML = r.issues.map(function(i) {
-        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + (i.type === 'missing' ? 'Missing in 2B' : i.type) + '</span></td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
+        return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + (typeLabels[i.type] || i.type) + '</span></td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
       }).join('');
     }
 
@@ -5277,7 +5419,7 @@
         var c = getCurrentClient();
         var issue = c.results.issues.find(function(i) { return i.id === parseInt(viewBtn.dataset.mid, 10); });
         if (!issue) return;
-        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>';
+        document.getElementById('detailModalBody').innerHTML = '<div style="margin-bottom:10px;"><strong>Type:</strong> ' + (typeLabelsForExport[issue.type] || issue.type) + '</div><div style="margin-bottom:10px;"><strong>Invoice No:</strong> ' + issue.invoiceNo + '</div><div style="margin-bottom:10px;"><strong>GSTIN:</strong> ' + issue.gstin + '</div><div style="margin-bottom:10px;"><strong>Purchase Register Amount:</strong> ₹' + issue.purchaseAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>GSTR-2B Amount:</strong> ₹' + issue.gstrAmt.toLocaleString('en-IN') + '</div><div style="margin-bottom:10px;"><strong>Difference:</strong> ₹' + issue.diff.toLocaleString('en-IN') + '</div>' + (issue.note ? '<div style="margin-bottom:10px;color:rgba(36,31,26,0.65);"><strong>Note:</strong> ' + issue.note + '</div>' : '');
         document.getElementById('markResolvedBtn').dataset.mid = issue.id;
         document.getElementById('markResolvedBtn').style.display = issue.resolved ? 'none' : 'block';
         openModal('detailModal');
@@ -5314,18 +5456,41 @@
       }
     });
 
+    function csvEscape(v) {
+      var s = String(v === undefined || v === null ? '' : v);
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    var typeLabelsForExport = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial', matched: 'Matched' };
+
+    // Full row-by-row match log — every row from both files, including
+    // rows that matched cleanly, not just the ones flagged as issues. The
+    // PDF report (below) stays focused on what needs attention; this is
+    // the complete underlying decision log for a CA who wants to spot-
+    // check the engine's logic on any row, matched or not.
     document.getElementById('downloadCsvBtn').addEventListener('click', function() {
       var c = getCurrentClient();
       if (!c || !c.results) return;
-      var csv = 'Invoice No,GSTIN,Purchase Amount,GSTR-2B Amount,Difference,Type,Status\n';
-      c.results.issues.forEach(function(i) {
-        csv += [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, i.type, i.resolved ? 'Resolved' : 'Open'].join(',') + '\n';
+      var r = c.results;
+      var lines = [];
+      lines.push(['Invoice No', 'GSTIN', 'Purchase Register Amount', 'GSTR-2B Amount', 'Difference', 'Type', 'Note'].map(csvEscape).join(','));
+      (r.allRows || r.issues || []).forEach(function(i) {
+        lines.push([i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, typeLabelsForExport[i.type] || i.type, i.note || ''].map(csvEscape).join(','));
       });
+      lines.push('');
+      lines.push(['Matching logic version', r.matchingLogicVersion || '—'].map(csvEscape).join(','));
+      lines.push(['Report generated', r.generatedAt ? new Date(r.generatedAt).toLocaleString('en-IN') : '—'].map(csvEscape).join(','));
+      lines.push(['Purchase Register rows read', r.totalPrRows || r.total || 0].map(csvEscape).join(','));
+      lines.push(['GSTR-2B rows read', r.totalGstrRows || 0].map(csvEscape).join(','));
+      if (r.prSkippedCount) lines.push(['Purchase Register rows skipped (blank Invoice No/GSTIN)', r.prSkippedCount].map(csvEscape).join(','));
+      if (r.gstrSkippedCount) lines.push(['GSTR-2B rows skipped (blank Invoice No/GSTIN)', r.gstrSkippedCount].map(csvEscape).join(','));
+      var csv = lines.join('\n');
       var blob = new Blob([csv], { type: 'text/csv' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = c.name.replace(/\s+/g, '_') + '_reconciliation_report.csv';
+      a.download = c.name.replace(/\s+/g, '_') + '_full_match_log.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -5333,7 +5498,21 @@
     });
 
     function buildReportTableHtml(c, r) {
-      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + i.type + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
+      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + (typeLabelsForExport[i.type] || i.type) + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
+    }
+
+    function buildAuditSummaryHtml(r) {
+      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0);
+      var totalSkipped = (r.prSkippedCount || 0) + (r.gstrSkippedCount || 0);
+      return '<p style="font-size:11px;color:#555;">' +
+        'Purchase Register rows: <strong>' + (r.totalPrRows || r.total || 0) + '</strong> (' + prOutcomes + ' accounted for) &nbsp; ' +
+        'GSTR-2B rows: <strong>' + (r.totalGstrRows || 0) + '</strong>' +
+        (r.missingInBooksCount ? (' &nbsp; Missing in Books: <strong>' + r.missingInBooksCount + '</strong>') : '') +
+        (r.duplicateCount ? (' &nbsp; Duplicates in 2B: <strong>' + r.duplicateCount + '</strong>') : '') +
+        (r.needsReviewCount ? (' &nbsp; Needs Review: <strong>' + r.needsReviewCount + '</strong>') : '') +
+        (totalSkipped ? (' &nbsp; Skipped (unreadable rows): <strong>' + totalSkipped + '</strong>') : '') +
+        '<br>Matching logic version: <strong>' + (r.matchingLogicVersion || '—') + '</strong> &nbsp; Generated: <strong>' + (r.generatedAt ? new Date(r.generatedAt).toLocaleString('en-IN') : '—') + '</strong>' +
+        '</p>';
     }
 
     document.getElementById('downloadPdfPlainBtn').addEventListener('click', function() {
@@ -5345,6 +5524,7 @@
         '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
         '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        buildAuditSummaryHtml(r) +
         '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
       window.print();
     });
@@ -5369,6 +5549,7 @@
         '<h2 style="font-family:Georgia,serif;margin-top:0;">Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
         '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        buildAuditSummaryHtml(r) +
         '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="font-size:10px;color:#888;">Generated by EANOVA — eanova.in — this report reflects the two files uploaded by the account holder and is not a filing with the GST department.</div>' +
@@ -5623,7 +5804,14 @@
       downloadReceiptBtnEl.addEventListener('click', function() {
         var rcpt = window._lastReceipt;
         if (!rcpt) return;
-        var dateStr = new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        // rcpt.date is null when this device never actually witnessed the
+        // purchase (e.g. bought a few days ago, before this device cached
+        // it, or bought on a different device) — show "—" rather than
+        // fabricating today's date, which would misrepresent when the
+        // purchase actually happened.
+        var dateStr = rcpt.date
+          ? (new Date(rcpt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) + ' ' + new Date(rcpt.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }))
+          : '—';
         var expiryStr = rcpt.expiry ? new Date(rcpt.expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
         var planLabel = rcpt.plan === 'annual' ? 'Annual plan' : (rcpt.plan === 'first' ? 'First month' : 'Monthly plan');
         var logoImg = document.querySelector('.brand-logo');
