@@ -4018,16 +4018,21 @@
         // know (plan, amount, account) instead of leaving Order ID/Payment
         // Method blank and the Download Invoice button doing nothing.
         if (!window._lastReceipt || window._lastReceipt.plan !== state.activePlan) {
-          window._lastReceipt = {
-            txnId: '—',
-            plan: state.activePlan || 'monthly',
-            amount: activeInfo.currency + activeInfo.amount + activeInfo.period,
-            method: '—',
-            name: (state.user && state.user.name) || '',
-            email: (state.user && state.user.email) || '',
-            date: Date.now(),
-            expiry: state.subscriptionExpiry
-          };
+          var cachedReceipt = loadReceiptLocally(state.user && state.user.email);
+          if (cachedReceipt && cachedReceipt.plan === state.activePlan) {
+            window._lastReceipt = cachedReceipt;
+          } else {
+            window._lastReceipt = {
+              txnId: '—',
+              plan: state.activePlan || 'monthly',
+              amount: activeInfo.currency + activeInfo.amount + activeInfo.period,
+              method: '—',
+              name: (state.user && state.user.name) || '',
+              email: (state.user && state.user.email) || '',
+              date: Date.now(),
+              expiry: state.subscriptionExpiry
+            };
+          }
         }
         populatePaymentConfirm({
           title: 'Your plan is already running',
@@ -4045,6 +4050,32 @@
       }
       document.getElementById('checkoutForm').style.display = 'block';
       successBox.style.display = 'none';
+    }
+
+    /********************************************************************
+     *  RECEIPT CACHE — window._lastReceipt only lives in memory, so it's
+     *  gone after any page reload. That's fine right after a purchase
+     *  (same page, same session), but it meant that revisiting the
+     *  "already running" screen even a day later on the very same device/
+     *  browser lost the real Order ID and Payment Method and fell back to
+     *  a "—" placeholder, even though this device genuinely knows that
+     *  info. Caching the real receipt per account in localStorage fixes
+     *  that — it's still never sent anywhere, just kept locally the same
+     *  way the profile picture already is.
+     ********************************************************************/
+    function receiptStorageKey(email) {
+      return 'eanova_receipt_v1_' + (email || '').toLowerCase();
+    }
+    function saveReceiptLocally(email, receipt) {
+      if (!email) return;
+      try { localStorage.setItem(receiptStorageKey(email), JSON.stringify(receipt)); } catch (_) {}
+    }
+    function loadReceiptLocally(email) {
+      if (!email) return null;
+      try {
+        var raw = localStorage.getItem(receiptStorageKey(email));
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) { return null; }
     }
 
     /********************************************************************
@@ -5540,6 +5571,7 @@
             date: Date.now(),
             expiry: confirmedExpiry
           };
+          saveReceiptLocally(state.user && state.user.email, window._lastReceipt);
           payBtnEl.disabled = false;
           payBtnEl.textContent = originalBtnText;
           toggleBtnSpinner(payBtnEl, false);
@@ -6024,6 +6056,36 @@
       var runBtn = document.getElementById('demoRunBtn');
       var errBox = document.getElementById('demoError');
 
+      // The pre-signup demo runs entirely in the browser (no server call,
+      // no account), so a limit on it can only be enforced per-device via
+      // localStorage — someone using a different browser/device (or
+      // clearing storage) will get a fresh allowance. That's an accepted
+      // trade-off for a no-signup-required demo; the real per-day limit
+      // that actually matters (the 14-day trial) is enforced server-side
+      // once someone has an account.
+      var DEMO_USAGE_KEY = 'eanova_demo_usage_v1';
+      var DEMO_USE_LIMIT = 2;
+      function getDemoUsage() {
+        try {
+          var raw = localStorage.getItem(DEMO_USAGE_KEY);
+          return raw ? JSON.parse(raw) : { count: 0, firstDate: null };
+        } catch (_) { return { count: 0, firstDate: null }; }
+      }
+      function recordDemoUse() {
+        var usage = getDemoUsage();
+        usage.count = (usage.count || 0) + 1;
+        if (!usage.firstDate) usage.firstDate = Date.now();
+        try { localStorage.setItem(DEMO_USAGE_KEY, JSON.stringify(usage)); } catch (_) {}
+      }
+      function showDemoLimitReached() {
+        var usage = getDemoUsage();
+        var dateStr = usage.firstDate ? new Date(usage.firstDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'earlier';
+        document.getElementById('demoResult').classList.remove('show');
+        errBox.innerHTML = '⚠️ You\'ve already used this free demo test on this device (started ' + dateStr + '). To keep matching files, please create a free account — you get 14 days full access, one file match per day.' +
+          '<div style="margin-top:12px;"><button class="btn btn-sm" type="button" data-nav="signup">Start 14-day Free Trial →</button></div>';
+        errBox.style.display = 'block';
+      }
+
       function checkReady() { runBtn.disabled = !(demoState.prFile && demoState.gstrFile); }
 
       prInput.addEventListener('change', function() {
@@ -6042,7 +6104,13 @@
 
       runBtn.addEventListener('click', async function() {
         errBox.style.display = 'none';
+        errBox.innerHTML = '';
         document.getElementById('demoResult').classList.remove('show');
+        var usage = getDemoUsage();
+        if ((usage.count || 0) >= DEMO_USE_LIMIT) {
+          showDemoLimitReached();
+          return;
+        }
         document.getElementById('demoSpinner').classList.add('show');
         runBtn.disabled = true;
         try {
@@ -6050,6 +6118,15 @@
           document.getElementById('demoSummary').innerHTML = '<div class="sumcard"><div class="n">' + r.matched + '</div><div class="l">Matched</div></div><div class="sumcard partial"><div class="n">' + r.partialCount + '</div><div class="l">Partial match</div></div><div class="sumcard mismatch"><div class="n">' + r.mismatchCount + '</div><div class="l">Mismatch</div></div><div class="sumcard missing"><div class="n">' + r.missingCount + '</div><div class="l">Missing in 2B</div></div>';
           document.getElementById('demoSpinner').classList.remove('show');
           document.getElementById('demoResult').classList.add('show');
+          recordDemoUse();
+          var usageAfter = getDemoUsage();
+          if (usageAfter.count >= DEMO_USE_LIMIT) {
+            var note = document.createElement('p');
+            note.style.cssText = 'font-size:13px;color:rgba(36,31,26,0.55);margin-top:10px;';
+            note.textContent = 'That was your last free demo run on this device — create a free account for 14 days of full access.';
+            document.getElementById('demoResult').appendChild(note);
+          }
+          runBtn.disabled = false;
         } catch (err) {
           document.getElementById('demoSpinner').classList.remove('show');
           runBtn.disabled = false;
