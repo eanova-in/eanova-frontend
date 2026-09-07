@@ -2944,15 +2944,24 @@
             // শুধুমাত্র ইনস্টল করা অ্যাপ (হোমস্ক্রিন/স্ট্যান্ডঅ্যালোন মোড) থেকে
             // খোলা হলেই এই এন্ট্রি স্প্ল্যাশ দেখাবে — সাধারণ ব্রাউজারে সাইট
             // ভিজিট করলে এটা দেখাবে না এবং নিচের কোনো অ্যানিমেশনও চলবে না।
+            // এছাড়া, একই সেশনে বারবার রিফ্রেশ করলে প্রতিবার আবার দেখাবে না —
+            // sessionStorage দিয়ে মনে রাখা হয়, তাই ঐ চালু-থাকা সেশনে একবার
+            // দেখানোর পর বাকি রিফ্রেশগুলোয় সরাসরি অ্যাপে চলে যাবে। অ্যাপ পুরো
+            // বন্ধ করে আইকন থেকে আবার খুললে (নতুন সেশন) আবার একবার দেখাবে।
             var isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches ||
                 window.navigator.standalone === true;
             var entrySplashEl = document.getElementById('entrySplash');
-            if (!isStandaloneApp) {
+            var alreadyShownThisSession = false;
+            try {
+                alreadyShownThisSession = sessionStorage.getItem('eanovaEntrySplashShown') === '1';
+            } catch (_) { /* sessionStorage unavailable — fall back to always-show */ }
+            if (!isStandaloneApp || alreadyShownThisSession) {
                 if (entrySplashEl && entrySplashEl.parentNode) {
                     entrySplashEl.parentNode.removeChild(entrySplashEl);
                 }
                 return;
             }
+            try { sessionStorage.setItem('eanovaEntrySplashShown', '1'); } catch (_) {}
             entrySplashEl.classList.add('ent-show');
 
             // ============================================================
@@ -4002,16 +4011,34 @@
         var planNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
         document.getElementById('checkoutForm').style.display = 'none';
         successBox.style.display = 'block';
+        // If nothing was purchased in this browser session (e.g. logging in
+        // on a different device than the one the plan was bought on), there
+        // is no in-memory receipt yet — the server never stores card/UPI
+        // details, so a fresh, best-effort receipt is built from what we do
+        // know (plan, amount, account) instead of leaving Order ID/Payment
+        // Method blank and the Download Invoice button doing nothing.
+        if (!window._lastReceipt || window._lastReceipt.plan !== state.activePlan) {
+          window._lastReceipt = {
+            txnId: '—',
+            plan: state.activePlan || 'monthly',
+            amount: activeInfo.currency + activeInfo.amount + activeInfo.period,
+            method: '—',
+            name: (state.user && state.user.name) || '',
+            email: (state.user && state.user.email) || '',
+            date: Date.now(),
+            expiry: state.subscriptionExpiry
+          };
+        }
         populatePaymentConfirm({
           title: 'Your plan is already running',
           subHtml: (planNames[state.activePlan] || 'Monthly') + ' plan (' +
             activeInfo.currency + activeInfo.amount + activeInfo.period +
             ') is currently active — no need to purchase again.',
-          orderId: (window._lastReceipt && window._lastReceipt.txnId) || '—',
+          orderId: window._lastReceipt.txnId,
           dateStr: state.subscriptionExpiry ? ('Renews ' + new Date(state.subscriptionExpiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })) : '—',
           planLabel: (planNames[state.activePlan] || 'Monthly') + ' plan',
-          amount: activeInfo.currency + activeInfo.amount + activeInfo.period,
-          method: (window._lastReceipt && window._lastReceipt.method) || '—',
+          amount: window._lastReceipt.amount,
+          method: window._lastReceipt.method,
           skipAnimations: true
         });
         return;
@@ -4466,7 +4493,7 @@
           state.subscriptionExpiry = result.body.subscriptionExpiry || null;
           state.user.hasPaidBefore = state.subscriptionActive || state.user.hasPaidBefore || false;
           if (result.body.profilePic) {
-            try { localStorage.setItem('eanova_avatar_v1_' + email, result.body.profilePic); } catch (_) {}
+            try { localStorage.setItem('eanova_avatar_v1_' + state.user.email.toLowerCase(), result.body.profilePic); } catch (_) {}
           }
           setAuthToken(result.body.token || '');
           try { localStorage.setItem(SESSION_KEY, email); } catch (_) {}
@@ -5108,7 +5135,21 @@
       if (!c) return;
       var errBox = document.getElementById('reconError');
       errBox.style.display = 'none';
-      if (!isSubscriptionValid()) {
+
+      // A plan that was actually bought and has now passed its expiry date
+      // blocks reconciliation immediately — no need to ask the server.
+      // A brand-new account that has never paid anything is still
+      // trial-eligible, though: whether its 14-day trial window has
+      // actually run out is something only the server can say (it's the
+      // one that knows the signup date), so that case is intentionally
+      // NOT blocked here — it flows into the /api/check-reconciliation-limit
+      // call below instead, which is what was deciding trial eligibility
+      // and the once-a-day limit all along. Blocking it here too (as an
+      // earlier version did) meant a fresh trial account got "your plan
+      // has expired" on its very first reconciliation, despite never
+      // having subscribed to anything yet.
+      var everPaidBefore = !!(state.user && state.user.hasPaidBefore);
+      if (everPaidBefore && !isSubscriptionValid()) {
         errBox.textContent = '⚠️ Your plan has expired. Please renew your subscription to run file matching.';
         errBox.style.display = 'block';
         return;
@@ -5118,7 +5159,7 @@
       // this entirely (checked server-side too, so it can't be bypassed by
       // editing localStorage — the /api/check-reconciliation-limit route
       // returns { allowed: true, reason: 'paid' } immediately for paid users).
-      if (state.user) {
+      if (!isSubscriptionValid() && state.user) {
         document.getElementById('runReconBtn').disabled = true;
         var originalRunBtnText = document.getElementById('runReconBtn').textContent;
         document.getElementById('runReconBtn').textContent = 'Checking trial limit…';
@@ -5132,7 +5173,16 @@
           document.getElementById('runReconBtn').disabled = false;
           document.getElementById('runReconBtn').textContent = originalRunBtnText;
           if (!limitData.allowed) {
-            errBox.textContent = "⚠️ You've used today's free reconciliation. Your trial allows one file match per day — upgrade to a paid plan to run reconciliations without a daily limit.";
+            // Some backends distinguish "trial window has fully ended" from
+            // "today's one free reconciliation is already used" via a
+            // reason code — show the accurate message when that's present,
+            // and fall back to the daily-limit wording otherwise (still
+            // correct for the far more common case).
+            if (limitData.reason === 'trial_expired' || limitData.reason === 'trial_over') {
+              errBox.textContent = '⚠️ Your 14-day free trial has ended. Please choose a plan to keep running reconciliations.';
+            } else {
+              errBox.textContent = "⚠️ You've used today's free reconciliation. Your trial allows one file match per day — upgrade to a paid plan to run reconciliations without a daily limit.";
+            }
             errBox.style.display = 'block';
             return;
           }
@@ -5412,6 +5462,11 @@
       // charge), just a stable id so the downloadable receipt has something
       // concrete to show under "Transaction ID".
       var txnId = 'EANOVA-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+      // Captured up-front — payBtnEl.textContent gets overwritten with
+      // "Confirming payment…" a few lines below, which would otherwise
+      // wipe out the <span id="payBtnAmount"> living inside this same
+      // button and leave the receipt/confirmation amount blank.
+      var amountForReceipt = document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '';
       var methodLabel;
       if (_selectedPayMethod === 'upi') {
         methodLabel = _selectedUpiApp === 'phonepe' ? 'UPI — PhonePe' : 'UPI — Google Pay';
@@ -5478,7 +5533,7 @@
           window._lastReceipt = {
             txnId: txnId,
             plan: plan,
-            amount: document.getElementById('payBtnAmount') ? document.getElementById('payBtnAmount').textContent : '',
+            amount: amountForReceipt,
             method: methodLabel,
             name: (state.user && state.user.name) || '',
             email: (state.user && state.user.email) || '',
@@ -6131,7 +6186,7 @@
             state.clients = merged;
           }
           if (data.user.profilePic) {
-            try { localStorage.setItem('eanova_avatar_v1_' + state.user.email, data.user.profilePic); } catch (_) {}
+            try { localStorage.setItem('eanova_avatar_v1_' + state.user.email.toLowerCase(), data.user.profilePic); } catch (_) {}
           }
           persistCurrentAccount();
           updateNavState();
