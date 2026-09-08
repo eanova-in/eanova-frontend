@@ -2106,7 +2106,7 @@
     }
     .summarygrid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
       gap: 16px;
       margin-top: 34px;
     }
@@ -2160,10 +2160,10 @@
     }
     @media (max-width: 900px) {
       .summarygrid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       }
     }
-    @media (max-width: 760px) {
+    @media (max-width: 480px) {
       .summarygrid {
         grid-template-columns: 1fr 1fr;
       }
@@ -2215,6 +2215,10 @@
     .typebadge.needs_review {
       background: rgba(27, 110, 140, 0.14);
       color: #1B6E8C;
+    }
+    .typebadge.gstin_mismatch {
+      background: rgba(166, 61, 64, 0.20);
+      color: var(--red);
     }
     .resolved-row td {
       opacity: 0.42;
@@ -3653,6 +3657,7 @@
           <div class="sumcard missing"><div class="n" id="sumMissing">0</div><div class="l">Missing in 2B</div></div>
           <div class="sumcard missing-books"><div class="n" id="sumMissingBooks">0</div><div class="l">Missing in Books</div></div>
           <div class="sumcard needs-review"><div class="n" id="sumNeedsReview">0</div><div class="l">Needs Review</div></div>
+          <div class="sumcard mismatch"><div class="n" id="sumGstinMismatch">0</div><div class="l">GSTIN Mismatch</div></div>
         </div>
         <div class="auditline" id="auditLine"></div>
         <div class="resultbar">
@@ -5099,7 +5104,8 @@
 
     function reconcileRows(prRows, gstrRows) {
       var gstrByKey = new Map();   // "invoiceKey|gstin" -> [rows] (tracks exact-key duplicates)
-      var gstrByGstin = new Map(); // gstin -> [rows] (fuzzy-match candidate pool)
+      var gstrByGstin = new Map(); // gstin -> [rows] (fuzzy invoice-number candidate pool)
+      var gstrByInvoiceKey = new Map(); // invoiceKey alone -> [rows], any GSTIN (GSTIN-mismatch candidate pool)
 
       gstrRows.forEach(function(r) {
         r._consumed = false;
@@ -5108,6 +5114,8 @@
         gstrByKey.get(key).push(r);
         if (!gstrByGstin.has(r.gstin)) gstrByGstin.set(r.gstin, []);
         gstrByGstin.get(r.gstin).push(r);
+        if (!gstrByInvoiceKey.has(r.invoiceKey)) gstrByInvoiceKey.set(r.invoiceKey, []);
+        gstrByInvoiceKey.get(r.invoiceKey).push(r);
       });
 
       // Any invoice number + GSTIN combination appearing more than once in
@@ -5118,7 +5126,7 @@
 
       var matched = 0, partialCount = 0, mismatchCount = 0, missingCount = 0,
           fuzzyMatchedCount = 0, missingInBooksCount = 0, duplicateCount = 0,
-          needsReviewCount = 0, splitMatchedCount = 0;
+          needsReviewCount = 0, splitMatchedCount = 0, gstinMismatchCount = 0;
       var issues = [];
       var allRows = []; // full row-by-row decision log — every PR row, plus every 2B row never claimed by a PR row
 
@@ -5200,6 +5208,31 @@
         }
 
         if (!gstrRow) {
+          // GSTIN mismatch: same invoice number, same amount, but recorded
+          // against a different GSTIN in the two files. Without this pass,
+          // this invoice would silently show up as two unrelated phantom
+          // entries — "Missing in 2B" for the books side and "Missing in
+          // Books" for the 2B side — instead of the one real issue it
+          // actually is: a GSTIN typo/discrepancy on one invoice. Amount
+          // tolerance here is intentionally tight (not the wider mismatch
+          // tolerance) since invoice number + amount both already agree —
+          // the only open question is which GSTIN is correct.
+          var invoiceCandidates = (gstrByInvoiceKey.get(pr.invoiceKey) || []).filter(function(x) { return !x._consumed && x.gstin !== pr.gstin; });
+          var gstinMismatchBest = null, gstinMismatchDiff = Infinity;
+          invoiceCandidates.forEach(function(cRow) {
+            var d = Math.abs(pr.amount - cRow.amount);
+            if (d < gstinMismatchDiff) { gstinMismatchDiff = d; gstinMismatchBest = cRow; }
+          });
+          if (gstinMismatchBest && gstinMismatchDiff <= tolerance) {
+            gstinMismatchBest._consumed = true;
+            gstinMismatchCount++;
+            issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch', note: 'Same invoice & amount, but GSTIN differs between Purchase Register (' + pr.gstin + ') and 2B (' + gstinMismatchBest.gstin + ').', resolved: false });
+            allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch' });
+            return;
+          }
+        }
+
+        if (!gstrRow) {
           missingCount++;
           issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false });
           allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing' });
@@ -5242,6 +5275,7 @@
         missingCount: missingCount, fuzzyMatchedCount: fuzzyMatchedCount,
         missingInBooksCount: missingInBooksCount, duplicateCount: duplicateCount,
         needsReviewCount: needsReviewCount, splitMatchedCount: splitMatchedCount,
+        gstinMismatchCount: gstinMismatchCount,
         issues: issues, allRows: allRows,
         totalPrRows: prRows.length, totalGstrRows: gstrRows.length,
         matchingLogicVersion: MATCHING_LOGIC_VERSION,
@@ -5381,6 +5415,7 @@
       document.getElementById('sumMissing').textContent = r.missingCount;
       document.getElementById('sumMissingBooks').textContent = r.missingInBooksCount || 0;
       document.getElementById('sumNeedsReview').textContent = r.needsReviewCount || 0;
+      document.getElementById('sumGstinMismatch').textContent = r.gstinMismatchCount || 0;
 
       // Audit line — every readable row from both files is guaranteed to
       // land in exactly one outcome bucket by construction: every Purchase
@@ -5390,7 +5425,7 @@
       // dropped. Rows that couldn't be read at all (blank Invoice No or
       // GSTIN in the source file) are called out separately below instead
       // of being folded into that guarantee.
-      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0);
+      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0) + (r.gstinMismatchCount || 0);
       var totalSkipped = (r.prSkippedCount || 0) + (r.gstrSkippedCount || 0);
       var skippedNote = totalSkipped
         ? (' &nbsp;•&nbsp; <strong style="color:var(--red);">' + totalSkipped + ' row(s) skipped</strong> — blank Invoice No/GSTIN in the source file')
@@ -5400,13 +5435,14 @@
         '<span>GSTR-2B rows: <strong>' + (r.totalGstrRows || 0) + '</strong></span>' +
         (r.missingInBooksCount ? '<span><strong style="color:#5B3A8E;">' + r.missingInBooksCount + '</strong> in 2B but missing in Books</span>' : '') +
         (r.duplicateCount ? '<span><strong style="color:#5B3A8E;">' + r.duplicateCount + '</strong> duplicate invoice(s) in 2B</span>' : '') +
+        (r.gstinMismatchCount ? '<span><strong style="color:var(--red);">' + r.gstinMismatchCount + '</strong> GSTIN mismatch(es)</span>' : '') +
         (r.splitMatchedCount ? '<span><strong>' + r.splitMatchedCount + '</strong> split-invoice match(es) (summed across multiple 2B rows)</span>' : '') +
         skippedNote +
         '<span style="margin-left:auto;color:rgba(36,31,26,0.45);">Matching logic ' + (r.matchingLogicVersion || '—') + '</span>';
 
       var unresolved = r.issues.filter(function(i) { return !i.resolved; }).length;
       document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved === 1 ? '' : 's') + ' to review';
-      var typeLabels = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial' };
+      var typeLabels = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial', gstin_mismatch: 'GSTIN Mismatch' };
       var tbody = document.getElementById('mismatchTableBody');
       tbody.innerHTML = r.issues.map(function(i) {
         return '<tr class="' + (i.resolved ? 'resolved-row' : '') + '" data-row-id="' + i.id + '"><td class="mono">' + i.invoiceNo + '</td><td class="mono" style="font-size:12px;">' + i.gstin + '</td><td class="mono">₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td class="mono">₹' + i.diff.toLocaleString('en-IN') + '</td><td><span class="typebadge ' + i.type + '">' + (typeLabels[i.type] || i.type) + '</span></td><td><button class="btn btn-sm btn-outline" data-action="view-detail" data-mid="' + i.id + '" ' + (i.resolved ? 'disabled' : '') + '>' + (i.resolved ? 'Resolved' : 'View Details') + '</button></td></tr>';
@@ -5462,7 +5498,7 @@
       return s;
     }
 
-    var typeLabelsForExport = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial', matched: 'Matched' };
+    var typeLabelsForExport = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial', matched: 'Matched', gstin_mismatch: 'GSTIN Mismatch' };
 
     // Full row-by-row match log — every row from both files, including
     // rows that matched cleanly, not just the ones flagged as issues. The
@@ -5498,17 +5534,26 @@
     });
 
     function buildReportTableHtml(c, r) {
-      return r.issues.map(function(i) { return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + (typeLabelsForExport[i.type] || i.type) + '</td><td>' + (i.resolved ? 'Resolved' : 'Open') + '</td></tr>'; }).join('');
+      // Every row from both files, not just the flagged issues — so a CA
+      // can directly verify in the PDF itself how any specific invoice
+      // (including ones that matched cleanly) was actually classified,
+      // instead of having to trust the summary counts alone.
+      var rows = (r.allRows && r.allRows.length) ? r.allRows : r.issues;
+      return rows.map(function(i) {
+        var status = i.type === 'matched' ? '—' : (i.resolved ? 'Resolved' : 'Open');
+        return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + (typeLabelsForExport[i.type] || i.type) + '</td><td>' + status + (i.note ? '<br><span style="font-size:10px;color:#777;">' + i.note + '</span>' : '') + '</td></tr>';
+      }).join('');
     }
 
     function buildAuditSummaryHtml(r) {
-      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0);
+      var prOutcomes = r.matched + r.partialCount + r.mismatchCount + r.missingCount + (r.needsReviewCount || 0) + (r.gstinMismatchCount || 0);
       var totalSkipped = (r.prSkippedCount || 0) + (r.gstrSkippedCount || 0);
       return '<p style="font-size:11px;color:#555;">' +
         'Purchase Register rows: <strong>' + (r.totalPrRows || r.total || 0) + '</strong> (' + prOutcomes + ' accounted for) &nbsp; ' +
         'GSTR-2B rows: <strong>' + (r.totalGstrRows || 0) + '</strong>' +
         (r.missingInBooksCount ? (' &nbsp; Missing in Books: <strong>' + r.missingInBooksCount + '</strong>') : '') +
         (r.duplicateCount ? (' &nbsp; Duplicates in 2B: <strong>' + r.duplicateCount + '</strong>') : '') +
+        (r.gstinMismatchCount ? (' &nbsp; GSTIN Mismatch: <strong>' + r.gstinMismatchCount + '</strong>') : '') +
         (r.needsReviewCount ? (' &nbsp; Needs Review: <strong>' + r.needsReviewCount + '</strong>') : '') +
         (totalSkipped ? (' &nbsp; Skipped (unreadable rows): <strong>' + totalSkipped + '</strong>') : '') +
         '<br>Matching logic version: <strong>' + (r.matchingLogicVersion || '—') + '</strong> &nbsp; Generated: <strong>' + (r.generatedAt ? new Date(r.generatedAt).toLocaleString('en-IN') : '—') + '</strong>' +
@@ -5523,7 +5568,7 @@
       document.getElementById('print-report').innerHTML =
         '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>GSTIN Mismatch:</strong> ' + (r.gstinMismatchCount || 0) + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Needs Review:</strong> ' + (r.needsReviewCount || 0) + '</p>' +
         buildAuditSummaryHtml(r) +
         '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
       window.print();
@@ -5548,7 +5593,7 @@
         '</div>' +
         '<h2 style="font-family:Georgia,serif;margin-top:0;">Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
-        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + '</p>' +
+        '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>GSTIN Mismatch:</strong> ' + (r.gstinMismatchCount || 0) + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Needs Review:</strong> ' + (r.needsReviewCount || 0) + '</p>' +
         buildAuditSummaryHtml(r) +
         '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
