@@ -1620,6 +1620,27 @@
       margin-top: 26px;
       padding: 13px;
     }
+    .np-or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0 14px;
+      color: rgba(36, 31, 26, 0.4);
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .np-or-divider::before, .np-or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+    .np-google-btn-wrap {
+      display: flex;
+      justify-content: center;
+      min-height: 40px;
+    }
     .authswitch {
       font-size: 13px;
       text-align: center;
@@ -2474,6 +2495,7 @@
       }
     }
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <!-- ============================================================ -->
@@ -3465,13 +3487,15 @@
             </div>
             <div class="np-field">
               <label>Password</label>
-              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="su-pass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
+              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="su-pass" placeholder="At least 6 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="su-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
               <div class="np-hint">Minimum 6 characters</div>
               <div class="np-pwd-meter" id="signupPwdStrength"><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span></div>
               <div class="np-pwd-label" id="signupPwdLabel"></div>
             </div>
             <button class="btn np-btn" type="submit">Create Account</button>
           </form>
+          <div class="np-or-divider"><span>or</span></div>
+          <div id="googleSignInBtnSignup" class="np-google-btn-wrap"></div>
           <div class="authswitch">Already have an account? <button type="button" data-nav="login">Log in</button></div>
         </div>
         <div id="signupStep2" style="display:none;">
@@ -3518,6 +3542,8 @@
           </div>
           <button class="btn np-btn" type="submit">Log In</button>
         </form>
+        <div class="np-or-divider"><span>or</span></div>
+        <div id="googleSignInBtnLogin" class="np-google-btn-wrap"></div>
         <div class="authswitch">New to EANOVA? <button type="button" data-nav="signup">Create an account</button></div>
       </div>
     </div>
@@ -3575,7 +3601,7 @@
           <form id="forgotResetForm">
             <div class="np-field">
               <label>New password</label>
-              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="fp-newpass" placeholder="At least 8 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
+              <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="fp-newpass" placeholder="At least 6 characters" required minlength="6" style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="fp-newpass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
               <div class="np-pwd-meter" id="newPwdStrength"><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span></div>
               <div class="np-pwd-label" id="newPwdLabel"></div>
             </div>
@@ -4881,6 +4907,92 @@
         toggleBtnSpinner(resendOtpLinkEl, false);
       });
     });
+
+    /********************************************************************
+     *  GOOGLE SIGN-IN — entirely new/separate feature, does not touch or
+     *  call any OTP-related code above. One click creates an account (if
+     *  the email is new) or logs in (if it already exists) — Google has
+     *  already verified the email, so no OTP step is needed either way.
+     *  Calls the new /api/google-login backend route added for this.
+     ********************************************************************/
+    var GOOGLE_CLIENT_ID = '263544387024-j64anhfmhdibs6l1jr8ietjq03tun1gn.apps.googleusercontent.com';
+
+    function handleGoogleCredentialResponse(response) {
+      var credential = response && response.credential;
+      var errBoxLogin = document.getElementById('loginError');
+      var errBoxSignup = document.getElementById('signupError');
+      function showGoogleError(msg) {
+        [errBoxLogin, errBoxSignup].forEach(function(b) {
+          if (b) { b.textContent = msg; b.style.display = 'block'; }
+        });
+      }
+      if (!credential) { showGoogleError('Google sign-in did not return a credential. Please try again.'); return; }
+      if (errBoxLogin) errBoxLogin.style.display = 'none';
+      if (errBoxSignup) errBoxSignup.style.display = 'none';
+
+      fetch(API_BASE + '/api/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credential })
+      })
+      .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+      .then(function(result) {
+        if (result.status === 200) {
+          var userData = result.body.user;
+          state.user = { name: userData.name, firm: userData.firm, email: userData.email, region: userData.region };
+          state.clients = result.body.clients || [];
+          state.subscriptionActive = result.body.subscriptionActive || false;
+          state.activePlan = result.body.activePlan || null;
+          state.subscriptionExpiry = result.body.subscriptionExpiry || null;
+          state.user.hasPaidBefore = state.subscriptionActive || state.user.hasPaidBefore || false;
+          if (result.body.profilePic) {
+            try { localStorage.setItem('eanova_avatar_v1_' + state.user.email.toLowerCase(), result.body.profilePic); } catch (_) {}
+          }
+          setAuthToken(result.body.token || '');
+          try { localStorage.setItem(SESSION_KEY, userData.email); } catch (_) {}
+          persistCurrentAccount();
+          showView('dashboard');
+          syncUserData();
+        } else {
+          showGoogleError(result.body.message || 'Google sign-in failed. Please try again.');
+        }
+      })
+      .catch(function() {
+        showGoogleError('Server error during Google sign-in. Please try again.');
+      });
+    }
+
+    function initGoogleSignIn() {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse
+      });
+      var loginBtnEl = document.getElementById('googleSignInBtnLogin');
+      var signupBtnEl = document.getElementById('googleSignInBtnSignup');
+      if (loginBtnEl && !loginBtnEl.dataset.rendered) {
+        google.accounts.id.renderButton(loginBtnEl, { theme: 'outline', size: 'large', text: 'continue_with', width: 300 });
+        loginBtnEl.dataset.rendered = '1';
+      }
+      if (signupBtnEl && !signupBtnEl.dataset.rendered) {
+        google.accounts.id.renderButton(signupBtnEl, { theme: 'outline', size: 'large', text: 'continue_with', width: 300 });
+        signupBtnEl.dataset.rendered = '1';
+      }
+    }
+    // The Google script tag loads async/defer, so it may not be ready the
+    // instant this script runs — poll briefly for it instead of assuming.
+    (function waitForGoogleSdk() {
+      var attempts = 0;
+      var iv = setInterval(function() {
+        attempts++;
+        if (window.google && google.accounts && google.accounts.id) {
+          clearInterval(iv);
+          initGoogleSignIn();
+        } else if (attempts > 40) {
+          clearInterval(iv); // gave it 10s — SDK likely blocked/offline; the rest of the site still works fine without it.
+        }
+      }, 250);
+    })();
 
     /********************************************************************
      *  DASHBOARD
