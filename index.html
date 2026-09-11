@@ -1435,11 +1435,19 @@
     .pricecard[data-currency="intl"] .pc-price::before {
       content: "$";
     }
+    .pricecard[data-currency="intl"] .pc-gst-note {
+      display: none;
+    }
     .pc-permo {
       font-size: 14px;
       font-weight: 500;
       color: rgba(237, 231, 217, 0.6);
       margin-left: 2px;
+    }
+    .pc-gst-note {
+      font-size: 11px;
+      color: rgba(237, 231, 217, 0.5);
+      margin-top: 2px;
     }
     .pc-sub {
       font-size: 12.5px;
@@ -1559,6 +1567,24 @@
       gap: 10px;
       border-top: 1px solid var(--line);
       margin-top: 20px;
+    }
+    .footer-legal-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-legal-links button {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 13px;
+      color: rgba(36, 31, 26, 0.5);
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+    .footer-legal-links button:hover {
+      color: var(--navy);
     }
     .authshell {
       min-height: 70vh;
@@ -2496,6 +2522,7 @@
     }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
   <!-- ============================================================ -->
@@ -3384,6 +3411,7 @@
         <div class="pricecard" id="firstMonthPriceCard">
           <div class="pc-label">First Month</div>
           <div class="pc-price"><span class="pc-num" data-in="99" data-intl="9">99</span></div>
+          <div class="pc-gst-note">+ 18% GST at checkout</div>
           <div class="pc-sub">New accounts only, one-time introductory price</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Real reconciliation engine</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="first" data-nav="checkout" type="button">Start at this price →</button>
@@ -3392,6 +3420,7 @@
         <div class="pricecard">
           <div class="pc-label">Monthly</div>
           <div class="pc-price"><span class="pc-num" data-in="199" data-intl="25">199</span><span class="pc-permo">/mo</span></div>
+          <div class="pc-gst-note">+ 18% GST at checkout</div>
           <div class="pc-sub">From month 2 onward, pay-as-you-go</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Cancel anytime</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="monthly" data-nav="checkout" type="button">Start Free Trial →</button>
@@ -3401,6 +3430,7 @@
           <div class="pc-badge">Best value</div>
           <div class="pc-label">Annual</div>
           <div class="pc-price"><span class="pc-num" data-in="150" data-intl="19">150</span><span class="pc-permo">/mo</span></div>
+          <div class="pc-gst-note">+ 18% GST at checkout</div>
           <div class="pc-sub" id="pcAnnualSub">Billed yearly — <span data-in="₹1,800" data-intl="$228">₹1,800</span>/year total</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>~25% cheaper than monthly</li></ul>
           <button class="btn btn-gold btn-sm" data-plan="annual" data-nav="checkout" type="button">Get the annual plan →</button>
@@ -3456,6 +3486,12 @@
 
     <footer class="wrap">
       <span>&copy; 2026 EANOVA. All rights reserved.</span>
+      <div class="footer-legal-links">
+        <button type="button" data-nav="legal-terms">Terms &amp; Conditions</button>
+        <button type="button" data-nav="legal-privacy">Privacy Policy</button>
+        <button type="button" data-nav="legal-refund">Refund &amp; Cancellation</button>
+        <button type="button" data-nav="legal-contact">Contact Us</button>
+      </div>
       <span>Figures on this page are illustrative, based on industry-reported reconciliation times.</span>
       <span>Developer by Mr.Gama</span>
     </footer>
@@ -3715,7 +3751,24 @@
       <div id="checkoutForm">
         <div class="checkoutwrap">
           <div class="paycard">
-            <h3 style="font-size:17px;">Payment details <span style="font-size:12px;color:rgba(36,31,26,0.5);font-weight:400;">(demo — no real charge)</span></h3>
+            <h3 style="font-size:17px;">Payment details</h3>
+
+            <!-- Real payment via Razorpay — shown for India (region: in).
+                 Handles UPI/card/netbanking/wallet itself inside Razorpay's
+                 own secure checkout popup, so the custom UPI/Card form
+                 below isn't needed here; that form is kept exactly as-is
+                 for the international flow underneath. -->
+            <div id="payRealIndia" style="display:none;">
+              <p style="font-size:13.5px;color:rgba(36,31,26,0.65);line-height:1.6;margin-bottom:18px;">
+                You'll be taken to Razorpay's secure checkout to pay by UPI, card, netbanking, or wallet — whichever you prefer.
+              </p>
+              <button class="btn" style="width:100%;justify-content:center;" id="payBtnRazorpay" type="button">Proceed to Pay <span id="payBtnAmountReal">₹0</span></button>
+              <div class="auth-error" id="checkoutErrorReal" style="display:none;margin-top:12px;"></div>
+            </div>
+
+            <!-- International (region: intl) — unchanged demo flow, since
+                 real international payment isn't wired up yet. -->
+            <div id="payDemoIntl">
             <div class="pay-tabs" role="tablist">
               <button type="button" class="pay-tab active" data-pay-tab="upi">UPI</button>
               <button type="button" class="pay-tab" data-pay-tab="card">Credit Card</button>
@@ -3756,12 +3809,13 @@
 
             <button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button>
             <div class="auth-error" id="checkoutError" style="display:none;margin-top:12px;"></div>
+            </div>
           </div>
           <div class="ordercard">
             <h3 style="color:var(--paper);font-size:17px;">Order summary</h3>
             <div class="row2"><span id="orderPlanLabel">EANOVA — Monthly plan</span><span id="orderPlanAmount">₹199</span></div>
-            <div class="row2"><span>Billing cycle</span><span>Monthly</span></div>
-            <div class="row2"><span>GST (18%)</span><span>Included</span></div>
+            <div class="row2"><span>Billing cycle</span><span id="orderBillingCycle">Monthly</span></div>
+            <div class="row2" id="orderGstRow"><span>GST (18%)</span><span id="orderGstAmount">₹0</span></div>
             <div class="row2 total"><span>Total due today</span><span id="orderTotalAmount">₹199</span></div>
           </div>
         </div>
@@ -3821,6 +3875,84 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- LEGAL PAGES — Terms, Privacy, Refund & Cancellation, Contact Us -->
+  <!-- (new, self-contained; no other view/section touched) -->
+  <!-- ============================================================ -->
+  <section class="view" id="view-legal-terms">
+    <div class="wrap legalpage">
+      <a href="#" class="backlink" data-nav="landing">← Back</a>
+      <h1>Terms &amp; Conditions</h1>
+      <p class="legal-updated">Last updated: September 2026</p>
+      <p>These Terms &amp; Conditions govern your use of EANOVA (eanova.in), a GST reconciliation tool for Indian CA practices, operated as an individual/proprietorship business ("we", "us").</p>
+      <h3>1. The Service</h3>
+      <p>EANOVA lets you upload a Purchase Register and GSTR-2B file and matches invoices between them to highlight mismatches, missing entries, and duplicates. It is a reconciliation aid, not tax, legal, or accounting advice — you remain responsible for verifying figures before filing.</p>
+      <h3>2. Accounts &amp; Free Trial</h3>
+      <p>New accounts get a 14-day free trial with one reconciliation per day. After the trial, continued use requires an active paid plan. You're responsible for keeping your login credentials confidential.</p>
+      <h3>3. Payments</h3>
+      <p>Paid plans are billed as shown at checkout, with applicable GST added separately. Payments are processed by Razorpay; we do not store your card, UPI, or banking details ourselves.</p>
+      <h3>4. Your Data</h3>
+      <p>Files you upload for reconciliation are processed to generate your report. See our <button class="linklike" type="button" data-nav="legal-privacy">Privacy Policy</button> for details on what we store and for how long.</p>
+      <h3>5. Acceptable Use</h3>
+      <p>You agree not to misuse the service — including attempting to bypass usage limits, reverse-engineer the matching engine, or use the service for any unlawful purpose.</p>
+      <h3>6. Limitation of Liability</h3>
+      <p>EANOVA is provided "as is". While we aim for accurate reconciliation, we are not liable for losses arising from reliance on the tool's output without independent verification, or from service interruptions.</p>
+      <h3>7. Changes</h3>
+      <p>We may update these terms from time to time; continued use after an update means you accept the revised terms.</p>
+      <h3>8. Contact</h3>
+      <p>Questions about these terms? <button class="linklike" type="button" data-nav="legal-contact">Contact us</button>.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-legal-privacy">
+    <div class="wrap legalpage">
+      <a href="#" class="backlink" data-nav="landing">← Back</a>
+      <h1>Privacy Policy</h1>
+      <p class="legal-updated">Last updated: September 2026</p>
+      <p>This Privacy Policy explains what information EANOVA collects and how it's used.</p>
+      <h3>1. What We Collect</h3>
+      <p>Account details you provide (name, firm name, email, region), and the Purchase Register / GSTR-2B files you upload for reconciliation.</p>
+      <h3>2. How We Use It</h3>
+      <p>To run the reconciliation you request, manage your account and subscription, send OTP/login emails, and process payments (via Razorpay).</p>
+      <h3>3. What We Don't Store</h3>
+      <p>We never store your card number, CVV, or UPI PIN — these go directly to Razorpay's secure checkout and never touch our servers.</p>
+      <h3>4. Sharing</h3>
+      <p>We don't sell your data. It's shared only with service providers required to run EANOVA — currently Razorpay (payments) and our email provider (OTP/notification emails).</p>
+      <h3>5. Data Retention</h3>
+      <p>Account data is retained while your account is active. You can request deletion by contacting us.</p>
+      <h3>6. Your Rights</h3>
+      <p>You can request a copy of your data, ask us to correct it, or ask us to delete your account, by <button class="linklike" type="button" data-nav="legal-contact">contacting us</button>.</p>
+      <h3>7. Changes</h3>
+      <p>We may update this policy; the "Last updated" date above reflects the latest revision.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-legal-refund">
+    <div class="wrap legalpage">
+      <a href="#" class="backlink" data-nav="landing">← Back</a>
+      <h1>Refund &amp; Cancellation Policy</h1>
+      <p class="legal-updated">Last updated: September 2026</p>
+      <h3>1. Free Trial</h3>
+      <p>Every new account gets a 14-day free trial (one reconciliation per day) — no payment is required to try EANOVA.</p>
+      <h3>2. Cancellation</h3>
+      <p>You can cancel anytime from your dashboard. Cancelling stops future renewals but does not end your access early.</p>
+      <h3>3. Refunds</h3>
+      <p>Because plans are billed for a full month (or year) upfront and access is granted immediately, no refunds are provided for the active billing period once payment is made. You can continue using the service for the remainder of the period you've already paid for.</p>
+      <h3>4. Failed / Duplicate Payments</h3>
+      <p>If a payment was deducted but your subscription wasn't activated, or you were charged more than once by mistake, <button class="linklike" type="button" data-nav="legal-contact">contact us</button> with your payment ID and we'll investigate and correct it.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-legal-contact">
+    <div class="wrap legalpage">
+      <a href="#" class="backlink" data-nav="landing">← Back</a>
+      <h1>Contact Us</h1>
+      <p>For any questions, support, billing issues, or feedback, reach us by email:</p>
+      <a href="mailto:eanova.in@gmail.com" style="display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--navy);text-decoration:underline;">eanova.in@gmail.com</a>
+      <p style="margin-top:18px;color:rgba(36,31,26,0.6);font-size:13.5px;">We typically respond within 24-48 hours.</p>
     </div>
   </section>
 
@@ -3914,6 +4046,10 @@
     const SESSION_KEY = 'eanova_session_v1';
     const TOKEN_KEY = 'eanova_token_v1';
     const API_BASE = 'https://eanova-backend.onrender.com';
+    // Display-only — the server independently computes and charges the
+    // authoritative amount at payment time; this just lets the checkout
+    // page show the right total before the person clicks Pay.
+    const GST_RATE = 0.18;
 
     // লগইন করলে সার্ভার একটা JWT টোকেন দেয় — সেটা এখানে সংরক্ষণ/ব্যবহার
     // করা হয়, যাতে dashboard/profile/client-related সব রিকোয়েস্টে
@@ -4069,10 +4205,41 @@
       }
       const plan = window._selectedPlan || 'monthly';
       const p = currentPlanPrice(plan);
-      document.getElementById('payBtnAmount').textContent = p.currency + p.amount;
+      const region = (state.user && state.user.region) || 'in';
+      const isIndia = region === 'in';
+
       document.getElementById('orderPlanLabel').textContent = 'EANOVA — ' + p.label + ' plan';
-      document.getElementById('orderPlanAmount').textContent = p.currency + p.amount;
-      document.getElementById('orderTotalAmount').textContent = p.currency + p.amount;
+      document.getElementById('orderBillingCycle').textContent = (plan === 'annual') ? 'Annual' : 'Monthly';
+
+      var payRealEl = document.getElementById('payRealIndia');
+      var payDemoEl = document.getElementById('payDemoIntl');
+      var orderGstRowEl = document.getElementById('orderGstRow');
+
+      if (isIndia) {
+        // Real payment (India) — plan price + 18% GST added on top, shown
+        // as separate line items so the customer sees exactly what they're
+        // being charged before clicking Pay.
+        var base = p.totalAmount;
+        var gst = Math.round(base * GST_RATE * 100) / 100;
+        var total = Math.round((base + gst) * 100) / 100;
+        document.getElementById('orderPlanAmount').textContent = p.currency + base.toLocaleString('en-IN');
+        document.getElementById('orderGstAmount').textContent = p.currency + gst.toFixed(2);
+        document.getElementById('orderTotalAmount').textContent = p.currency + total.toFixed(2);
+        document.getElementById('payBtnAmountReal').textContent = p.currency + total.toFixed(2);
+        orderGstRowEl.style.display = '';
+        if (payRealEl) payRealEl.style.display = 'block';
+        if (payDemoEl) payDemoEl.style.display = 'none';
+      } else {
+        // International — unchanged demo flow (Indian GST doesn't apply
+        // to customers outside India; real international payment isn't
+        // wired up yet).
+        document.getElementById('payBtnAmount').textContent = p.currency + p.totalAmount;
+        document.getElementById('orderPlanAmount').textContent = p.currency + p.totalAmount;
+        document.getElementById('orderTotalAmount').textContent = p.currency + p.totalAmount;
+        orderGstRowEl.style.display = 'none';
+        if (payRealEl) payRealEl.style.display = 'none';
+        if (payDemoEl) payDemoEl.style.display = 'block';
+      }
       // If a plan is already active, don't let the person pay again by
       // mistake — reuse the existing success card but populate it with
       // the currently-active plan's real details instead of showing the
@@ -4255,9 +4422,14 @@
     function currentPlanPrice(plan) {
       const region = (state.user && state.user.region) || 'in';
       const rates = {
-        'first': { in: { currency: '₹', amount: '99', period: '/mo', label: 'First Month' }, intl: { currency: '$', amount: '9', period: '/mo', label: 'First Month' } },
-        'monthly': { in: { currency: '₹', amount: '199', period: '/mo', label: 'Monthly' }, intl: { currency: '$', amount: '25', period: '/mo', label: 'Monthly' } },
-        'annual': { in: { currency: '₹', amount: '150', period: '/mo', label: 'Annual' }, intl: { currency: '$', amount: '19', period: '/mo', label: 'Annual' } }
+        'first': { in: { currency: '₹', amount: '99', period: '/mo', label: 'First Month', totalAmount: 99 }, intl: { currency: '$', amount: '9', period: '/mo', label: 'First Month', totalAmount: 9 } },
+        'monthly': { in: { currency: '₹', amount: '199', period: '/mo', label: 'Monthly', totalAmount: 199 }, intl: { currency: '$', amount: '25', period: '/mo', label: 'Monthly', totalAmount: 25 } },
+        // totalAmount for annual is the real one-time charge (₹150/mo × 12
+        // months = ₹1,800), matching what the pricing card itself already
+        // promises ("Billed yearly — ₹1,800/year total") — amount/period
+        // above stay as the per-month DISPLAY figure shown on the pricing
+        // cards, totalAmount is what actually gets charged at checkout.
+        'annual': { in: { currency: '₹', amount: '150', period: '/mo', label: 'Annual', totalAmount: 1800 }, intl: { currency: '$', amount: '19', period: '/mo', label: 'Annual', totalAmount: 228 } }
       };
       return (rates[plan] || rates.monthly)[region] || rates.monthly.in;
     }
@@ -5997,6 +6169,138 @@
             '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA APPROVED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
           '</div>';
         window.print();
+      });
+    }
+
+    /********************************************************************
+     *  RAZORPAY REAL PAYMENT (India) — entirely new/separate flow from
+     *  the existing demo payBtn handler above, which is left completely
+     *  untouched and still runs for international (region: intl) users.
+     ********************************************************************/
+    var payBtnRazorpayEl = document.getElementById('payBtnRazorpay');
+    if (payBtnRazorpayEl) {
+      payBtnRazorpayEl.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (!state.user) return;
+        var btn = this;
+        var plan = window._selectedPlan || 'monthly';
+        var errBox = document.getElementById('checkoutErrorReal');
+        errBox.style.display = 'none';
+
+        if (typeof Razorpay === 'undefined') {
+          errBox.textContent = "Payment couldn't load — check your connection and refresh the page.";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        var originalText = btn.textContent;
+        btn.disabled = true;
+        toggleBtnSpinner(btn, true);
+
+        authFetch(API_BASE + '/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: plan })
+        })
+        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+        .then(function(result) {
+          btn.disabled = false;
+          toggleBtnSpinner(btn, false);
+          if (result.status !== 200) {
+            errBox.textContent = result.body.message || 'Could not start payment. Please try again.';
+            errBox.style.display = 'block';
+            return;
+          }
+          var order = result.body;
+          var rzp = new Razorpay({
+            key: order.keyId,
+            amount: order.amount,
+            currency: order.currency,
+            order_id: order.orderId,
+            name: 'EANOVA',
+            description: 'EANOVA — ' + plan + ' plan subscription',
+            prefill: { name: order.name || '', email: order.email || '' },
+            theme: { color: '#A63D40' },
+            handler: function(response) {
+              btn.disabled = true;
+              btn.textContent = 'Confirming payment…';
+              toggleBtnSpinner(btn, true);
+              authFetch(API_BASE + '/api/razorpay/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  plan: plan
+                })
+              })
+              .then(function(res2) { return res2.json().then(function(data2) { return { status: res2.status, body: data2 }; }); })
+              .then(function(vres) {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                toggleBtnSpinner(btn, false);
+                if (vres.status !== 200) {
+                  errBox.textContent = (vres.body.message || 'Payment could not be verified.') +
+                    ' If money was deducted, please contact support with this payment ID: ' + response.razorpay_payment_id;
+                  errBox.style.display = 'block';
+                  return;
+                }
+                var serverUser = vres.body.user;
+                state.subscriptionActive = true;
+                state.activePlan = plan;
+                state.subscriptionExpiry = serverUser.subscriptionExpiry;
+                if (state.user) state.user.hasPaidBefore = true;
+                persistCurrentAccount();
+
+                var totalText = document.getElementById('payBtnAmountReal').textContent;
+                window._lastReceipt = {
+                  txnId: vres.body.razorpayPaymentId,
+                  plan: plan,
+                  amount: totalText,
+                  method: 'Razorpay',
+                  name: (state.user && state.user.name) || '',
+                  email: (state.user && state.user.email) || '',
+                  date: Date.now(),
+                  expiry: state.subscriptionExpiry
+                };
+                saveReceiptLocally(state.user && state.user.email, window._lastReceipt);
+
+                document.getElementById('checkoutForm').style.display = 'none';
+                document.getElementById('checkoutSuccess').style.display = 'block';
+                var planLabelMap = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
+                var receiptDate = new Date(window._lastReceipt.date);
+                populatePaymentConfirm({
+                  title: 'Payment Confirmed',
+                  orderId: window._lastReceipt.txnId,
+                  dateStr: receiptDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                  planLabel: 'EANOVA — ' + (planLabelMap[plan] || 'Monthly') + ' plan',
+                  amount: totalText,
+                  method: 'Razorpay'
+                });
+                updateProfileMenu();
+              })
+              .catch(function() {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                toggleBtnSpinner(btn, false);
+                errBox.textContent = 'Server error while verifying payment. If money was deducted, please contact support with this payment ID: ' + response.razorpay_payment_id;
+                errBox.style.display = 'block';
+              });
+            }
+          });
+          rzp.on('payment.failed', function(response) {
+            errBox.textContent = 'Payment failed' + (response.error && response.error.description ? (': ' + response.error.description) : '.') + ' Please try again.';
+            errBox.style.display = 'block';
+          });
+          rzp.open();
+        })
+        .catch(function() {
+          btn.disabled = false;
+          toggleBtnSpinner(btn, false);
+          errBox.textContent = 'Server error. Please try again.';
+          errBox.style.display = 'block';
+        });
       });
     }
 
