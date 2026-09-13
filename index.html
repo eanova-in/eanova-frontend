@@ -6207,6 +6207,23 @@
           btn.disabled = false;
           toggleBtnSpinner(btn, false);
           if (result.status !== 200) {
+            if (result.status === 401) {
+              // Session token missing/expired in this browser (can happen if
+              // the tab was left open past the 7-day login expiry, or the
+              // token got cleared some other way) — the fix is always to
+              // log in again, so send them there directly instead of
+              // leaving a confusing "Not authenticated" message on screen.
+              setAuthToken('');
+              try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+              state.user = null;
+              showView('login');
+              var loginErrBox = document.getElementById('loginError');
+              if (loginErrBox) {
+                loginErrBox.textContent = 'Your session expired — please log in again to continue to payment.';
+                loginErrBox.style.display = 'block';
+              }
+              return;
+            }
             errBox.textContent = result.body.message || 'Could not start payment. Please try again.';
             errBox.style.display = 'block';
             return;
