@@ -1573,7 +1573,7 @@
       gap: 16px;
       flex-wrap: wrap;
     }
-    .footer-legal-links button {
+    .footer-legal-links button, .footer-legal-links a {
       background: none;
       border: none;
       padding: 0;
@@ -1583,7 +1583,7 @@
       text-decoration: underline;
       font-family: inherit;
     }
-    .footer-legal-links button:hover {
+    .footer-legal-links button:hover, .footer-legal-links a:hover {
       color: var(--navy);
     }
     .authshell {
@@ -3322,7 +3322,7 @@
     <section class="wrap" id="how">
       <div class="section-head"><span class="eyebrow">Five seconds to understand</span><h2>How it works</h2></div>
       <div class="steps">
-        <div class="step"><div class="stepnum">01</div><h4>Upload</h4><p>Drop in the purchase register and the GSTR-2B export for a client. Excel, CSV or PDF — whatever you already have.</p></div>
+        <div class="step"><div class="stepnum">01</div><h4>Upload</h4><p>Drop in the purchase register and the GSTR-2B export for a client. Excel or CSV — whatever you already have.</p></div>
         <div class="step"><div class="stepnum">02</div><h4>Reconcile</h4><p>EANOVA matches every invoice, flags real mismatches vs. timing differences, and sorts what actually needs your eyes.</p></div>
         <div class="step"><div class="stepnum">03</div><h4>Download Report</h4><p>A client-ready Excel or PDF report, every match and mismatch laid out — no manual formatting.</p></div>
       </div>
@@ -3448,7 +3448,7 @@
         <button class="faq-tab" data-filter="billing" type="button">Billing &amp; Trial</button>
       </div>
       <div class="faqlist" id="faqList">
-        <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>Which file formats are supported?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Excel (.xlsx), CSV, and PDF exports — for both your purchase register and your GSTR-2B.</div></div></div>
+        <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>Which file formats are supported?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Excel (.xlsx) and CSV exports — for both your purchase register and your GSTR-2B. PDF isn't supported yet; if the GST portal gives you a PDF, export or convert it to Excel first.</div></div></div>
         <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Is client data secure?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Data protection (India-region hosting, encryption at rest/in transit) is a firm commitment before any real client data is accepted — see "How we plan to handle your clients' data" above. It's not yet-built infrastructure we're claiming as live today.</div></div></div>
         <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>How many clients can I add?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Unlimited, on every plan — including the free trial.</div></div></div>
         <div class="faqitem" data-category="billing"><button class="faqq" type="button"><span>Is there a free trial?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Yes, 14 days, full access, no card required to start.</div></div></div>
@@ -3487,6 +3487,7 @@
     <footer class="wrap">
       <span>&copy; 2026 EANOVA. All rights reserved.</span>
       <div class="footer-legal-links">
+        <a href="https://www.linkedin.com/in/mrgama?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_android" target="_blank" rel="noopener noreferrer">Founder on LinkedIn</a>
         <button type="button" data-nav="legal-terms">Terms &amp; Conditions</button>
         <button type="button" data-nav="legal-privacy">Privacy Policy</button>
         <button type="button" data-nav="legal-refund">Refund &amp; Cancellation</button>
@@ -3696,12 +3697,12 @@
           <div class="uploadcard" id="uploadCardPR">
             <div class="icon">📄</div><h4>Purchase Register</h4>
             <div class="fname" id="prFname"></div>
-            <label class="filebtn">Choose File<input type="file" id="prFile" /></label>
+            <label class="filebtn">Choose File<input type="file" id="prFile" accept=".xlsx,.xls,.csv" /></label>
           </div>
           <div class="uploadcard" id="uploadCard2B">
             <div class="icon">🧾</div><h4>GSTR-2B</h4>
             <div class="fname" id="bFname"></div>
-            <label class="filebtn">Choose File<input type="file" id="bFile" /></label>
+            <label class="filebtn">Choose File<input type="file" id="bFile" accept=".xlsx,.xls,.csv" /></label>
           </div>
         </div>
         <div class="runrow">
@@ -3709,7 +3710,7 @@
         </div>
         <div class="spinner" id="reconSpinner"><span class="dotload"></span><span class="dotload"></span><span class="dotload"></span>&nbsp; Reading and matching your files…</div>
         <div class="demo-error" id="reconError" style="display:none;"></div>
-        <p style="font-size:12.5px;color:rgba(36,31,26,0.55);text-align:center;margin-top:14px;">Files need columns for Invoice No, GSTIN, and Amount (column names can vary slightly — we try to detect them).</p>
+        <p style="font-size:12.5px;color:rgba(36,31,26,0.55);text-align:center;margin-top:14px;">Excel (.xlsx) or CSV only for now — PDF isn't supported yet. Files need columns for Invoice No, GSTIN, and Amount (column names can vary slightly — we try to detect them).</p>
       </div>
       <div id="cd-resultsSection" style="display:none;">
         <div class="summarygrid">
@@ -5298,6 +5299,16 @@
     function readFileAsRows(file) {
       return new Promise(function(resolve, reject) {
         if (!file) { reject(new Error('No file selected.')); return; }
+        // PDF (and any other non-spreadsheet format) can't be parsed by the
+        // library used here — it only reads actual spreadsheet formats
+        // (.xlsx/.xls/.csv). Checking this upfront gives an honest, specific
+        // error instead of the confusing "couldn't find columns" message
+        // that used to appear when a PDF silently failed to parse.
+        var lowerName = (file.name || '').toLowerCase();
+        if (file.type === 'application/pdf' || lowerName.endsWith('.pdf')) {
+          reject(new Error('"' + file.name + '" is a PDF — PDF upload isn\'t supported yet. Please export or convert it to Excel (.xlsx) or CSV first (the GST portal also lets you download GSTR-2B directly as Excel).'));
+          return;
+        }
         var reader = new FileReader();
         reader.onload = function(e) {
           try {
@@ -6613,7 +6624,7 @@
           hi: "Hi! 👋 Ask about pricing, trial, uploads, security, or reconciliation.",
           pricing: "EANOVA: ₹99 first month, ₹199/month, or ₹150/month annual (₹1,800/year). International: $9 first, $25/mo, $19/mo annual. 14-day free trial.",
           trial: "Yes! 14-day free trial, full access, no credit card required.",
-          upload: "Upload Purchase Register and GSTR-2B as Excel (.xlsx), CSV, or PDF.",
+          upload: "Upload Purchase Register and GSTR-2B as Excel (.xlsx) or CSV. PDF isn't supported yet — convert it to Excel first.",
           security: "Data is never sold or shared. We use encryption and India-region hosting.",
           reconcile: "Reconciliation matches invoices, flags mismatches, partials, and missing in GSTR-2B. Try the free demo above.",
           report: "Download Excel or PDF reports after reconciliation.",
@@ -6628,7 +6639,7 @@
           hi: "হ্যালো! 👋 দাম, ট্রায়াল, আপলোড, নিরাপত্তা বা রিকনসিলিয়েশন সম্পর্কে জানতে চাইলে জিজ্ঞেস করুন।",
           pricing: "EANOVA: প্রথম মাস ₹৯৯, তারপর ₹১৯৯/মাস, বা বার্ষিক ₹১৫০/মাস (₹১,৮০০/বছর)। আন্তর্জাতিক: $৯ প্রথম, $২৫/মাস, $১৯/মাস বার্ষিক। ১৪ দিন ফ্রি ট্রায়াল।",
           trial: "হ্যাঁ! ১৪ দিন ফ্রি ট্রায়াল, পুরো অ্যাক্সেস, কার্ড লাগে না।",
-          upload: "পারচেজ রেজিস্টার এবং GSTR-2B Excel (.xlsx), CSV বা PDF ফরম্যাটে আপলোড করুন।",
+          upload: "পারচেজ রেজিস্টার এবং GSTR-2B Excel (.xlsx) বা CSV ফরম্যাটে আপলোড করুন। PDF এখনো সাপোর্টেড না — আগে Excel-এ কনভার্ট করে নিন।",
           security: "ডেটা কখনো বিক্রি বা শেয়ার করা হয় না। এনক্রিপশন ও ইন্ডিয়া-রিজিয়ন হোস্টিং ব্যবহার করি।",
           reconcile: "রিকনসিলিয়েশন ইনভয়েস মিলিয়ে, মিসম্যাচ, পার্শিয়াল ও GSTR-2B-তে অনুপস্থিত ইনভয়েস চিহ্নিত করে। উপরের ডেমো ট্রাই করুন।",
           report: "রিকনসিলিয়েশন শেষে Excel বা PDF রিপোর্ট ডাউনলোড করুন।",
@@ -6643,7 +6654,7 @@
           hi: "नमस्ते! 👋 कीमत, ट्रायल, अपलोड, सुरक्षा या रिकन्सिलिएशन के बारे में पूछें।",
           pricing: "EANOVA: पहले महीने ₹99, फिर ₹199/महीना, या सालाना ₹150/महीना (₹1,800/साल)। अंतर्राष्ट्रीय: $9 पहला, $25/मो, $19/मो सालाना। 14 दिन फ्री ट्रायल।",
           trial: "हाँ! 14 दिन फ्री ट्रायल, पूरी सुविधाएँ, कार्ड की ज़रूरत नहीं।",
-          upload: "परचेज रजिस्टर और GSTR-2B Excel (.xlsx), CSV या PDF में अपलोड करें।",
+          upload: "परचेज रजिस्टर और GSTR-2B Excel (.xlsx) या CSV में अपलोड करें। PDF अभी सपोर्टेड नहीं है — पहले Excel में बदलें।",
           security: "डेटा कभी बेचा या साझा नहीं किया जाता। एन्क्रिप्शन और इंडिया-रीजन होस्टिंग।",
           reconcile: "रिकन्सिलिएशन इनवॉइस मिलाता है, मिसमैच, पार्शियल और GSTR-2B में गायब इनवॉइस दिखाता है। ऊपर डेमो ट्राई करें।",
           report: "रिकन्सिलिएशन के बाद Excel या PDF रिपोर्ट डाउनलोड करें।",
