@@ -3391,7 +3391,7 @@
       <div class="section-head"><span class="eyebrow">Before you'd upload a single invoice</span><h2>How we plan to handle your clients' data</h2><p>CA firms hold financial data that isn't theirs alone to risk. These are commitments for what we build before real client data touches this product — not yet-built infrastructure we're claiming today.</p></div>
       <div class="trustgrid">
         <div class="trustcard"><div class="icon">🇮🇳</div><h4>India-region hosting</h4><p>Planned: client data will reside on India-region servers, not routed through foreign data centers.</p></div>
-        <div class="trustcard"><div class="icon">🔒</div><h4>Encryption by default</h4><p>Planned: encryption at rest and in transit for every uploaded file, before any real client data is accepted.</p></div>
+        <div class="trustcard"><div class="icon">🔒</div><h4>Encryption by default</h4><p>Live today: all traffic to EANOVA runs over HTTPS/TLS, and data at rest is encrypted (AES-256) on our database provider's infrastructure — for every account, not just paid ones.</p></div>
         <div class="trustcard"><div class="icon">🚫</div><h4>Never sold or shared</h4><p>Commitment: client financial data will never be sold, shared with third parties, or used to train external models.</p></div>
         <div class="trustcard"><div class="icon">📤</div><h4>Yours to export or delete</h4><p>Planned: full data export or permanent deletion, on request, at any time — no lock-in.</p></div>
       </div>
@@ -3450,7 +3450,7 @@
       </div>
       <div class="faqlist" id="faqList">
         <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>Which file formats are supported?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Excel (.xlsx) and CSV exports — for both your purchase register and your GSTR-2B. PDF isn't supported yet; if the GST portal gives you a PDF, export or convert it to Excel first.</div></div></div>
-        <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Is client data secure?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Data protection (India-region hosting, encryption at rest/in transit) is a firm commitment before any real client data is accepted — see "How we plan to handle your clients' data" above. It's not yet-built infrastructure we're claiming as live today.</div></div></div>
+        <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Is client data secure?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Encryption is already live: every connection to EANOVA runs over HTTPS/TLS, and all data at rest is encrypted (AES-256) on our database provider's infrastructure — this isn't a future promise, it's how the app runs today. India-region hosting is still a firm commitment we're working toward, not yet in place — see "How we plan to handle your clients' data" above.</div></div></div>
         <div class="faqitem" data-category="general"><button class="faqq" type="button"><span>How many clients can I add?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Unlimited, on every plan — including the free trial.</div></div></div>
         <div class="faqitem" data-category="billing"><button class="faqq" type="button"><span>Is there a free trial?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">Yes, 14 days, full access, no card required to start.</div></div></div>
         <div class="faqitem" data-category="security"><button class="faqq" type="button"><span>Do I need to share my GST portal login?</span><span class="plus">+</span></button><div class="faqa"><div class="faqa-inner">No. You upload your GSTR-2B export directly — EANOVA never asks for or stores your GST portal credentials.</div></div></div>
@@ -3495,7 +3495,6 @@
         <button type="button" data-nav="legal-contact">Contact Us</button>
       </div>
       <span>Figures on this page are illustrative, based on industry-reported reconciliation times.</span>
-      <span>Developer by Mr.Gama</span>
     </footer>
   </main>
 
@@ -3771,44 +3770,12 @@
             <!-- International (region: intl) — unchanged demo flow, since
                  real international payment isn't wired up yet. -->
             <div id="payDemoIntl">
-            <p style="font-size:12px;color:rgba(36,31,26,0.5);margin-bottom:12px;">International payments are in demo mode for now — no real charge. Real card/wallet processing for customers outside India is coming soon.</p>
-            <div class="pay-tabs" role="tablist">
-              <button type="button" class="pay-tab active" data-pay-tab="upi">UPI</button>
-              <button type="button" class="pay-tab" data-pay-tab="card">Credit Card</button>
+            <div style="text-align:center;padding:36px 12px;">
+              <div style="font-size:32px;margin-bottom:12px;">🌍</div>
+              <p style="font-size:14.5px;color:rgba(36,31,26,0.75);line-height:1.6;margin-bottom:6px;font-weight:600;">International payments aren't available yet</p>
+              <p style="font-size:13px;color:rgba(36,31,26,0.55);line-height:1.6;">We're working on card/wallet processing for customers outside India. In the meantime, you can still use the 14-day free trial — or reach out and we'll help set up your account manually.</p>
+              <button type="button" class="btn btn-outline btn-sm" data-nav="legal-contact" style="margin-top:16px;">Contact Us</button>
             </div>
-
-            <div class="pay-panel active" id="payPanelUpi">
-              <div class="field"><label>UPI ID</label><input type="text" id="pay-upi-id" placeholder="yourname@upi" /></div>
-              <div class="upi-app-row">
-                <button type="button" class="upi-app-btn selected" data-upi-app="phonepe"><svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#5F259F"/><path d="M8 6h5.5c2.2 0 3.8 1.4 3.8 3.5 0 2-1.5 3.4-3.6 3.4h-2.4V17H8V6zm3.3 5h1.9c1 0 1.6-.6 1.6-1.5s-.6-1.5-1.6-1.5h-1.9v3z" fill="#fff"/></svg> PhonePe</button>
-                <button type="button" class="upi-app-btn" data-upi-app="gpay"><svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#e2e9f0"/><path d="M17.6 12.23c0-.63-.06-1.25-.16-1.84H12v3.48h3.14a2.7 2.7 0 0 1-1.16 1.77v1.47h1.88c1.1-1.01 1.74-2.5 1.74-4.28z" fill="#4285F4"/><path d="M12 18c1.57 0 2.89-.52 3.86-1.4l-1.88-1.47c-.52.35-1.19.56-1.98.56-1.52 0-2.81-1.03-3.27-2.41H6.79v1.51A6 6 0 0 0 12 18z" fill="#34A853"/><path d="M8.73 13.28a3.6 3.6 0 0 1 0-2.3V9.47H6.79a6 6 0 0 0 0 5.32l1.94-1.51z" fill="#FBBC05"/><path d="M12 8.58c.85 0 1.62.29 2.22.87l1.67-1.67C14.88 6.77 13.56 6.2 12 6.2a6 6 0 0 0-5.21 3.27l1.94 1.51C9.19 9.6 10.48 8.58 12 8.58z" fill="#EA4335"/></svg> Google Pay</button>
-              </div>
-            </div>
-
-            <div class="pay-panel" id="payPanelCard">
-              <div class="card-network-tabs" role="tablist">
-                <button type="button" class="card-network-tab active" data-card-network="visa" data-card-len="16">
-                  <span class="cn-badge cn-visa">VISA</span>
-                </button>
-                <button type="button" class="card-network-tab" data-card-network="mastercard" data-card-len="16">
-                  <span class="cn-badge cn-mastercard"><svg viewBox="0 0 36 22" width="34" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="14" cy="11" r="10" fill="#EB001B"/><circle cx="22" cy="11" r="10" fill="#F79E1B" fill-opacity="0.85"/></svg></span>
-                </button>
-                <button type="button" class="card-network-tab" data-card-network="amex" data-card-len="15">
-                  <span class="cn-badge cn-amex">AMEX</span>
-                </button>
-              </div>
-              <div class="field"><label>Name on card</label><input type="text" id="pay-name" placeholder="Your name" /></div>
-              <div class="field"><label>Card number <span id="payCardHint" style="font-weight:400;text-transform:none;color:rgba(36,31,26,0.5);">(16 digits)</span></label><input type="text" id="pay-card" placeholder="4242 4242 4242 4242" maxlength="16" inputmode="numeric" /></div>
-              <div class="field" style="display:flex;gap:12px;">
-                <div style="flex:1;"><label>Expiry</label><input type="text" id="pay-expiry" placeholder="MM/YY" maxlength="5" /></div>
-                <div style="flex:1;"><label>CVV</label><input type="text" id="pay-cvv" placeholder="123" maxlength="3" inputmode="numeric" /></div>
-              </div>
-            </div>
-
-            <div class="pay-panel" id="payPanelCrypto" style="display:none;"></div>
-
-            <button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button>
-            <div class="auth-error" id="checkoutError" style="display:none;margin-top:12px;"></div>
             </div>
           </div>
           <div class="ordercard">
@@ -3919,13 +3886,15 @@
       <p>To run the reconciliation you request, manage your account and subscription, send OTP/login emails, and process payments (via Razorpay).</p>
       <h3>3. What We Don't Store</h3>
       <p>We never store your card number, CVV, or UPI PIN — these go directly to Razorpay's secure checkout and never touch our servers.</p>
-      <h3>4. Sharing</h3>
+      <h3>4. Data Security</h3>
+      <p>All traffic to and from EANOVA is encrypted in transit (HTTPS/TLS). Data at rest — including your account details and uploaded files — is encrypted (AES-256) on our database provider's infrastructure. India-region hosting for client data is a commitment we're actively working toward, not yet in place.</p>
+      <h3>5. Sharing</h3>
       <p>We don't sell your data. It's shared only with service providers required to run EANOVA — currently Razorpay (payments) and our email provider (OTP/notification emails).</p>
-      <h3>5. Data Retention</h3>
-      <p>Account data is retained while your account is active. You can request deletion by contacting us.</p>
-      <h3>6. Your Rights</h3>
+      <h3>6. Data Retention &amp; Deletion</h3>
+      <p>Account data is retained while your account is active. You can request deletion at any time by <button class="linklike" type="button" data-nav="legal-contact">contacting us</button> — we'll delete your account and associated data within 30 days of a verified request, except where we're required to keep records for legal or payment-compliance reasons (e.g. transaction records Razorpay/tax law require us to retain).</p>
+      <h3>7. Your Rights</h3>
       <p>You can request a copy of your data, ask us to correct it, or ask us to delete your account, by <button class="linklike" type="button" data-nav="legal-contact">contacting us</button>.</p>
-      <h3>7. Changes</h3>
+      <h3>8. Changes</h3>
       <p>We may update this policy; the "Last updated" date above reflects the latest revision.</p>
     </div>
   </section>
@@ -4229,10 +4198,9 @@
         if (payRealEl) payRealEl.style.display = 'block';
         if (payDemoEl) payDemoEl.style.display = 'none';
       } else {
-        // International — unchanged demo flow (Indian GST doesn't apply
-        // to customers outside India; real international payment isn't
-        // wired up yet).
-        document.getElementById('payBtnAmount').textContent = p.currency + p.totalAmount;
+        // International — payment isn't available yet (see payDemoIntl's
+        // "not available" message); still show the order summary figures
+        // for reference, just no live pay button to wire up here anymore.
         document.getElementById('orderPlanAmount').textContent = p.currency + p.totalAmount;
         document.getElementById('orderTotalAmount').textContent = p.currency + p.totalAmount;
         orderGstRowEl.style.display = 'none';
@@ -5947,10 +5915,12 @@
     // Card number and CVV should only ever contain digits — this is also
     // what keeps the max-length limit above meaningful (no spaces/letters
     // eating into the digit count).
-    document.getElementById('pay-card').addEventListener('input', function() {
+    var payCardInputEl = document.getElementById('pay-card');
+    if (payCardInputEl) payCardInputEl.addEventListener('input', function() {
       this.value = this.value.replace(/\D/g, '');
     });
-    document.getElementById('pay-cvv').addEventListener('input', function() {
+    var payCvvInputEl = document.getElementById('pay-cvv');
+    if (payCvvInputEl) payCvvInputEl.addEventListener('input', function() {
       this.value = this.value.replace(/\D/g, '');
     });
 
@@ -6000,7 +5970,12 @@
       return true;
     }
 
-    document.getElementById('payBtn').addEventListener('click', function(e) {
+    // International demo payment UI has been removed (see payDemoIntl above)
+    // — this whole handler is now dead code kept only so nothing else that
+    // references these variables breaks; guarded so it simply never attaches
+    // since #payBtn no longer exists.
+    var payBtnLegacyEl = document.getElementById('payBtn');
+    if (payBtnLegacyEl) payBtnLegacyEl.addEventListener('click', function(e) {
       e.preventDefault();
       if (_selectedPayMethod === 'crypto') return; // guarded, but belt-and-braces
       if (!validatePaymentFields()) return;
@@ -6622,7 +6597,7 @@
           pricing: "EANOVA: ₹99 first month, ₹199/month, or ₹150/month annual (₹1,800/year). International: $9 first, $25/mo, $19/mo annual. 14-day free trial.",
           trial: "Yes! 14-day free trial, full access, no credit card required.",
           upload: "Upload Purchase Register and GSTR-2B as Excel (.xlsx) or CSV. PDF isn't supported yet — convert it to Excel first.",
-          security: "Data is never sold or shared. India-region hosting and encryption at rest/in transit are firm commitments before any real client data is accepted — not yet-built infrastructure we're claiming as live today.",
+          security: "Data is never sold or shared. Encryption is already live — HTTPS/TLS in transit and AES-256 encryption at rest on our database provider's infrastructure. India-region hosting is a firm commitment we're still working toward, not live yet.",
           reconcile: "Reconciliation matches invoices, flags mismatches, partials, and missing in GSTR-2B. Try the free demo above.",
           report: "Download Excel or PDF reports after reconciliation.",
           demo: "Scroll up to 'Run a free reconciliation check' – no signup needed.",
@@ -6637,7 +6612,7 @@
           pricing: "EANOVA: প্রথম মাস ₹৯৯, তারপর ₹১৯৯/মাস, বা বার্ষিক ₹১৫০/মাস (₹১,৮০০/বছর)। আন্তর্জাতিক: $৯ প্রথম, $২৫/মাস, $১৯/মাস বার্ষিক। ১৪ দিন ফ্রি ট্রায়াল।",
           trial: "হ্যাঁ! ১৪ দিন ফ্রি ট্রায়াল, পুরো অ্যাক্সেস, কার্ড লাগে না।",
           upload: "পারচেজ রেজিস্টার এবং GSTR-2B Excel (.xlsx) বা CSV ফরম্যাটে আপলোড করুন। PDF এখনো সাপোর্টেড না — আগে Excel-এ কনভার্ট করে নিন।",
-          security: "ডেটা কখনো বিক্রি বা শেয়ার করা হয় না। ইন্ডিয়া-রিজিয়ন হোস্টিং ও এনক্রিপশন — আসল ক্লায়েন্ট ডেটা নেওয়ার আগেই বাস্তবায়নের দৃঢ় প্রতিশ্রুতি, এখনো তৈরি না হওয়া কিছুকে 'চালু আছে' বলে দাবি করছি না।",
+          security: "ডেটা কখনো বিক্রি বা শেয়ার করা হয় না। এনক্রিপশন এখনই চালু — যাতায়াতে HTTPS/TLS আর ডাটাবেসে AES-256 এনক্রিপশন। ইন্ডিয়া-রিজিয়ন হোস্টিং এখনো তৈরি হয়নি, এটা এখনো আমাদের দৃঢ় প্রতিশ্রুতি হিসেবে আছে।",
           reconcile: "রিকনসিলিয়েশন ইনভয়েস মিলিয়ে, মিসম্যাচ, পার্শিয়াল ও GSTR-2B-তে অনুপস্থিত ইনভয়েস চিহ্নিত করে। উপরের ডেমো ট্রাই করুন।",
           report: "রিকনসিলিয়েশন শেষে Excel বা PDF রিপোর্ট ডাউনলোড করুন।",
           demo: "স্ক্রল করে 'ফ্রি রিকনসিলিয়েশন চেক' করুন – সাইনআপ লাগবে না।",
@@ -6652,7 +6627,7 @@
           pricing: "EANOVA: पहले महीने ₹99, फिर ₹199/महीना, या सालाना ₹150/महीना (₹1,800/साल)। अंतर्राष्ट्रीय: $9 पहला, $25/मो, $19/मो सालाना। 14 दिन फ्री ट्रायल।",
           trial: "हाँ! 14 दिन फ्री ट्रायल, पूरी सुविधाएँ, कार्ड की ज़रूरत नहीं।",
           upload: "परचेज रजिस्टर और GSTR-2B Excel (.xlsx) या CSV में अपलोड करें। PDF अभी सपोर्टेड नहीं है — पहले Excel में बदलें।",
-          security: "डेटा कभी बेचा या साझा नहीं किया जाता। इंडिया-रीजन होस्टिंग और एन्क्रिप्शन — असली क्लाइंट डेटा लेने से पहले लागू करने की पक्की प्रतिबद्धता है, अभी तैयार न हुई चीज़ को 'लाइव' नहीं बता रहे।",
+          security: "डेटा कभी बेचा या साझा नहीं किया जाता। एन्क्रिप्शन अभी लाइव है — ट्रांज़िट में HTTPS/TLS और डेटाबेस पर AES-256 एन्क्रिप्शन। इंडिया-रीजन होस्टिंग अभी तैयार नहीं है, यह अभी भी हमारी पक्की प्रतिबद्धता है।",
           reconcile: "रिकन्सिलिएशन इनवॉइस मिलाता है, मिसमैच, पार्शियल और GSTR-2B में गायब इनवॉइस दिखाता है। ऊपर डेमो ट्राई करें।",
           report: "रिकन्सिलिएशन के बाद Excel या PDF रिपोर्ट डाउनलोड करें।",
           demo: "स्क्रॉल करें और 'फ्री रिकन्सिलिएशन चेक' करें – साइनअप की ज़रूरत नहीं।",
