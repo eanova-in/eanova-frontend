@@ -3021,8 +3021,7 @@
 
         <!-- ফুটার -->
         <div class="ent-footer">
-            <span class="ent-lock"></span> End-to-End Encrypted
-            <span style="opacity:0.2;">|</span> ISO 27001
+            EANOVA — GST reconciliation for Indian CA practices
         </div>
     </div>
 
@@ -3225,6 +3224,7 @@
           <a href="#demo" data-nav="landing" data-scroll="demo">Demo</a>
           <a href="#pricing" data-nav="landing" data-scroll="pricing">Pricing</a>
           <a href="#faq" data-nav="landing" data-scroll="faq">FAQ</a>
+          <button class="navlink-ghost" id="askAssistantLink" type="button">💬 Ask Assistant</button>
           <a href="mailto:eanova.in@gmail.com" class="customer-care-link">Customer Care</a>
           <button class="navlink-ghost" id="navDashLink" style="display:none" data-nav="dashboard">Dashboard</button>
           <button class="navbtn" id="navCtaBtn" data-nav="signup">Start Free Trial</button>
@@ -3279,6 +3279,7 @@
       <a href="#demo" data-nav="landing" data-scroll="demo">Demo</a>
       <a href="#pricing" data-nav="landing" data-scroll="pricing">Pricing</a>
       <a href="#faq" data-nav="landing" data-scroll="faq">FAQ</a>
+      <button class="navlink-ghost" id="askAssistantLinkM" type="button" style="text-align:left;">💬 Ask Assistant</button>
       <button type="button" class="navlink-ghost" id="customerCareLink" style="text-align:left;">✉️ Customer Care</button>
       <button class="navlink-ghost" id="navDashLinkM" style="display:none" data-nav="dashboard">Dashboard</button>
       <button class="navbtn" id="navCtaBtnM" data-nav="signup" style="margin-top:6px;">Start Free Trial</button>
@@ -3763,17 +3764,17 @@
               <p style="font-size:13.5px;color:rgba(36,31,26,0.65);line-height:1.6;margin-bottom:18px;">
                 You'll be taken to Razorpay's secure checkout to pay by UPI, card, netbanking, or wallet — whichever you prefer.
               </p>
-              <button class="btn" style="width:100%;justify-content:center;" id="payBtnRazorpay" type="button">Proceed to Pay <span id="payBtnAmountReal">₹0</span></button>
+              <button class="btn" style="width:100%;justify-content:center;" id="payBtnRazorpay" type="button">Proceed to Pay <span id="payBtnAmountReal">₹234.82</span></button>
               <div class="auth-error" id="checkoutErrorReal" style="display:none;margin-top:12px;"></div>
             </div>
 
             <!-- International (region: intl) — unchanged demo flow, since
                  real international payment isn't wired up yet. -->
             <div id="payDemoIntl">
+            <p style="font-size:12px;color:rgba(36,31,26,0.5);margin-bottom:12px;">International payments are in demo mode for now — no real charge. Real card/wallet processing for customers outside India is coming soon.</p>
             <div class="pay-tabs" role="tablist">
               <button type="button" class="pay-tab active" data-pay-tab="upi">UPI</button>
               <button type="button" class="pay-tab" data-pay-tab="card">Credit Card</button>
-              <button type="button" class="pay-tab" data-pay-tab="crypto">CryptoPay</button>
             </div>
 
             <div class="pay-panel active" id="payPanelUpi">
@@ -3804,9 +3805,7 @@
               </div>
             </div>
 
-            <div class="pay-panel" id="payPanelCrypto">
-              <div class="crypto-soon">🔒 CryptoPay is coming soon.</div>
-            </div>
+            <div class="pay-panel" id="payPanelCrypto" style="display:none;"></div>
 
             <button class="btn" style="width:100%;margin-top:24px;justify-content:center;" id="payBtn">Pay <span id="payBtnAmount">₹199</span></button>
             <div class="auth-error" id="checkoutError" style="display:none;margin-top:12px;"></div>
@@ -4018,7 +4017,6 @@
   <!-- ============================================================ -->
   <!-- AI CHAT -->
   <!-- ============================================================ -->
-  <button class="ai-widget-btn" id="aiWidgetBtn" aria-label="Chat with the EANOVA assistant">💬</button>
   <div class="ai-chat-panel" id="aiChatPanel">
     <div class="ai-chat-head"><div class="avatar">🤖</div><div class="info"><div class="name">EANOVA Assistant</div><div class="sub">here to help</div></div><button class="ai-chat-close" id="aiChatClose">✕</button></div>
     <div class="ai-chat-body" id="aiChatBody"><div class="ai-msg bot">Hi! 👋 I can tell you about pricing, the free trial, file uploads, security, or how reconciliation works. What do you want to know?</div></div>
@@ -6606,7 +6604,6 @@
      *  AI CHAT (মাল্টি-ল্যাঙ্গুয়েজ)
      ********************************************************************/
     (function() {
-      var btn = document.getElementById('aiWidgetBtn');
       var panel = document.getElementById('aiChatPanel');
       var closeBtn = document.getElementById('aiChatClose');
       var body = document.getElementById('aiChatBody');
@@ -6625,7 +6622,7 @@
           pricing: "EANOVA: ₹99 first month, ₹199/month, or ₹150/month annual (₹1,800/year). International: $9 first, $25/mo, $19/mo annual. 14-day free trial.",
           trial: "Yes! 14-day free trial, full access, no credit card required.",
           upload: "Upload Purchase Register and GSTR-2B as Excel (.xlsx) or CSV. PDF isn't supported yet — convert it to Excel first.",
-          security: "Data is never sold or shared. We use encryption and India-region hosting.",
+          security: "Data is never sold or shared. India-region hosting and encryption at rest/in transit are firm commitments before any real client data is accepted — not yet-built infrastructure we're claiming as live today.",
           reconcile: "Reconciliation matches invoices, flags mismatches, partials, and missing in GSTR-2B. Try the free demo above.",
           report: "Download Excel or PDF reports after reconciliation.",
           demo: "Scroll up to 'Run a free reconciliation check' – no signup needed.",
@@ -6640,7 +6637,7 @@
           pricing: "EANOVA: প্রথম মাস ₹৯৯, তারপর ₹১৯৯/মাস, বা বার্ষিক ₹১৫০/মাস (₹১,৮০০/বছর)। আন্তর্জাতিক: $৯ প্রথম, $২৫/মাস, $১৯/মাস বার্ষিক। ১৪ দিন ফ্রি ট্রায়াল।",
           trial: "হ্যাঁ! ১৪ দিন ফ্রি ট্রায়াল, পুরো অ্যাক্সেস, কার্ড লাগে না।",
           upload: "পারচেজ রেজিস্টার এবং GSTR-2B Excel (.xlsx) বা CSV ফরম্যাটে আপলোড করুন। PDF এখনো সাপোর্টেড না — আগে Excel-এ কনভার্ট করে নিন।",
-          security: "ডেটা কখনো বিক্রি বা শেয়ার করা হয় না। এনক্রিপশন ও ইন্ডিয়া-রিজিয়ন হোস্টিং ব্যবহার করি।",
+          security: "ডেটা কখনো বিক্রি বা শেয়ার করা হয় না। ইন্ডিয়া-রিজিয়ন হোস্টিং ও এনক্রিপশন — আসল ক্লায়েন্ট ডেটা নেওয়ার আগেই বাস্তবায়নের দৃঢ় প্রতিশ্রুতি, এখনো তৈরি না হওয়া কিছুকে 'চালু আছে' বলে দাবি করছি না।",
           reconcile: "রিকনসিলিয়েশন ইনভয়েস মিলিয়ে, মিসম্যাচ, পার্শিয়াল ও GSTR-2B-তে অনুপস্থিত ইনভয়েস চিহ্নিত করে। উপরের ডেমো ট্রাই করুন।",
           report: "রিকনসিলিয়েশন শেষে Excel বা PDF রিপোর্ট ডাউনলোড করুন।",
           demo: "স্ক্রল করে 'ফ্রি রিকনসিলিয়েশন চেক' করুন – সাইনআপ লাগবে না।",
@@ -6655,7 +6652,7 @@
           pricing: "EANOVA: पहले महीने ₹99, फिर ₹199/महीना, या सालाना ₹150/महीना (₹1,800/साल)। अंतर्राष्ट्रीय: $9 पहला, $25/मो, $19/मो सालाना। 14 दिन फ्री ट्रायल।",
           trial: "हाँ! 14 दिन फ्री ट्रायल, पूरी सुविधाएँ, कार्ड की ज़रूरत नहीं।",
           upload: "परचेज रजिस्टर और GSTR-2B Excel (.xlsx) या CSV में अपलोड करें। PDF अभी सपोर्टेड नहीं है — पहले Excel में बदलें।",
-          security: "डेटा कभी बेचा या साझा नहीं किया जाता। एन्क्रिप्शन और इंडिया-रीजन होस्टिंग।",
+          security: "डेटा कभी बेचा या साझा नहीं किया जाता। इंडिया-रीजन होस्टिंग और एन्क्रिप्शन — असली क्लाइंट डेटा लेने से पहले लागू करने की पक्की प्रतिबद्धता है, अभी तैयार न हुई चीज़ को 'लाइव' नहीं बता रहे।",
           reconcile: "रिकन्सिलिएशन इनवॉइस मिलाता है, मिसमैच, पार्शियल और GSTR-2B में गायब इनवॉइस दिखाता है। ऊपर डेमो ट्राई करें।",
           report: "रिकन्सिलिएशन के बाद Excel या PDF रिपोर्ट डाउनलोड करें।",
           demo: "स्क्रॉल करें और 'फ्री रिकन्सिलिएशन चेक' करें – साइनअप की ज़रूरत नहीं।",
@@ -6685,10 +6682,10 @@
         return dict.fallback;
       }
 
-      btn.addEventListener('click', function() {
-        panel.classList.toggle('show');
-        if (panel.classList.contains('show')) input.focus();
-      });
+      var askBtnDesktop = document.getElementById('askAssistantLink');
+      var askBtnMobile = document.getElementById('askAssistantLinkM');
+      if (askBtnDesktop) askBtnDesktop.addEventListener('click', function() { window.openEanovaAssistant(); });
+      if (askBtnMobile) askBtnMobile.addEventListener('click', function() { closeMobileMenu(); window.openEanovaAssistant(); });
       closeBtn.addEventListener('click', function() { panel.classList.remove('show'); });
       window.openEanovaAssistant = function() { panel.classList.add('show');
         input.focus(); };
