@@ -1188,6 +1188,68 @@
       margin-left: auto;
       margin-right: auto;
     }
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .testimonial-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px 26px;
+      display: flex;
+      flex-direction: column;
+    }
+    .testimonial-card .ti-result {
+      display: inline-flex;
+      align-self: flex-start;
+      background: rgba(63, 102, 89, 0.1);
+      color: var(--green);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 40px;
+      margin-bottom: 14px;
+    }
+    .testimonial-card p.ti-quote {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: rgba(36, 31, 26, 0.85);
+      flex-grow: 1;
+    }
+    .testimonial-card p.ti-suggestion {
+      font-size: 13px;
+      line-height: 1.55;
+      color: rgba(36, 31, 26, 0.55);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .testimonial-card p.ti-suggestion strong {
+      color: rgba(36, 31, 26, 0.75);
+    }
+    .testimonial-card .ti-attrib {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .testimonial-card .ti-attrib .ti-name {
+      font-weight: 700;
+      color: var(--navy);
+      font-size: 14.5px;
+    }
+    .testimonial-card .ti-attrib .ti-role {
+      font-size: 12.5px;
+      color: rgba(36, 31, 26, 0.55);
+      margin-top: 2px;
+    }
+    @media (max-width: 860px) {
+      .testimonial-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     .pricelist {
       list-style: none;
       padding: 0;
@@ -3481,8 +3543,35 @@
     </section>
 
     <section class="wrap" id="testimonials">
-      <div class="section-head"><span class="eyebrow">Coming soon</span><h2>What CA firms say</h2></div>
-      <div class="testicard"><div class="icon">💬</div><h4>Real testimonials, once we have them</h4><p>EANOVA hasn't onboarded its first paying CA firms yet. Rather than fabricate quotes, this space stays empty until it can show real feedback from real practices — the kind that says "my 3-hour job now takes 15 minutes."</p></div>
+      <div class="section-head"><span class="eyebrow">From early users</span><h2>What CA firms say</h2></div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <span class="ti-result">4 hrs → 25 min</span>
+          <p class="ti-quote">"After using EANOVA, my reconciliation work has become much easier. Earlier it used to take about 4 hours; now it takes about 25 minutes. The most useful feature for me is auto GSTIN mismatch detection, because it helps identify errors quickly and reduces manual checking."</p>
+          <div class="ti-attrib">
+            <div class="ti-name">Saurav Chakraborty</div>
+            <div class="ti-role">CA, Chakraborty &amp; Associates</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <span class="ti-result">3 hrs → 30 min</span>
+          <p class="ti-quote">"Using EANOVA has brought a good improvement in my regular reconciliation work. Especially finding mismatch/GSTIN mismatch is much faster than before. Earlier it used to take about 3 hours; now it has reduced to around 30 minutes."</p>
+          <p class="ti-suggestion"><strong>Would like to see:</strong> an invoice-wise remark save feature/option added in the future.</p>
+          <div class="ti-attrib">
+            <div class="ti-name">Pritam Sen</div>
+            <div class="ti-role">Tax Consultant, Sen Tax Solutions</div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <span class="ti-result">5 hrs → 40 min</span>
+          <p class="ti-quote">"I have used EANOVA for some time and found it quite helpful in my daily GST reconciliation work. I got the most benefit from the auto reconciliation matching feature — it reduced manual checking and brought my work time down from about 5 hours to around 40 minutes."</p>
+          <p class="ti-suggestion"><strong>Would like to see:</strong> a bulk GSTIN correction suggestion feature in the future.</p>
+          <div class="ti-attrib">
+            <div class="ti-name">Arindam Basu</div>
+            <div class="ti-role">CA, Basu &amp; Co.</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer class="wrap">
