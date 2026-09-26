@@ -333,6 +333,15 @@
       background: var(--red);
       color: #fff;
     }
+    .pd-share-btn {
+      border-color: var(--green) !important;
+      color: var(--green) !important;
+      margin-bottom: 8px;
+    }
+    .pd-share-btn:hover {
+      background: var(--green) !important;
+      color: #fff !important;
+    }
     #pdAvatarFileInput {
       display: none;
     }
@@ -1952,6 +1961,11 @@
       gap: 12px;
       width: 100%;
     }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
     .dash-plan-card {
       background: var(--navy);
       color: var(--paper);
@@ -3329,6 +3343,7 @@
               </div>
             </div>
             <div class="pd-footer">
+              <button type="button" class="pd-logout-btn pd-share-btn" id="pdShareEarnBtn" data-nav="referral">🎁 Share &amp; Earn</button>
               <button type="button" class="pd-logout-btn" id="pdLogoutBtn">Log out</button>
             </div>
           </div>
@@ -3741,6 +3756,53 @@
   </section>
 
   <!-- ============================================================ -->
+  <!-- REFERRAL ("Share & Earn") VIEW -->
+  <!-- ============================================================ -->
+  <section class="view" id="view-referral">
+    <div class="wrap dash-top">
+      <div class="dash-title">
+        <div><h1>Share &amp; Earn</h1><p style="font-size:14px;color:rgba(36,31,26,0.6);margin-top:4px;">Invite other CAs/practices — you earn 8% (excl. GST) when someone you refer buys a plan.</p></div>
+      </div>
+
+      <div class="card" style="margin-top:24px;padding:24px;">
+        <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:rgba(36,31,26,0.55);">Your referral link</label>
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+          <input type="text" id="referralLinkInput" readonly style="flex:1;min-width:220px;padding:11px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--navy);" />
+          <button class="btn btn-sm" id="referralCopyBtn" type="button">Copy Link</button>
+        </div>
+        <div class="auth-error" id="referralError" style="display:none;margin-top:12px;"></div>
+      </div>
+
+      <div class="summarygrid" style="margin-top:24px;">
+        <div class="sumcard"><div class="n" id="refWithdrawable">₹0</div><div class="l">Withdrawable</div></div>
+        <div class="sumcard partial"><div class="n" id="refLocked">₹0</div><div class="l">Locked (7-day hold)</div></div>
+        <div class="sumcard missing-books"><div class="n" id="refLifetime">₹0</div><div class="l">Lifetime earned</div></div>
+        <div class="sumcard needs-review"><div class="n" id="refReferredCount">0</div><div class="l">People referred</div></div>
+      </div>
+
+      <div class="card" style="margin-top:24px;padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:700;color:var(--navy);">Request withdrawal</div>
+            <div style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:2px;">Minimum ₹100 withdrawable balance required.</div>
+          </div>
+          <button class="btn btn-sm" id="referralWithdrawBtn" type="button">Request Withdrawal</button>
+        </div>
+        <div class="auth-error" id="referralWithdrawMsg" style="display:none;margin-top:14px;"></div>
+      </div>
+
+      <div style="margin-top:32px;">
+        <h3 style="font-size:17px;margin-bottom:14px;">People you've referred</h3>
+        <div id="referralListEmpty" style="font-size:14px;color:rgba(36,31,26,0.55);padding:20px 0;">No one yet — share your link above to get started.</div>
+        <table style="width:100%;border-collapse:collapse;display:none;" id="referralListTable">
+          <thead><tr style="text-align:left;border-bottom:1.5px solid var(--line);"><th style="padding:10px 8px;font-size:12px;color:rgba(36,31,26,0.5);">Name</th><th style="padding:10px 8px;font-size:12px;color:rgba(36,31,26,0.5);">Status</th></tr></thead>
+          <tbody id="referralListBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
   <!-- DASHBOARD VIEW -->
   <!-- ============================================================ -->
   <section class="view" id="view-dashboard">
@@ -4116,6 +4178,20 @@
     function getAuthToken() {
       try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (_) { return ''; }
     }
+    // রেফারেল লিংক দিয়ে কেউ প্রথমবার এলে ?ref=CODE থাকবে — সেটা ধরে
+    // রাখা হচ্ছে (session-এর জন্য, যতক্ষণ না signup সম্পন্ন হয়), যাতে
+    // পরে signup/Google-login রিকোয়েস্টের সাথে পাঠানো যায়। কেউ যদি সরাসরি
+    // সাইটে আসে (লিংক ছাড়া), এটা সবসময় খালিই থাকবে — কোনো ক্ষতি নেই।
+    (function captureReferralCode() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var ref = params.get('ref');
+        if (ref) sessionStorage.setItem('eanova_pending_ref', ref.trim().toUpperCase());
+      } catch (_) {}
+    })();
+    function getPendingReferralCode() {
+      try { return sessionStorage.getItem('eanova_pending_ref') || ''; } catch (_) { return ''; }
+    }
     function setAuthToken(token) {
       try {
         if (token) localStorage.setItem(TOKEN_KEY, token);
@@ -4233,6 +4309,7 @@
       window.scrollTo({ top: 0, behavior: 'instant' });
       if (name === 'dashboard') renderDashboard();
       if (name === 'checkout') renderCheckout();
+      if (name === 'referral') renderReferralView();
       updateNavState();
       closeMobileMenu();
       // Push each view change onto browser history so a single back-press
@@ -4353,6 +4430,92 @@
       document.getElementById('checkoutForm').style.display = 'block';
       successBox.style.display = 'none';
     }
+
+    /********************************************************************
+     *  SHARE & EARN (referral dashboard) — entirely new/separate view;
+     *  doesn't touch OTP, login, or checkout logic at all.
+     ********************************************************************/
+    function renderReferralView() {
+      var errBox = document.getElementById('referralError');
+      var withdrawMsg = document.getElementById('referralWithdrawMsg');
+      errBox.style.display = 'none';
+      withdrawMsg.style.display = 'none';
+      authFetch(API_BASE + '/api/referral/dashboard')
+        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+        .then(function(result) {
+          if (result.status !== 200) {
+            errBox.textContent = result.body.message || 'Could not load your referral info.';
+            errBox.style.display = 'block';
+            return;
+          }
+          var d = result.body;
+          var link = window.location.origin + window.location.pathname + '?ref=' + d.referralCode;
+          document.getElementById('referralLinkInput').value = link;
+          document.getElementById('refWithdrawable').textContent = '₹' + (d.withdrawableBalance || 0).toLocaleString('en-IN');
+          document.getElementById('refLocked').textContent = '₹' + (d.lockedBalance || 0).toLocaleString('en-IN');
+          document.getElementById('refLifetime').textContent = '₹' + (d.lifetimeEarned || 0).toLocaleString('en-IN');
+          document.getElementById('refReferredCount').textContent = (d.referredUsers || []).length;
+
+          var listBody = document.getElementById('referralListBody');
+          var listTable = document.getElementById('referralListTable');
+          var listEmpty = document.getElementById('referralListEmpty');
+          var users = d.referredUsers || [];
+          if (users.length === 0) {
+            listTable.style.display = 'none';
+            listEmpty.style.display = 'block';
+          } else {
+            listEmpty.style.display = 'none';
+            listTable.style.display = 'table';
+            listBody.innerHTML = users.map(function(u) {
+              var badgeColor = u.status === 'successful' ? 'var(--green)' : 'rgba(36,31,26,0.45)';
+              var badgeBg = u.status === 'successful' ? 'rgba(63,102,89,0.1)' : 'rgba(36,31,26,0.06)';
+              return '<tr style="border-bottom:1px solid var(--line);"><td style="padding:10px 8px;font-size:14px;">' + u.name + '</td><td style="padding:10px 8px;"><span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:40px;background:' + badgeBg + ';color:' + badgeColor + ';">' + (u.status === 'successful' ? 'Successful' : 'Pending') + '</span></td></tr>';
+            }).join('');
+          }
+        })
+        .catch(function() {
+          errBox.textContent = 'Server error. Please try again.';
+          errBox.style.display = 'block';
+        });
+    }
+
+    var referralCopyBtnEl = document.getElementById('referralCopyBtn');
+    if (referralCopyBtnEl) referralCopyBtnEl.addEventListener('click', function() {
+      var input = document.getElementById('referralLinkInput');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      var restoreText = function() { referralCopyBtnEl.textContent = 'Copy Link'; };
+      function fallbackCopy() {
+        try { document.execCommand('copy'); } catch (_) {}
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+      referralCopyBtnEl.textContent = 'Copied!';
+      setTimeout(restoreText, 1800);
+    });
+
+    var referralWithdrawBtnEl = document.getElementById('referralWithdrawBtn');
+    if (referralWithdrawBtnEl) referralWithdrawBtnEl.addEventListener('click', function() {
+      var withdrawMsg = document.getElementById('referralWithdrawMsg');
+      withdrawMsg.style.display = 'none';
+      setBtnLoading(referralWithdrawBtnEl, true);
+      authFetch(API_BASE + '/api/referral/withdraw-request', { method: 'POST' })
+        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+        .then(function(result) {
+          withdrawMsg.textContent = result.body.message || (result.status === 200 ? 'Request received.' : 'Something went wrong.');
+          withdrawMsg.style.display = 'block';
+        })
+        .catch(function() {
+          withdrawMsg.textContent = 'Server error. Please try again.';
+          withdrawMsg.style.display = 'block';
+        })
+        .finally(function() {
+          setBtnLoading(referralWithdrawBtnEl, false);
+        });
+    });
 
     /********************************************************************
      *  RECEIPT CACHE — window._lastReceipt only lives in memory, so it's
@@ -4759,7 +4922,8 @@
           email: data.email,
           password: data.password,
           region: data.region,
-          otp: otp
+          otp: otp,
+          ref: getPendingReferralCode()
         })
       })
       .then(res => res.json().then(data => ({ status: res.status, body: data })))
@@ -5161,7 +5325,7 @@
       fetch(API_BASE + '/api/google-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: credential })
+        body: JSON.stringify({ credential: credential, ref: getPendingReferralCode() })
       })
       .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
       .then(function(result) {
