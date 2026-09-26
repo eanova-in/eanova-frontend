@@ -349,6 +349,42 @@
       background: var(--green);
       color: #fff;
     }
+    .ref-status-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 8px;
+      flex-shrink: 0;
+      animation: refDotBlink 1.4s ease-in-out infinite;
+    }
+    .ref-status-dot.success { background: #2fae63; box-shadow: 0 0 0 rgba(47,174,99,0.5); }
+    .ref-status-dot.pending { background: var(--gold); box-shadow: 0 0 0 rgba(192,138,40,0.5); }
+    @keyframes refDotBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+    .eanova-toast {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      background: var(--navy, #1a2233);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .eanova-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
     #pdAvatarFileInput {
       display: none;
     }
@@ -3495,7 +3531,7 @@
         <div class="pricecard" id="firstMonthPriceCard">
           <div class="pc-label">First Month</div>
           <div class="pc-price"><span class="pc-num" data-in="99" data-intl="9">99</span></div>
-          <div class="pc-gst-note">+ 18% GST at checkout</div>
+          <div class="pc-gst-note">Including all charges</div>
           <div class="pc-sub">New accounts only, one-time introductory price</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Real reconciliation engine</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="first" data-nav="checkout" type="button">Start at this price →</button>
@@ -3504,7 +3540,7 @@
         <div class="pricecard">
           <div class="pc-label">Monthly</div>
           <div class="pc-price"><span class="pc-num" data-in="199" data-intl="25">199</span><span class="pc-permo">/mo</span></div>
-          <div class="pc-gst-note">+ 18% GST at checkout</div>
+          <div class="pc-gst-note">Including all charges</div>
           <div class="pc-sub">From month 2 onward, pay-as-you-go</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Cancel anytime</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="monthly" data-nav="checkout" type="button">Start Free Trial →</button>
@@ -3514,7 +3550,7 @@
           <div class="pc-badge">Best value</div>
           <div class="pc-label">Annual</div>
           <div class="pc-price"><span class="pc-num" data-in="150" data-intl="19">150</span><span class="pc-permo">/mo</span></div>
-          <div class="pc-gst-note">+ 18% GST at checkout</div>
+          <div class="pc-gst-note">Including all charges</div>
           <div class="pc-sub" id="pcAnnualSub">Billed yearly — <span data-in="₹1,800" data-intl="$228">₹1,800</span>/year total</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>~25% cheaper than monthly</li></ul>
           <button class="btn btn-gold btn-sm" data-plan="annual" data-nav="checkout" type="button">Get the annual plan →</button>
@@ -6797,20 +6833,22 @@
 
           var listEl = document.getElementById('refHistoryList');
           var emptyEl = document.getElementById('refHistoryEmpty');
-          var history = body.points.history || [];
-          if (!history.length) {
+          var accounts = body.referredAccounts || [];
+          if (!accounts.length) {
             listEl.innerHTML = '';
             emptyEl.style.display = 'block';
           } else {
             emptyEl.style.display = 'none';
-            var statusLabels = { available: 'Available', on_hold: 'On hold', withdrawn: 'Withdrawn', reversed: 'Reversed (refunded)' };
-            var statusColors = { available: 'var(--green)', on_hold: 'var(--gold)', withdrawn: 'rgba(36,31,26,0.5)', reversed: 'var(--red)' };
-            listEl.innerHTML = history.map(function(h) {
-              var d = new Date(h.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            listEl.innerHTML = accounts.map(function(a) {
+              var isSuccess = a.status === 'success';
+              var dotClass = isSuccess ? 'success' : 'pending';
+              var label = isSuccess
+                ? (a.totalEarned > 0 ? '<span style="font-size:11.5px;font-weight:600;color:var(--green);">Success — ₹' + a.totalEarned + ' earned</span>' : '<span style="font-size:11.5px;font-weight:600;color:var(--green);">Success</span>')
+                : '<span style="font-size:11.5px;font-weight:600;color:var(--gold);">(Pending)</span>';
               return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(36,31,26,0.08);">' +
-                '<div><div style="font-weight:600;">₹' + h.amount + ' — ' + (h.buyerEmailMasked || '') + '</div>' +
-                '<div style="font-size:11.5px;color:rgba(36,31,26,0.5);">' + (h.planPurchased || '') + ' plan · ' + d + '</div></div>' +
-                '<span style="font-size:11.5px;font-weight:600;color:' + (statusColors[h.status] || 'inherit') + ';">' + (statusLabels[h.status] || h.status) + '</span>' +
+                '<div style="display:flex;align-items:center;"><span class="ref-status-dot ' + dotClass + '"></span>' +
+                '<span style="font-weight:600;">' + a.name + '</span></div>' +
+                label +
                 '</div>';
             }).join('');
           }
@@ -6836,8 +6874,28 @@
       }
     });
 
+    // ছোট toast popup — কোনো modal/window খোলে না, শুধু ২ সেকেন্ডের জন্য
+    // উপরে একটা মেসেজ দেখিয়ে নিজে থেকে মিলিয়ে যায়।
+    function showToast(message) {
+      var el = document.getElementById('eanovaToast');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'eanovaToast';
+        el.className = 'eanova-toast';
+        document.body.appendChild(el);
+      }
+      el.textContent = message;
+      el.classList.add('show');
+      clearTimeout(el._hideTimer);
+      el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 2400);
+    }
+
     document.getElementById('refWithdrawBtn').addEventListener('click', function() {
       var available = (_referralPointsCache && _referralPointsCache.availableBalance) || 0;
+      if (available < 100) {
+        showToast('Insufficient balance — you need at least ₹100 available to withdraw.');
+        return;
+      }
       document.getElementById('wdAvailableAmt').textContent = '₹' + available;
       document.getElementById('withdrawalError').style.display = 'none';
       openModal('withdrawalModal');
