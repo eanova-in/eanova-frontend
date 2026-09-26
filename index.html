@@ -333,14 +333,21 @@
       background: var(--red);
       color: #fff;
     }
-    .pd-share-btn {
-      border-color: var(--green) !important;
-      color: var(--green) !important;
+    .pd-referral-btn {
+      width: 100%;
+      background: none;
+      border: 1.5px solid var(--green);
+      color: var(--green);
+      padding: 9px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
       margin-bottom: 8px;
+      cursor: pointer;
     }
-    .pd-share-btn:hover {
-      background: var(--green) !important;
-      color: #fff !important;
+    .pd-referral-btn:hover {
+      background: var(--green);
+      color: #fff;
     }
     #pdAvatarFileInput {
       display: none;
@@ -1961,11 +1968,6 @@
       gap: 12px;
       width: 100%;
     }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
     .dash-plan-card {
       background: var(--navy);
       color: var(--paper);
@@ -3341,9 +3343,13 @@
                 <span class="pd-row-label">Valid plan</span>
                 <span class="pd-row-value"><span class="pd-validity-text" id="pdValidityText">—</span></span>
               </div>
+              <div class="pd-row" id="pdRefundRow" style="display:none;">
+                <span class="pd-row-label">Refund</span>
+                <span class="pd-row-value"><button type="button" class="linklike" id="pdRequestRefundBtn">Request Refund</button></span>
+              </div>
             </div>
             <div class="pd-footer">
-              <button type="button" class="pd-logout-btn pd-share-btn" id="pdShareEarnBtn" data-nav="referral">🎁 Share &amp; Earn</button>
+              <button type="button" class="pd-referral-btn" id="pdReferralBtn">🎁 Refer &amp; Earn</button>
               <button type="button" class="pd-logout-btn" id="pdLogoutBtn">Log out</button>
             </div>
           </div>
@@ -3756,53 +3762,6 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- REFERRAL ("Share & Earn") VIEW -->
-  <!-- ============================================================ -->
-  <section class="view" id="view-referral">
-    <div class="wrap dash-top">
-      <div class="dash-title">
-        <div><h1>Share &amp; Earn</h1><p style="font-size:14px;color:rgba(36,31,26,0.6);margin-top:4px;">Invite other CAs/practices — you earn 8% (excl. GST) when someone you refer buys a plan.</p></div>
-      </div>
-
-      <div class="card" style="margin-top:24px;padding:24px;">
-        <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:rgba(36,31,26,0.55);">Your referral link</label>
-        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
-          <input type="text" id="referralLinkInput" readonly style="flex:1;min-width:220px;padding:11px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--navy);" />
-          <button class="btn btn-sm" id="referralCopyBtn" type="button">Copy Link</button>
-        </div>
-        <div class="auth-error" id="referralError" style="display:none;margin-top:12px;"></div>
-      </div>
-
-      <div class="summarygrid" style="margin-top:24px;">
-        <div class="sumcard"><div class="n" id="refWithdrawable">₹0</div><div class="l">Withdrawable</div></div>
-        <div class="sumcard partial"><div class="n" id="refLocked">₹0</div><div class="l">Locked (7-day hold)</div></div>
-        <div class="sumcard missing-books"><div class="n" id="refLifetime">₹0</div><div class="l">Lifetime earned</div></div>
-        <div class="sumcard needs-review"><div class="n" id="refReferredCount">0</div><div class="l">People referred</div></div>
-      </div>
-
-      <div class="card" style="margin-top:24px;padding:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-          <div>
-            <div style="font-weight:700;color:var(--navy);">Request withdrawal</div>
-            <div style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:2px;">Minimum ₹100 withdrawable balance required.</div>
-          </div>
-          <button class="btn btn-sm" id="referralWithdrawBtn" type="button">Request Withdrawal</button>
-        </div>
-        <div class="auth-error" id="referralWithdrawMsg" style="display:none;margin-top:14px;"></div>
-      </div>
-
-      <div style="margin-top:32px;">
-        <h3 style="font-size:17px;margin-bottom:14px;">People you've referred</h3>
-        <div id="referralListEmpty" style="font-size:14px;color:rgba(36,31,26,0.55);padding:20px 0;">No one yet — share your link above to get started.</div>
-        <table style="width:100%;border-collapse:collapse;display:none;" id="referralListTable">
-          <thead><tr style="text-align:left;border-bottom:1.5px solid var(--line);"><th style="padding:10px 8px;font-size:12px;color:rgba(36,31,26,0.5);">Name</th><th style="padding:10px 8px;font-size:12px;color:rgba(36,31,26,0.5);">Status</th></tr></thead>
-          <tbody id="referralListBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================ -->
   <!-- DASHBOARD VIEW -->
   <!-- ============================================================ -->
   <section class="view" id="view-dashboard">
@@ -3933,7 +3892,7 @@
             <h3 style="color:var(--paper);font-size:17px;">Order summary</h3>
             <div class="row2"><span id="orderPlanLabel">EANOVA — Monthly plan</span><span id="orderPlanAmount">₹199</span></div>
             <div class="row2"><span>Billing cycle</span><span id="orderBillingCycle">Monthly</span></div>
-            <div class="row2" id="orderGstRow"><span>GST (18%)</span><span id="orderGstAmount">₹0</span></div>
+            <div class="row2" id="orderGstRow"><span>Including all charges</span><span id="orderGstAmount">₹0</span></div>
             <div class="row2 total"><span>Total due today</span><span id="orderTotalAmount">₹199</span></div>
           </div>
         </div>
@@ -4016,11 +3975,14 @@
       <p>Files you upload for reconciliation are processed to generate your report. See our <button class="linklike" type="button" data-nav="legal-privacy">Privacy Policy</button> for details on what we store and for how long.</p>
       <h3>5. Acceptable Use</h3>
       <p>You agree not to misuse the service — including attempting to bypass usage limits, reverse-engineer the matching engine, or use the service for any unlawful purpose.</p>
-      <h3>6. Limitation of Liability</h3>
+      <h3>6. Share &amp; Earn (Referral Program)</h3>
+      <p>Every account gets a unique referral link. When someone you refer creates an account and buys a paid plan, you earn 8% commission on that purchase — and on every future plan they buy for as long as their account stays active, not just their first purchase. Commission is credited to you as Points in the "Refer &amp; Earn" section of your profile; 1 Point = ₹1.</p>
+      <p>Newly earned Points are held for 7 days before they can be withdrawn, matching our refund window (below) — if the referred purchase is refunded within that period, the related commission is reversed. You can request a withdrawal once your available balance reaches a minimum of ₹100; payouts are arranged manually via Live Chat or email after your request. We may suspend or reverse commissions obtained through fraudulent, fake, or self-referred accounts.</p>
+      <h3>7. Limitation of Liability</h3>
       <p>EANOVA is provided "as is". While we aim for accurate reconciliation, we are not liable for losses arising from reliance on the tool's output without independent verification, or from service interruptions.</p>
-      <h3>7. Changes</h3>
+      <h3>8. Changes</h3>
       <p>We may update these terms from time to time; continued use after an update means you accept the revised terms.</p>
-      <h3>8. Contact</h3>
+      <h3>9. Contact</h3>
       <p>Questions about these terms? <button class="linklike" type="button" data-nav="legal-contact">Contact us</button>.</p>
     </div>
   </section>
@@ -4032,7 +3994,7 @@
       <p class="legal-updated">Last updated: September 2026</p>
       <p>This Privacy Policy explains what information EANOVA collects and how it's used.</p>
       <h3>1. What We Collect</h3>
-      <p>Account details you provide (name, firm name, email, region), and the Purchase Register / GSTR-2B files you upload for reconciliation.</p>
+      <p>Account details you provide (name, firm name, email, region), and the Purchase Register / GSTR-2B files you upload for reconciliation. If you use Share &amp; Earn, we also store your referral code, who referred you (if anyone), and your referral commission/points history.</p>
       <h3>2. How We Use It</h3>
       <p>To run the reconciliation you request, manage your account and subscription, send OTP/login emails, and process payments (via Razorpay).</p>
       <h3>3. What We Don't Store</h3>
@@ -4060,7 +4022,8 @@
       <h3>2. Cancellation</h3>
       <p>You can cancel anytime from your dashboard. Cancelling stops future renewals but does not end your access early.</p>
       <h3>3. Refunds</h3>
-      <p>Because plans are billed for a full month (or year) upfront and access is granted immediately, no refunds are provided for the active billing period once payment is made. You can continue using the service for the remainder of the period you've already paid for.</p>
+      <p>Refunds are available if requested within <strong>7 days of your purchase date</strong>. Use the "Request Refund" option in your profile menu (or <button class="linklike" type="button" data-nav="legal-contact">contact us</button>) — we'll confirm details over Live Chat or email and process eligible refunds manually through Razorpay. After 7 days, purchases become non-refundable, though you can continue using the plan for the remainder of the period you've already paid for.</p>
+      <p>Note: EANOVA plans are one-time purchases, not auto-recurring subscriptions — each billing period requires you to actively return and pay again, so there's no auto-renewal to switch off.</p>
       <h3>4. Failed / Duplicate Payments</h3>
       <p>If a payment was deducted but your subscription wasn't activated, or you were charged more than once by mistake, <button class="linklike" type="button" data-nav="legal-contact">contact us</button> with your payment ID and we'll investigate and correct it.</p>
     </div>
@@ -4073,6 +4036,50 @@
       <p>For any questions, support, billing issues, or feedback, reach us by email:</p>
       <a href="mailto:eanova.in@gmail.com" style="display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--navy);text-decoration:underline;">eanova.in@gmail.com</a>
       <p style="margin-top:18px;color:rgba(36,31,26,0.6);font-size:13.5px;">We typically respond within 24-48 hours.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SHARE & EARN (REFERRAL) — new, self-contained view; no other -->
+  <!-- view/section touched. Data is fetched live from               -->
+  <!-- /api/referral/info when this view opens (renderReferral()).   -->
+  <!-- ============================================================ -->
+  <section class="view" id="view-referral">
+    <div class="wrap legalpage">
+      <a href="#" class="backlink" data-nav="dashboard">← Back to dashboard</a>
+      <h1>🎁 Refer &amp; Earn</h1>
+      <p>Share EANOVA with other CAs and firms. For every successful plan purchase made by someone you refer — for as long as their account stays active, not just their first purchase — you earn <strong>8% commission</strong>, credited to you as Points (1 Point = ₹1).</p>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;">
+        <div style="flex:1;min-width:140px;background:rgba(63,102,89,0.08);border-radius:10px;padding:14px 16px;">
+          <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">Available balance</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green);margin-top:4px;" id="refAvailable">₹0</div>
+        </div>
+        <div style="flex:1;min-width:140px;background:rgba(192,138,40,0.10);border-radius:10px;padding:14px 16px;">
+          <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">On hold (7-day)</div>
+          <div style="font-size:22px;font-weight:700;color:var(--gold);margin-top:4px;" id="refOnHold">₹0</div>
+        </div>
+        <div style="flex:1;min-width:140px;background:rgba(36,31,26,0.06);border-radius:10px;padding:14px 16px;">
+          <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">Total earned</div>
+          <div style="font-size:22px;font-weight:700;margin-top:4px;" id="refTotalEarned">₹0</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:24px;">
+        <label>Your referral link</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="refLinkInput" readonly style="flex:1;" />
+          <button type="button" class="btn btn-outline btn-sm" id="refCopyBtn">Copy</button>
+        </div>
+        <div id="refCopyMsg" style="display:none;color:var(--green);font-size:12.5px;margin-top:6px;">Copied!</div>
+      </div>
+
+      <button type="button" class="btn" id="refWithdrawBtn" style="margin-top:20px;">Request Withdrawal</button>
+      <p style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:8px;">Minimum ₹100 available balance to withdraw. Newly earned points need 7 days to clear (a refund-verification window) before they can be withdrawn — if a referred purchase is refunded within that week, the related commission is reversed.</p>
+
+      <h3 style="margin-top:34px;">History</h3>
+      <div id="refHistoryList" style="margin-top:10px;font-size:13.5px;"></div>
+      <div id="refHistoryEmpty" style="display:none;color:rgba(36,31,26,0.5);font-size:13.5px;margin-top:6px;">No referral activity yet — share your link above to start earning.</div>
     </div>
   </section>
 
@@ -4117,6 +4124,54 @@
       <p style="font-size:14px;color:rgba(36,31,26,0.65);margin-top:10px;">For any questions or support, reach out to us at:</p>
       <a href="mailto:eanova.in@gmail.com" style="display:block;margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--navy);text-decoration:underline;word-break:break-all;">eanova.in@gmail.com</a>
       <button class="btn" id="customerCareOkBtn" style="width:100%;margin-top:24px;justify-content:center;">OK</button>
+    </div>
+  </div>
+
+  <!-- Request Refund — choose Live Chat or Email; refund itself is always
+       processed manually by the founder via Razorpay's dashboard, so this
+       modal only starts the conversation, it doesn't call any refund API. -->
+  <div class="modal-overlay" id="contactChoiceModal">
+    <div class="modal" style="text-align:center;padding:32px 28px;">
+      <button class="modal-close" data-close-modal="contactChoiceModal">✕</button>
+      <h3 id="contactChoiceTitle">Request Refund</h3>
+      <p style="font-size:13.5px;color:rgba(36,31,26,0.65);margin-top:8px;" id="contactChoiceDesc">Refunds are valid within 7 days of purchase. Choose how you'd like to reach us, and tell us your registered email and payment details.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px;">
+        <button type="button" class="btn" id="contactChoiceLiveChatBtn">💬 Live Chat</button>
+        <button type="button" class="btn btn-outline" id="contactChoiceEmailBtn">✉️ Email us</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Withdrawal — records the request server-side and locks the
+       available points, then hands off to Live Chat/email where the user
+       shares bank/UPI details and the founder pays out manually. -->
+  <div class="modal-overlay" id="withdrawalModal">
+    <div class="modal">
+      <button class="modal-close" data-close-modal="withdrawalModal">✕</button>
+      <h3>Request Withdrawal</h3>
+      <p style="font-size:13px;color:rgba(36,31,26,0.6);margin-top:6px;">Available balance: <strong id="wdAvailableAmt">₹0</strong>. After submitting, continue on Live Chat or email to share your payout details and receive payment.</p>
+      <form id="withdrawalForm" style="margin-top:16px;">
+        <div class="field">
+          <label>How should we pay you?</label>
+          <select id="wd-payout-method">
+            <option value="bank">Bank details</option>
+            <option value="upi_qr">UPI QR code</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Notes (optional — e.g. account/IFSC, or "will share UPI QR on chat")</label>
+          <textarea id="wd-payout-details" rows="3" placeholder="Optional — you can also just share this on chat/email"></textarea>
+        </div>
+        <div class="field">
+          <label>Continue on</label>
+          <select id="wd-contact-method">
+            <option value="livechat">Live Chat</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+        <div class="auth-error" id="withdrawalError" style="display:none;"></div>
+        <button class="btn" type="submit" style="width:100%;margin-top:10px;justify-content:center;">Submit Request</button>
+      </form>
     </div>
   </div>
 
@@ -4170,6 +4225,21 @@
     // page show the right total before the person clicks Pay.
     const GST_RATE = 0.18;
 
+    // Share & Earn — কেউ referral link (?ref=CODE) দিয়ে সাইটে আসলে সেই
+    // কোডটা localStorage-এ রেখে দেওয়া হয়, যাতে সাইন-আপ শেষ হওয়া পর্যন্ত
+    // টিকে থাকে (ইউজার হয়তো landing page ঘুরে দেখে তারপর সাইন-আপ করবে)।
+    const REFERRAL_STORAGE_KEY = 'eanova_ref_code';
+    (function captureReferralCode() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) localStorage.setItem(REFERRAL_STORAGE_KEY, ref.trim().toUpperCase());
+      } catch (_) {}
+    })();
+    function getPendingReferralCode() {
+      try { return localStorage.getItem(REFERRAL_STORAGE_KEY) || ''; } catch (_) { return ''; }
+    }
+
     // লগইন করলে সার্ভার একটা JWT টোকেন দেয় — সেটা এখানে সংরক্ষণ/ব্যবহার
     // করা হয়, যাতে dashboard/profile/client-related সব রিকোয়েস্টে
     // পরিচয় যাচাই হয় (কেউ শুধু email পাঠিয়ে অন্য কারো ডেটা দেখতে/বদলাতে
@@ -4177,20 +4247,6 @@
     // এটা সম্পূর্ণ ব্যাকগ্রাউন্ডে কাজ করে।
     function getAuthToken() {
       try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (_) { return ''; }
-    }
-    // রেফারেল লিংক দিয়ে কেউ প্রথমবার এলে ?ref=CODE থাকবে — সেটা ধরে
-    // রাখা হচ্ছে (session-এর জন্য, যতক্ষণ না signup সম্পন্ন হয়), যাতে
-    // পরে signup/Google-login রিকোয়েস্টের সাথে পাঠানো যায়। কেউ যদি সরাসরি
-    // সাইটে আসে (লিংক ছাড়া), এটা সবসময় খালিই থাকবে — কোনো ক্ষতি নেই।
-    (function captureReferralCode() {
-      try {
-        var params = new URLSearchParams(window.location.search);
-        var ref = params.get('ref');
-        if (ref) sessionStorage.setItem('eanova_pending_ref', ref.trim().toUpperCase());
-      } catch (_) {}
-    })();
-    function getPendingReferralCode() {
-      try { return sessionStorage.getItem('eanova_pending_ref') || ''; } catch (_) { return ''; }
     }
     function setAuthToken(token) {
       try {
@@ -4309,7 +4365,7 @@
       window.scrollTo({ top: 0, behavior: 'instant' });
       if (name === 'dashboard') renderDashboard();
       if (name === 'checkout') renderCheckout();
-      if (name === 'referral') renderReferralView();
+      if (name === 'referral') renderReferral();
       updateNavState();
       closeMobileMenu();
       // Push each view change onto browser history so a single back-press
@@ -4430,92 +4486,6 @@
       document.getElementById('checkoutForm').style.display = 'block';
       successBox.style.display = 'none';
     }
-
-    /********************************************************************
-     *  SHARE & EARN (referral dashboard) — entirely new/separate view;
-     *  doesn't touch OTP, login, or checkout logic at all.
-     ********************************************************************/
-    function renderReferralView() {
-      var errBox = document.getElementById('referralError');
-      var withdrawMsg = document.getElementById('referralWithdrawMsg');
-      errBox.style.display = 'none';
-      withdrawMsg.style.display = 'none';
-      authFetch(API_BASE + '/api/referral/dashboard')
-        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
-        .then(function(result) {
-          if (result.status !== 200) {
-            errBox.textContent = result.body.message || 'Could not load your referral info.';
-            errBox.style.display = 'block';
-            return;
-          }
-          var d = result.body;
-          var link = window.location.origin + window.location.pathname + '?ref=' + d.referralCode;
-          document.getElementById('referralLinkInput').value = link;
-          document.getElementById('refWithdrawable').textContent = '₹' + (d.withdrawableBalance || 0).toLocaleString('en-IN');
-          document.getElementById('refLocked').textContent = '₹' + (d.lockedBalance || 0).toLocaleString('en-IN');
-          document.getElementById('refLifetime').textContent = '₹' + (d.lifetimeEarned || 0).toLocaleString('en-IN');
-          document.getElementById('refReferredCount').textContent = (d.referredUsers || []).length;
-
-          var listBody = document.getElementById('referralListBody');
-          var listTable = document.getElementById('referralListTable');
-          var listEmpty = document.getElementById('referralListEmpty');
-          var users = d.referredUsers || [];
-          if (users.length === 0) {
-            listTable.style.display = 'none';
-            listEmpty.style.display = 'block';
-          } else {
-            listEmpty.style.display = 'none';
-            listTable.style.display = 'table';
-            listBody.innerHTML = users.map(function(u) {
-              var badgeColor = u.status === 'successful' ? 'var(--green)' : 'rgba(36,31,26,0.45)';
-              var badgeBg = u.status === 'successful' ? 'rgba(63,102,89,0.1)' : 'rgba(36,31,26,0.06)';
-              return '<tr style="border-bottom:1px solid var(--line);"><td style="padding:10px 8px;font-size:14px;">' + u.name + '</td><td style="padding:10px 8px;"><span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:40px;background:' + badgeBg + ';color:' + badgeColor + ';">' + (u.status === 'successful' ? 'Successful' : 'Pending') + '</span></td></tr>';
-            }).join('');
-          }
-        })
-        .catch(function() {
-          errBox.textContent = 'Server error. Please try again.';
-          errBox.style.display = 'block';
-        });
-    }
-
-    var referralCopyBtnEl = document.getElementById('referralCopyBtn');
-    if (referralCopyBtnEl) referralCopyBtnEl.addEventListener('click', function() {
-      var input = document.getElementById('referralLinkInput');
-      input.select();
-      input.setSelectionRange(0, 99999);
-      var restoreText = function() { referralCopyBtnEl.textContent = 'Copy Link'; };
-      function fallbackCopy() {
-        try { document.execCommand('copy'); } catch (_) {}
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(input.value).catch(fallbackCopy);
-      } else {
-        fallbackCopy();
-      }
-      referralCopyBtnEl.textContent = 'Copied!';
-      setTimeout(restoreText, 1800);
-    });
-
-    var referralWithdrawBtnEl = document.getElementById('referralWithdrawBtn');
-    if (referralWithdrawBtnEl) referralWithdrawBtnEl.addEventListener('click', function() {
-      var withdrawMsg = document.getElementById('referralWithdrawMsg');
-      withdrawMsg.style.display = 'none';
-      setBtnLoading(referralWithdrawBtnEl, true);
-      authFetch(API_BASE + '/api/referral/withdraw-request', { method: 'POST' })
-        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
-        .then(function(result) {
-          withdrawMsg.textContent = result.body.message || (result.status === 200 ? 'Request received.' : 'Something went wrong.');
-          withdrawMsg.style.display = 'block';
-        })
-        .catch(function() {
-          withdrawMsg.textContent = 'Server error. Please try again.';
-          withdrawMsg.style.display = 'block';
-        })
-        .finally(function() {
-          setBtnLoading(referralWithdrawBtnEl, false);
-        });
-    });
 
     /********************************************************************
      *  RECEIPT CACHE — window._lastReceipt only lives in memory, so it's
@@ -6739,6 +6709,180 @@
     document.getElementById('pdLogoutBtn').addEventListener('click', function() {
       document.getElementById('profileDropdown').classList.remove('show');
       logoutUser();
+    });
+
+    document.getElementById('pdReferralBtn').addEventListener('click', function() {
+      document.getElementById('profileDropdown').classList.remove('show');
+      showView('referral');
+    });
+
+    /********************************************************************
+     *  SHARE & EARN — referral view, refund request, withdrawal request
+     *  (new, self-contained; doesn't touch any existing flow above)
+     ********************************************************************/
+    // "Request Refund" row in the profile menu only shows up while the
+    // active plan is still inside its 7-day refund window.
+    function updateRefundEligibility() {
+      var row = document.getElementById('pdRefundRow');
+      if (!row) return;
+      if (!state.subscriptionActive || !state.subscriptionExpiry || !state.activePlan) {
+        row.style.display = 'none';
+        return;
+      }
+      var REFUND_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+      var PLAN_DURATIONS_FOR_REFUND_MS = {
+        first: 30 * 24 * 60 * 60 * 1000,
+        monthly: 30 * 24 * 60 * 60 * 1000,
+        annual: 365 * 24 * 60 * 60 * 1000
+      };
+      var duration = PLAN_DURATIONS_FOR_REFUND_MS[state.activePlan] || PLAN_DURATIONS_FOR_REFUND_MS.monthly;
+      var purchaseMs = Number(state.subscriptionExpiry) - duration;
+      var elapsed = Date.now() - purchaseMs;
+      row.style.display = (elapsed >= 0 && elapsed <= REFUND_WINDOW_MS) ? 'flex' : 'none';
+    }
+    var _updateProfileMenuOrig = updateProfileMenu;
+    updateProfileMenu = function() {
+      _updateProfileMenuOrig();
+      updateRefundEligibility();
+    };
+
+    function tryOpenLiveChat() {
+      try {
+        if (window.Tawk_API && typeof Tawk_API.maximize === 'function') {
+          Tawk_API.maximize();
+          return true;
+        }
+      } catch (_) {}
+      return false;
+    }
+
+    document.getElementById('pdRequestRefundBtn').addEventListener('click', function() {
+      document.getElementById('profileDropdown').classList.remove('show');
+      openModal('contactChoiceModal');
+    });
+    document.getElementById('contactChoiceLiveChatBtn').addEventListener('click', function() {
+      closeModal('contactChoiceModal');
+      if (!tryOpenLiveChat()) {
+        alert('Please click the chat bubble in the corner of the screen to start Live Chat.');
+      }
+    });
+    document.getElementById('contactChoiceEmailBtn').addEventListener('click', function() {
+      closeModal('contactChoiceModal');
+      var email = (state.user && state.user.email) || '';
+      var subject = encodeURIComponent('Refund Request - ' + email);
+      var body = encodeURIComponent(
+        'Hi EANOVA team,\n\nI would like to request a refund for my recent purchase.\n\n' +
+        'My account email: ' + email + '\nPlan: ' + (state.activePlan || '') +
+        '\n\n(Please share your payment/order ID here if you have it.)'
+      );
+      window.location.href = 'mailto:eanova.in@gmail.com?subject=' + subject + '&body=' + body;
+    });
+
+    // ---- Referral view ----
+    var _referralPointsCache = null;
+
+    function renderReferral() {
+      var linkInput = document.getElementById('refLinkInput');
+      if (linkInput) linkInput.value = 'Loading…';
+      authFetch(API_BASE + '/api/referral/info', { method: 'GET' })
+        .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+        .then(function(result) {
+          if (result.status !== 200) { if (linkInput) linkInput.value = ''; return; }
+          var body = result.body;
+          _referralPointsCache = body.points;
+          document.getElementById('refAvailable').textContent = '₹' + body.points.availableBalance;
+          document.getElementById('refOnHold').textContent = '₹' + body.points.onHold;
+          document.getElementById('refTotalEarned').textContent = '₹' + body.points.totalEarned;
+          if (linkInput) linkInput.value = body.referralLink;
+
+          var listEl = document.getElementById('refHistoryList');
+          var emptyEl = document.getElementById('refHistoryEmpty');
+          var history = body.points.history || [];
+          if (!history.length) {
+            listEl.innerHTML = '';
+            emptyEl.style.display = 'block';
+          } else {
+            emptyEl.style.display = 'none';
+            var statusLabels = { available: 'Available', on_hold: 'On hold', withdrawn: 'Withdrawn', reversed: 'Reversed (refunded)' };
+            var statusColors = { available: 'var(--green)', on_hold: 'var(--gold)', withdrawn: 'rgba(36,31,26,0.5)', reversed: 'var(--red)' };
+            listEl.innerHTML = history.map(function(h) {
+              var d = new Date(h.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+              return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(36,31,26,0.08);">' +
+                '<div><div style="font-weight:600;">₹' + h.amount + ' — ' + (h.buyerEmailMasked || '') + '</div>' +
+                '<div style="font-size:11.5px;color:rgba(36,31,26,0.5);">' + (h.planPurchased || '') + ' plan · ' + d + '</div></div>' +
+                '<span style="font-size:11.5px;font-weight:600;color:' + (statusColors[h.status] || 'inherit') + ';">' + (statusLabels[h.status] || h.status) + '</span>' +
+                '</div>';
+            }).join('');
+          }
+        })
+        .catch(function() { if (linkInput) linkInput.value = ''; });
+    }
+
+    document.getElementById('refCopyBtn').addEventListener('click', function() {
+      var input = document.getElementById('refLinkInput');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      function shown() {
+        var msg = document.getElementById('refCopyMsg');
+        msg.style.display = 'block';
+        setTimeout(function() { msg.style.display = 'none'; }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(shown).catch(function() {
+          try { document.execCommand('copy'); shown(); } catch (_) {}
+        });
+      } else {
+        try { document.execCommand('copy'); shown(); } catch (_) {}
+      }
+    });
+
+    document.getElementById('refWithdrawBtn').addEventListener('click', function() {
+      var available = (_referralPointsCache && _referralPointsCache.availableBalance) || 0;
+      document.getElementById('wdAvailableAmt').textContent = '₹' + available;
+      document.getElementById('withdrawalError').style.display = 'none';
+      openModal('withdrawalModal');
+    });
+
+    document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var errBox = document.getElementById('withdrawalError');
+      errBox.style.display = 'none';
+      var payoutMethod = document.getElementById('wd-payout-method').value;
+      var payoutDetails = document.getElementById('wd-payout-details').value;
+      var contactMethod = document.getElementById('wd-contact-method').value;
+      var submitBtn = e.target.querySelector('button[type="submit"]');
+      setBtnLoading(submitBtn, true);
+      authFetch(API_BASE + '/api/points/request-withdrawal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactMethod: contactMethod, payoutMethod: payoutMethod, payoutDetails: payoutDetails })
+      })
+      .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+      .then(function(result) {
+        if (result.status === 200) {
+          closeModal('withdrawalModal');
+          renderReferral();
+          if (contactMethod === 'livechat') {
+            if (!tryOpenLiveChat()) alert(result.body.message + '\n\nPlease click the chat bubble in the corner to continue.');
+          } else {
+            var email = (state.user && state.user.email) || '';
+            var subject = encodeURIComponent('Withdrawal Request - ' + email);
+            var mailBody = encodeURIComponent(
+              'Hi EANOVA team,\n\nI have requested a withdrawal of ₹' + result.body.amount + '.\n\n' +
+              'My account email: ' + email + '\nPayout method: ' + payoutMethod + '\nDetails: ' + payoutDetails
+            );
+            window.location.href = 'mailto:eanova.in@gmail.com?subject=' + subject + '&body=' + mailBody;
+          }
+        } else {
+          errBox.textContent = result.body.message || 'Could not submit withdrawal request.';
+          errBox.style.display = 'block';
+        }
+      })
+      .catch(function() {
+        errBox.textContent = 'Server error. Please try again.';
+        errBox.style.display = 'block';
+      })
+      .finally(function() { setBtnLoading(submitBtn, false); });
     });
 
     /********************************************************************
