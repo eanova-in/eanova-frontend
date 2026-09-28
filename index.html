@@ -3106,11 +3106,11 @@
         <!-- স্ট্যাটস কাউন্টার -->
         <div class="ent-stats-grid">
             <div class="ent-stat-item">
-                <span class="ent-stat-number" id="entCountFirms">0</span>
+                <span class="ent-stat-number" id="entCountFirms">300+</span>
                 <span class="ent-stat-label">CA Firms</span>
             </div>
             <div class="ent-stat-item">
-                <span class="ent-stat-number" id="entCountAccuracy">0</span>
+                <span class="ent-stat-number" id="entCountAccuracy">99%</span>
                 <span class="ent-stat-label">Accuracy Rate</span>
             </div>
         </div>
@@ -3233,31 +3233,14 @@
             drawNetwork();
 
             // ============================================================
-            // 2. কাউন্টার অ্যানিমেশন (১,২০০+ এবং ৯৯.৮%)
+            // 2. কাউন্টার (৩০০+ এবং ৯৯%)
             // ============================================================
             const entCountFirms = document.getElementById('entCountFirms');
             const entCountAccuracy = document.getElementById('entCountAccuracy');
-            let firms = 0,
-                acc = 0;
-            const targetFirms = 1250,
-                targetAcc = 998;
-
-            function animateCounters() {
-                let stepFirms = Math.ceil(targetFirms / 60);
-                let stepAcc = Math.ceil(targetAcc / 60);
-                if (firms < targetFirms) {
-                    firms = Math.min(firms + stepFirms, targetFirms);
-                    entCountFirms.textContent = firms.toLocaleString() + '+';
-                }
-                if (acc < targetAcc) {
-                    acc = Math.min(acc + stepAcc, targetAcc);
-                    entCountAccuracy.textContent = (acc / 10).toFixed(1) + '%';
-                }
-                if (firms < targetFirms || acc < targetAcc) {
-                    requestAnimationFrame(animateCounters);
-                }
-            }
-            setTimeout(animateCounters, 1600);
+            // Static values (no count-up from 0), so the splash never shows "0" —
+            // even if animation/JS is slow or a screenshot is taken early.
+            entCountFirms.textContent = '300+';
+            entCountAccuracy.textContent = '99%';
 
             // ============================================================
             // 3. টাইপিং ইফেক্ট
@@ -3653,16 +3636,18 @@
           </div>
           <h2 style="margin-top:2px;">Create your <span class="np-brand">firm's</span> account</h2>
           <p class="lead">14-day free trial. No card required.</p>
+          <p class="np-hint" style="margin:-4px 0 14px;">Takes about a minute: ① fill in your details → ② enter the 6-digit code we email you → ③ start your free trial.</p>
           <div class="auth-error" id="signupError" style="display:none;"></div>
           <form id="signupForm">
             <div class="np-field"><label>Your name</label><div class="np-iwrap"><span class="np-icon">👤</span><input type="text" id="su-name" placeholder="Your name" required /></div></div>
-            <div class="np-field"><label>Firm name</label><div class="np-iwrap"><span class="np-icon">🏢</span><input type="text" id="su-firm" placeholder="Your firm name" required /></div></div>
-            <div class="np-field"><label>Email</label><div class="np-iwrap ni"><input type="email" id="su-email" placeholder="youremail@gmail.com" required /></div></div>
+            <div class="np-field"><label>Firm name</label><div class="np-iwrap"><span class="np-icon">🏢</span><input type="text" id="su-firm" placeholder="Your firm name" required /></div><div class="np-hint">The name of your CA firm or practice.</div></div>
+            <div class="np-field"><label>Email</label><div class="np-iwrap ni"><input type="email" id="su-email" placeholder="youremail@gmail.com" required /></div><div class="np-hint">We'll send a 6-digit verification code to this email.</div></div>
             <div class="np-field"><label>Region</label>
               <div class="np-iwrap"><span class="np-icon">🌐</span><select id="su-region">
                 <option value="in">🇮🇳 India — ₹99 first month</option>
                 <option value="intl">🌍 Outside India — $9 first month</option>
               </select></div>
+              <div class="np-hint">Sets the currency for your plan pricing.</div>
             </div>
             <div class="np-field">
               <label>Password</label>
@@ -4022,7 +4007,7 @@
       <h3>5. Acceptable Use</h3>
       <p>You agree not to misuse the service — including attempting to bypass usage limits, reverse-engineer the matching engine, or use the service for any unlawful purpose.</p>
       <h3>6. Share &amp; Earn (Referral Program)</h3>
-      <p>Every account gets a unique referral link. When someone you refer creates an account and buys a paid plan, you earn 8% commission on that purchase — and on every future plan they buy for as long as their account stays active, not just their first purchase. Commission is credited to you as Points in the "Refer &amp; Earn" section of your profile; 1 Point = ₹1.</p>
+      <p>Every account gets a unique referral link. When someone you refer creates an account and buys a paid plan, you earn 8% commission on that purchase — and on every future plan they buy for as long as their account stays active, not just their first purchase. As a one-time bonus, the first plan purchase made by the very first person you refer earns 20% instead of 8% (this applies to every account once; if that first person never buys a plan, later referrals earn the regular 8%). Commission is credited to you as Points in the "Refer &amp; Earn" section of your profile; 1 Point = ₹1.</p>
       <p>Newly earned Points are held for 7 days as a fraud/verification safeguard before they can be withdrawn — in rare cases (e.g. a duplicate-payment correction), a related commission may be reversed during this period. You can request a withdrawal once your available balance reaches a minimum of ₹100; payouts are arranged manually via Live Chat or email after your request. We may suspend or reverse commissions obtained through fraudulent, fake, or self-referred accounts.</p>
       <h3>7. Limitation of Liability</h3>
       <p>EANOVA is provided "as is". While we aim for accurate reconciliation, we are not liable for losses arising from reliance on the tool's output without independent verification, or from service interruptions.</p>
@@ -4095,6 +4080,7 @@
       <a href="#" class="backlink" data-nav="dashboard">← Back to dashboard</a>
       <h1>🎁 Refer &amp; Earn</h1>
       <p>Share EANOVA with other CAs and firms. For every successful plan purchase made by someone you refer — for as long as their account stays active, not just their first purchase — you earn <strong>8% commission</strong>, credited to you as Points (1 Point = ₹1).</p>
+      <p style="margin-top:10px;">🎉 <strong>First-referral bonus:</strong> the first plan purchase made by the very first person you refer earns you <strong>20%</strong> instead of 8% — a one-time bonus per account. After that, every purchase earns the regular 8%.</p>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;">
         <div style="flex:1;min-width:140px;background:rgba(63,102,89,0.08);border-radius:10px;padding:14px 16px;">
