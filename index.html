@@ -349,6 +349,17 @@
       background: var(--green);
       color: #fff;
     }
+    .np-terms-check {
+      border: 1.5px solid transparent;
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin-left: -6px;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .np-terms-check.error {
+      border-color: var(--red);
+      background: rgba(192, 57, 43, 0.06);
+    }
     .ref-status-dot {
       display: inline-block;
       width: 9px;
@@ -363,6 +374,49 @@
     @keyframes refDotBlink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.25; }
+    }
+    .milestone-item {
+      margin-bottom: 16px;
+    }
+    .milestone-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .milestone-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: rgba(36, 31, 26, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .milestone-bar-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 6px;
+      transition: width 0.4s ease;
+    }
+    .milestone-bar-fill.reached {
+      background: var(--green);
+    }
+    .milestone-claim-btn {
+      margin-top: 8px;
+      font-size: 12.5px;
+      padding: 6px 14px;
+    }
+    .site-rating-star {
+      cursor: pointer;
+      color: rgba(36, 31, 26, 0.3);
+      transition: color 0.1s ease, transform 0.1s ease;
+      user-select: none;
+    }
+    .site-rating-star:hover,
+    .site-rating-star.filled {
+      color: var(--gold);
+      transform: scale(1.12);
     }
     .eanova-toast {
       position: fixed;
@@ -3107,7 +3161,7 @@
         <div class="ent-stats-grid">
             <div class="ent-stat-item">
                 <span class="ent-stat-number" id="entCountFirms">300+</span>
-                <span class="ent-stat-label">CA Firms</span>
+                <span class="ent-stat-label">Users</span>
             </div>
             <div class="ent-stat-item">
                 <span class="ent-stat-number" id="entCountAccuracy">99%</span>
@@ -3619,6 +3673,7 @@
         <button type="button" data-nav="legal-refund">Refund &amp; Cancellation</button>
         <button type="button" data-nav="legal-contact">Contact Us</button>
       </div>
+      <div id="siteRatingFooter" style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:4px;"></div>
       <span>Figures on this page are illustrative, based on industry-reported reconciliation times.</span>
     </footer>
   </main>
@@ -3656,11 +3711,11 @@
               <div class="np-pwd-meter" id="signupPwdStrength"><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span><span class="np-bar"></span></div>
               <div class="np-pwd-label" id="signupPwdLabel"></div>
             </div>
-            <div class="np-terms-check" style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:rgba(36,31,26,0.7);margin:14px 0 4px;">
+            <div class="np-terms-check" id="suTermsRow" style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:rgba(36,31,26,0.7);margin:14px 0 4px;">
               <input type="checkbox" id="su-accept-terms" style="margin-top:2px;flex-shrink:0;cursor:pointer;" />
               <span>I accept the <button type="button" class="linklike" data-nav="legal-terms">Terms &amp; Conditions</button> and <button type="button" class="linklike" data-nav="legal-privacy">Privacy Policy</button></span>
             </div>
-            <button class="btn np-btn" type="submit" id="signupSubmitBtnStep1" disabled>Create Account</button>
+            <button class="btn np-btn" type="submit" id="signupSubmitBtnStep1">Create Account</button>
           </form>
           <div class="np-or-divider"><span>or</span></div>
           <div style="position:relative;">
@@ -3711,11 +3766,11 @@
             <div class="np-iwrap pwd-field-wrap ni"><input type="password" id="li-pass" placeholder="Your password" required style="border:none;" /><button type="button" class="pwd-eye-btn" data-pwd-toggle="li-pass" aria-label="Show password"><svg viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button></div>
             <div class="np-forgot-wrap"><button type="button" id="forgotPasswordLink">Forgot password?</button></div>
           </div>
-          <div class="np-terms-check" style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:rgba(36,31,26,0.7);margin:14px 0 4px;">
+          <div class="np-terms-check" id="liTermsRow" style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:rgba(36,31,26,0.7);margin:14px 0 4px;">
             <input type="checkbox" id="li-accept-terms" style="margin-top:2px;flex-shrink:0;cursor:pointer;" />
             <span>I accept the <button type="button" class="linklike" data-nav="legal-terms">Terms &amp; Conditions</button> and <button type="button" class="linklike" data-nav="legal-privacy">Privacy Policy</button></span>
           </div>
-          <button class="btn np-btn" type="submit" id="loginSubmitBtnMain" disabled>Log In</button>
+          <button class="btn np-btn" type="submit" id="loginSubmitBtnMain">Log In</button>
         </form>
         <div class="np-or-divider"><span>or</span></div>
         <div style="position:relative;">
@@ -4007,7 +4062,7 @@
       <h3>5. Acceptable Use</h3>
       <p>You agree not to misuse the service — including attempting to bypass usage limits, reverse-engineer the matching engine, or use the service for any unlawful purpose.</p>
       <h3>6. Share &amp; Earn (Referral Program)</h3>
-      <p>Every account gets a unique referral link. When someone you refer creates an account and buys a paid plan, you earn 8% commission on that purchase — and on every future plan they buy for as long as their account stays active, not just their first purchase. As a one-time bonus, the first plan purchase made by the very first person you refer earns 20% instead of 8% (this applies to every account once; if that first person never buys a plan, later referrals earn the regular 8%). Commission is credited to you as Points in the "Refer &amp; Earn" section of your profile; 1 Point = ₹1.</p>
+      <p>Every account gets a unique referral link. When someone you refer creates an account and buys a paid plan, you earn 8% commission on that purchase — and on every future plan they buy for as long as their account stays active, not just their first purchase. As a one-time bonus, the first plan purchase made by the very first person you refer earns 18% instead of 8% (this applies to every account once; if that first person never buys a plan, later referrals earn the regular 8%). Commission is credited to you as Points in the "Refer &amp; Earn" section of your profile; 1 Point = ₹1.</p>
       <p>Newly earned Points are held for 7 days as a fraud/verification safeguard before they can be withdrawn — in rare cases (e.g. a duplicate-payment correction), a related commission may be reversed during this period. You can request a withdrawal once your available balance reaches a minimum of ₹100; payouts are arranged manually via Live Chat or email after your request. We may suspend or reverse commissions obtained through fraudulent, fake, or self-referred accounts.</p>
       <h3>7. Limitation of Liability</h3>
       <p>EANOVA is provided "as is". While we aim for accurate reconciliation, we are not liable for losses arising from reliance on the tool's output without independent verification, or from service interruptions.</p>
@@ -4080,7 +4135,7 @@
       <a href="#" class="backlink" data-nav="dashboard">← Back to dashboard</a>
       <h1>🎁 Refer &amp; Earn</h1>
       <p>Share EANOVA with other CAs and firms. For every successful plan purchase made by someone you refer — for as long as their account stays active, not just their first purchase — you earn <strong>8% commission</strong>, credited to you as Points (1 Point = ₹1).</p>
-      <p style="margin-top:10px;">🎉 <strong>First-referral bonus:</strong> the first plan purchase made by the very first person you refer earns you <strong>20%</strong> instead of 8% — a one-time bonus per account. After that, every purchase earns the regular 8%.</p>
+      <p style="margin-top:10px;">🎉 <strong>First-referral bonus:</strong> the first plan purchase made by the very first person you refer earns you <strong>18%</strong> instead of 8% — a one-time bonus per account. After that, every purchase earns the regular 8%.</p>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;">
         <div style="flex:1;min-width:140px;background:rgba(63,102,89,0.08);border-radius:10px;padding:14px 16px;">
@@ -4108,6 +4163,10 @@
 
       <button type="button" class="btn" id="refWithdrawBtn" style="margin-top:20px;">Request Withdrawal</button>
       <p style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:8px;">Minimum ₹100 available balance to withdraw. Newly earned points need 7 days to clear (a fraud/verification safeguard) before they can be withdrawn.</p>
+
+      <h3 style="margin-top:34px;">🎁 Milestone Gifts</h3>
+      <p style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:4px;">Special gifts for successful referrals (people you referred who bought a plan) — on top of your regular commission. Reach a milestone to unlock the Claim button.</p>
+      <div id="refMilestonesList" style="margin-top:14px;"></div>
 
       <h3 style="margin-top:34px;">History</h3>
       <div id="refHistoryList" style="margin-top:10px;font-size:13.5px;"></div>
@@ -4189,6 +4248,40 @@
         <div class="auth-error" id="withdrawalError" style="display:none;"></div>
         <button class="btn" type="submit" style="width:100%;margin-top:10px;justify-content:center;">Submit Request</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Claim Milestone Gift — same pattern as withdrawal/refund: pick a
+       contact method, the actual gift is decided manually by the founder
+       after verifying on Live Chat/email. No automatic reward. -->
+  <div class="modal-overlay" id="milestoneClaimModal">
+    <div class="modal" style="text-align:center;padding:32px 28px;">
+      <button class="modal-close" data-close-modal="milestoneClaimModal">✕</button>
+      <h3 id="milestoneClaimTitle">Claim Milestone Gift</h3>
+      <p style="font-size:13.5px;color:rgba(36,31,26,0.65);margin-top:8px;">Choose how you'd like to reach us — we'll verify your referrals and arrange your gift.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px;">
+        <button type="button" class="btn" id="milestoneClaimLiveChatBtn">💬 Live Chat</button>
+        <button type="button" class="btn btn-outline" id="milestoneClaimEmailBtn">✉️ Email us</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Rating popup — no account needed, shown to visitors per the
+       localStorage-gated schedule in the JS below (first visit, then
+       every 7 days until they rate, never again after they rate). -->
+  <div class="modal-overlay" id="siteRatingModal">
+    <div class="modal" style="text-align:center;padding:30px 26px;">
+      <button class="modal-close" data-close-modal="siteRatingModal" id="siteRatingCloseBtn">✕</button>
+      <h3>Enjoying EANOVA?</h3>
+      <p style="font-size:13.5px;color:rgba(36,31,26,0.65);margin-top:8px;">Tap a star to rate your experience — takes two seconds.</p>
+      <div id="siteRatingStars" style="display:flex;justify-content:center;gap:6px;margin-top:18px;font-size:34px;line-height:1;">
+        <span class="site-rating-star" data-star="1">☆</span>
+        <span class="site-rating-star" data-star="2">☆</span>
+        <span class="site-rating-star" data-star="3">☆</span>
+        <span class="site-rating-star" data-star="4">☆</span>
+        <span class="site-rating-star" data-star="5">☆</span>
+      </div>
+      <div id="siteRatingThanks" style="display:none;color:var(--green);font-weight:600;margin-top:14px;">Thanks for your feedback! 🎉</div>
     </div>
   </div>
 
@@ -4837,6 +4930,12 @@
       e.preventDefault();
       const errBox = document.getElementById('signupError');
       errBox.style.display = 'none';
+
+      if (!document.getElementById('su-accept-terms').checked) {
+        flashTermsError('suTermsRow', 'su-accept-terms');
+        return;
+      }
+
       const name = document.getElementById('su-name').value.trim();
       const firm = document.getElementById('su-firm').value.trim();
       const email = document.getElementById('su-email').value.trim();
@@ -4943,6 +5042,12 @@
       e.preventDefault();
       const errBox = document.getElementById('loginError');
       errBox.style.display = 'none';
+
+      if (!document.getElementById('li-accept-terms').checked) {
+        flashTermsError('liTermsRow', 'li-accept-terms');
+        return;
+      }
+
       const email = document.getElementById('li-email').value.trim();
       const password = document.getElementById('li-pass').value;
       if (!email || !password) {
@@ -6749,6 +6854,37 @@
 
     // ---- Referral view ----
     var _referralPointsCache = null;
+    var _pendingMilestoneClaim = null;
+
+    function submitMilestoneClaim(contactMethod) {
+      var milestone = _pendingMilestoneClaim;
+      closeModal('milestoneClaimModal');
+      if (!milestone) return;
+      authFetch(API_BASE + '/api/referral/claim-milestone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ milestone: milestone, contactMethod: contactMethod })
+      })
+      .then(function(res) { return res.json().then(function(data) { return { status: res.status, body: data }; }); })
+      .then(function(result) {
+        if (result.status === 200) {
+          renderReferral();
+          if (contactMethod === 'livechat') {
+            if (!tryOpenLiveChat()) showToast(result.body.message);
+          } else {
+            var email = (state.user && state.user.email) || '';
+            var subject = encodeURIComponent('Milestone Gift Claim — ' + milestone + ' referrals — ' + email);
+            var mailBody = encodeURIComponent('Hi EANOVA team,\n\nI have reached ' + milestone + ' successful referrals and would like to claim my milestone gift.\n\nMy account email: ' + email);
+            window.location.href = 'mailto:eanova.in@gmail.com?subject=' + subject + '&body=' + mailBody;
+          }
+        } else {
+          showToast(result.body.message || 'Could not submit milestone claim.');
+        }
+      })
+      .catch(function() { showToast('Server error. Please try again.'); });
+    }
+    document.getElementById('milestoneClaimLiveChatBtn').addEventListener('click', function() { submitMilestoneClaim('livechat'); });
+    document.getElementById('milestoneClaimEmailBtn').addEventListener('click', function() { submitMilestoneClaim('email'); });
 
     function renderReferral() {
       var linkInput = document.getElementById('refLinkInput');
@@ -6763,6 +6899,36 @@
           document.getElementById('refOnHold').textContent = '₹' + body.points.onHold;
           document.getElementById('refTotalEarned').textContent = '₹' + body.points.totalEarned;
           if (linkInput) linkInput.value = body.referralLink;
+
+          var msList = document.getElementById('refMilestonesList');
+          if (msList) {
+            var milestones = body.milestones || [];
+            msList.innerHTML = milestones.map(function(m) {
+              var pct = Math.round((m.progress / m.milestone) * 100);
+              var barClass = m.reached ? 'reached' : '';
+              var action;
+              if (m.status === 'pending') {
+                action = '<span style="font-size:12px;color:var(--gold);font-weight:600;">Claim requested — pending verification</span>';
+              } else if (m.status === 'fulfilled') {
+                action = '<span style="font-size:12px;color:var(--green);font-weight:600;">✓ Gift sent</span>';
+              } else if (m.reached) {
+                action = '<button type="button" class="btn milestone-claim-btn" data-milestone="' + m.milestone + '">Claim Gift</button>';
+              } else {
+                action = '';
+              }
+              return '<div class="milestone-item">' +
+                '<div class="milestone-item-head"><span>' + m.milestone + ' successful referrals</span><span>' + m.progress + ' / ' + m.milestone + '</span></div>' +
+                '<div class="milestone-bar-bg"><div class="milestone-bar-fill ' + barClass + '" style="width:' + pct + '%;"></div></div>' +
+                action +
+                '</div>';
+            }).join('');
+            msList.querySelectorAll('[data-milestone]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                _pendingMilestoneClaim = Number(this.dataset.milestone);
+                openModal('milestoneClaimModal');
+              });
+            });
+          }
 
           var listEl = document.getElementById('refHistoryList');
           var emptyEl = document.getElementById('refHistoryEmpty');
@@ -6894,15 +7060,23 @@
      *  buttons (via an invisible blocker overlay, since Google's button
      *  is rendered inside a cross-origin iframe we can't disable directly).
      ********************************************************************/
-    function wireTermsGate(checkboxId, submitBtnId, blockerId) {
+    function flashTermsError(rowId, checkboxId) {
+      var row = document.getElementById(rowId);
       var checkbox = document.getElementById(checkboxId);
-      var submitBtn = document.getElementById(submitBtnId);
+      if (!row) return;
+      row.classList.add('error');
+      if (checkbox) checkbox.focus();
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      clearTimeout(row._errTimer);
+      row._errTimer = setTimeout(function() { row.classList.remove('error'); }, 2500);
+    }
+
+    function wireTermsGate(checkboxId, blockerId) {
+      var checkbox = document.getElementById(checkboxId);
       var blocker = document.getElementById(blockerId);
       if (!checkbox) return;
       function sync() {
-        var accepted = checkbox.checked;
-        if (submitBtn) submitBtn.disabled = !accepted;
-        if (blocker) blocker.style.pointerEvents = accepted ? 'none' : 'auto';
+        if (blocker) blocker.style.pointerEvents = checkbox.checked ? 'none' : 'auto';
       }
       checkbox.addEventListener('change', sync);
       if (blocker) {
@@ -6912,8 +7086,8 @@
       }
       sync();
     }
-    wireTermsGate('su-accept-terms', 'signupSubmitBtnStep1', 'googleSignupBlocker');
-    wireTermsGate('li-accept-terms', 'loginSubmitBtnMain', 'googleLoginBlocker');
+    wireTermsGate('su-accept-terms', 'googleSignupBlocker');
+    wireTermsGate('li-accept-terms', 'googleLoginBlocker');
 
     /********************************************************************
      *  MOBILE MENU
@@ -7336,6 +7510,80 @@
         }
       } catch (e) { console.warn('Sync failed:', e); }
     }
+
+    /********************************************************************
+     *  SITE RATING — footer aggregate + a 1-5 star popup shown to
+     *  visitors (no login needed). Schedule (all client-side, via
+     *  localStorage on this device):
+     *    - Never shown again once this device has submitted a rating.
+     *    - First-ever visit on a device: shows once.
+     *    - Otherwise: shows again only if 7+ days have passed since it
+     *      was last shown (so a daily/every-few-days visitor won't see
+     *      it every time).
+     ********************************************************************/
+    const SITE_RATING_SUBMITTED_KEY = 'eanova_rating_submitted';
+    const SITE_RATING_LAST_SHOWN_KEY = 'eanova_rating_last_shown';
+    const SITE_RATING_REPROMPT_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function renderSiteRatingFooter(average, count) {
+      var el = document.getElementById('siteRatingFooter');
+      if (!el) return;
+      if (!count) { el.textContent = ''; return; }
+      el.textContent = '★ ' + average.toFixed(1) + ' average from ' + count + (count === 1 ? ' rating' : ' ratings');
+    }
+
+    function loadSiteRatingFooter() {
+      fetch(API_BASE + '/api/site-rating')
+        .then(function(res) { return res.json(); })
+        .then(function(data) { renderSiteRatingFooter(data.average || 0, data.count || 0); })
+        .catch(function() {});
+    }
+
+    function maybeShowSiteRatingPopup() {
+      try {
+        if (localStorage.getItem(SITE_RATING_SUBMITTED_KEY) === 'true') return;
+        var lastShown = Number(localStorage.getItem(SITE_RATING_LAST_SHOWN_KEY) || 0);
+        var now = Date.now();
+        if (lastShown && (now - lastShown) < SITE_RATING_REPROMPT_MS) return;
+        localStorage.setItem(SITE_RATING_LAST_SHOWN_KEY, String(now));
+        setTimeout(function() { openModal('siteRatingModal'); }, 1200);
+      } catch (_) {}
+    }
+
+    document.querySelectorAll('.site-rating-star').forEach(function(star) {
+      star.addEventListener('mouseenter', function() {
+        var n = Number(this.dataset.star);
+        document.querySelectorAll('.site-rating-star').forEach(function(s) {
+          s.textContent = Number(s.dataset.star) <= n ? '★' : '☆';
+        });
+      });
+      star.addEventListener('click', function() {
+        var n = Number(this.dataset.star);
+        document.querySelectorAll('.site-rating-star').forEach(function(s) { s.style.pointerEvents = 'none'; });
+        fetch(API_BASE + '/api/site-rating', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stars: n })
+        })
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            try { localStorage.setItem(SITE_RATING_SUBMITTED_KEY, 'true'); } catch (_) {}
+            renderSiteRatingFooter(data.average || 0, data.count || 0);
+            document.getElementById('siteRatingStars').style.display = 'none';
+            document.getElementById('siteRatingThanks').style.display = 'block';
+            setTimeout(function() { closeModal('siteRatingModal'); }, 1500);
+          })
+          .catch(function() {
+            document.querySelectorAll('.site-rating-star').forEach(function(s) { s.style.pointerEvents = 'auto'; });
+          });
+      });
+    });
+    document.getElementById('siteRatingStars').addEventListener('mouseleave', function() {
+      document.querySelectorAll('.site-rating-star').forEach(function(s) { s.textContent = '☆'; });
+    });
+
+    loadSiteRatingFooter();
+    maybeShowSiteRatingPopup();
 
     /********************************************************************
      *  INIT
