@@ -413,9 +413,12 @@
       transition: color 0.1s ease, transform 0.1s ease;
       user-select: none;
     }
-    .site-rating-star:hover,
-    .site-rating-star.filled {
+    .site-rating-star.hover-preview {
       color: var(--gold);
+      transform: scale(1.12);
+    }
+    .site-rating-star.selected {
+      color: var(--green);
       transform: scale(1.12);
     }
     .eanova-toast {
@@ -3666,6 +3669,7 @@
 
     <footer class="wrap">
       <span>&copy; 2026 EANOVA. All rights reserved.</span>
+      <div id="siteRatingFooter" style="font-size:13.5px;color:var(--green);font-weight:600;margin:2px 0;"></div>
       <div class="footer-legal-links">
         <a href="https://www.linkedin.com/in/mrgama?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_android" target="_blank" rel="noopener noreferrer">Founder on LinkedIn</a>
         <button type="button" data-nav="legal-terms">Terms &amp; Conditions</button>
@@ -3673,7 +3677,6 @@
         <button type="button" data-nav="legal-refund">Refund &amp; Cancellation</button>
         <button type="button" data-nav="legal-contact">Contact Us</button>
       </div>
-      <div id="siteRatingFooter" style="font-size:12.5px;color:rgba(36,31,26,0.55);margin-top:4px;"></div>
       <span>Figures on this page are illustrative, based on industry-reported reconciliation times.</span>
     </footer>
   </main>
@@ -4281,6 +4284,7 @@
         <span class="site-rating-star" data-star="4">☆</span>
         <span class="site-rating-star" data-star="5">☆</span>
       </div>
+      <button type="button" class="btn" id="siteRatingSubmitBtn" style="display:none;margin-top:18px;width:100%;justify-content:center;">Submit</button>
       <div id="siteRatingThanks" style="display:none;color:var(--green);font-weight:600;margin-top:14px;">Thanks for your feedback! 🎉</div>
     </div>
   </div>
@@ -7550,37 +7554,64 @@
       } catch (_) {}
     }
 
-    document.querySelectorAll('.site-rating-star').forEach(function(star) {
+    // নতুন ২-ধাপ ফ্লো: তারকায় ক্লিক করলে শুধু সিলেক্ট হয় (সবুজ, লেগে থাকে),
+    // আসল submit হয় আলাদা "Submit" বাটনে ক্লিক করলে।
+    var _siteRatingSelected = 0;
+    var _siteRatingStarEls = document.querySelectorAll('.site-rating-star');
+    var _siteRatingSubmitBtn = document.getElementById('siteRatingSubmitBtn');
+
+    function paintStars(n, mode) {
+      _siteRatingStarEls.forEach(function(s) {
+        var starNum = Number(s.dataset.star);
+        var active = starNum <= n;
+        s.textContent = active ? '★' : '☆';
+        s.classList.toggle('hover-preview', active && mode === 'preview');
+        s.classList.toggle('selected', active && mode === 'selected');
+      });
+    }
+
+    _siteRatingStarEls.forEach(function(star) {
       star.addEventListener('mouseenter', function() {
-        var n = Number(this.dataset.star);
-        document.querySelectorAll('.site-rating-star').forEach(function(s) {
-          s.textContent = Number(s.dataset.star) <= n ? '★' : '☆';
-        });
+        paintStars(Number(this.dataset.star), 'preview');
       });
       star.addEventListener('click', function() {
-        var n = Number(this.dataset.star);
-        document.querySelectorAll('.site-rating-star').forEach(function(s) { s.style.pointerEvents = 'none'; });
+        _siteRatingSelected = Number(this.dataset.star);
+        paintStars(_siteRatingSelected, 'selected');
+        if (_siteRatingSubmitBtn) _siteRatingSubmitBtn.style.display = 'flex';
+      });
+    });
+    document.getElementById('siteRatingStars').addEventListener('mouseleave', function() {
+      // মাউস সরে গেলে, এখনো যা সিলেক্ট করা আছে সেটাই (সবুজ) দেখাও —
+      // কিছু সিলেক্ট না থাকলে সব খালি তারকা।
+      paintStars(_siteRatingSelected, 'selected');
+    });
+
+    if (_siteRatingSubmitBtn) {
+      _siteRatingSubmitBtn.addEventListener('click', function() {
+        if (!_siteRatingSelected) return;
+        _siteRatingSubmitBtn.disabled = true;
+        _siteRatingStarEls.forEach(function(s) { s.style.pointerEvents = 'none'; });
         fetch(API_BASE + '/api/site-rating', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stars: n })
+          body: JSON.stringify({ stars: _siteRatingSelected })
         })
           .then(function(res) { return res.json(); })
           .then(function(data) {
             try { localStorage.setItem(SITE_RATING_SUBMITTED_KEY, 'true'); } catch (_) {}
             renderSiteRatingFooter(data.average || 0, data.count || 0);
             document.getElementById('siteRatingStars').style.display = 'none';
+            _siteRatingSubmitBtn.style.display = 'none';
             document.getElementById('siteRatingThanks').style.display = 'block';
             setTimeout(function() { closeModal('siteRatingModal'); }, 1500);
           })
           .catch(function() {
-            document.querySelectorAll('.site-rating-star').forEach(function(s) { s.style.pointerEvents = 'auto'; });
+            _siteRatingSubmitBtn.disabled = false;
+            _siteRatingStarEls.forEach(function(s) { s.style.pointerEvents = 'auto'; });
+            showToast('Could not submit your rating — please try again.');
           });
       });
-    });
-    document.getElementById('siteRatingStars').addEventListener('mouseleave', function() {
-      document.querySelectorAll('.site-rating-star').forEach(function(s) { s.textContent = '☆'; });
-    });
+    }
 
     loadSiteRatingFooter();
     maybeShowSiteRatingPopup();
