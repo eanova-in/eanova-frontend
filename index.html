@@ -946,6 +946,20 @@
       font-weight: 700;
       letter-spacing: 0.06em;
     }
+    .fixcard .planned-badge {
+      display: inline-block;
+      margin-left: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #8a6d1a;
+      background: rgba(192, 138, 40, 0.15);
+      border: 1px solid rgba(192, 138, 40, 0.4);
+      padding: 2px 8px;
+      border-radius: 10px;
+      vertical-align: middle;
+    }
     .fixcard h3 {
       font-size: 19px;
       margin-top: 10px;
@@ -2690,6 +2704,20 @@
         width: 100%;
         padding: 20px;
       }
+      /* Pagination fix: repeat the table header on every printed page, and
+         never split a single invoice row (incl. its Reason text) across a
+         page break — so a row's data stays together instead of its top
+         half landing on one page and the rest on the next. */
+      #print-report table {
+        border-collapse: collapse;
+      }
+      #print-report thead {
+        display: table-header-group;
+      }
+      #print-report tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
     }
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -3485,7 +3513,7 @@
     </section>
 
     <section class="wrap" id="demo">
-      <div class="section-head"><span class="eyebrow">No signup needed</span><h2>Run a free reconciliation check</h2><p>Upload your actual Purchase Register and GSTR-2B (Excel or CSV) — this runs the real matching engine on your real data, right here, before you sign up. Files need columns for Invoice No, GSTIN, and Amount (names can vary — we try to detect them).</p></div>
+      <div class="section-head"><span class="eyebrow">No signup needed</span><h2>Run a free reconciliation check</h2><p>Upload your actual Purchase Register and GSTR-2B (Excel or CSV) — this runs the real matching engine on your real data, right here, before you sign up. You'll get to confirm which column is which (Invoice No, GSTIN, Amount, and tax breakdown if present) before anything is matched.</p></div>
       <div class="democard">
         <div class="uploadgrid" style="margin-top:0;">
           <div class="uploadcard" id="demoUploadCardPR">
@@ -3525,11 +3553,11 @@
       <div class="section-head"><span class="eyebrow">One dashboard, every recurring fire</span><h2>What EANOVA actually automates</h2><p>Each card is a real, named pain point from Indian CA practice — and the specific fix for it.</p></div>
       <div class="fixgrid">
         <div class="fixcard"><div class="pnum">01 — Reconciliation</div><h3>GSTR-2B matching</h3><div class="problem">2–3 hours per client, every month, done by eye in Excel.</div><div class="solution">Fuzzy-matches invoices despite typos and formatting drift; flags true mismatches vs. timing differences in seconds.</div><button class="trycta" data-scroll="demo">Try this →</button></div>
-        <div class="fixcard"><div class="pnum">02 — Notices</div><h3>Notice Radar</h3><div class="problem">GST, IT and TDS notices sit unseen across three separate portals, burning response days.</div><div class="solution">Auto-fetches every notice the moment it's issued and starts a visible countdown, per client, in one calendar.</div><button class="trycta" data-nav="signup">Try this →</button></div>
-        <div class="fixcard"><div class="pnum">03 — Deadlines</div><h3>Compliance Autopilot</h3><div class="problem">Monthly, QRMP and composition clients each follow different due dates, tracked from memory.</div><div class="solution">Auto-generates the right recurring task for each client's actual filing category, plus DSC-expiry alerts.</div><button class="trycta" data-nav="signup">Try this →</button></div>
-        <div class="fixcard"><div class="pnum">04 — Documents</div><h3>Client Vault</h3><div class="problem">"What documents do you need?" answered over WhatsApp, 15–20 times a day.</div><div class="solution">Clients upload PAN, bank statements and invoices to a portal; your team is notified only when something actually arrives.</div><button class="trycta" data-nav="signup">Try this →</button></div>
-        <div class="fixcard"><div class="pnum">05 — Data entry</div><h3>Invoice OCR</h3><div class="problem">Vendor, GSTIN and line items typed in by hand from scans and phone photos.</div><div class="solution">Reads any invoice — PDF, scan, or blurry photo — and validates the GSTIN checksum in about three seconds.</div><button class="trycta" data-scroll="demo">Try this →</button></div>
-        <div class="fixcard"><div class="pnum">06 — Fees</div><h3>Aging &amp; Follow-up</h3><div class="problem">No clean view of which clients are overdue on fees, or by how long.</div><div class="solution">Live aging report with one-tap WhatsApp payment reminders and Razorpay/UPI links.</div><button class="trycta" data-nav="signup">Try this →</button></div>
+        <div class="fixcard"><div class="pnum">02 — Notices <span class="planned-badge">PLANNED</span></div><h3>Notice Radar</h3><div class="problem">GST, IT and TDS notices sit unseen across three separate portals, burning response days.</div><div class="solution">Auto-fetches every notice the moment it's issued and starts a visible countdown, per client, in one calendar.</div><button class="trycta" data-nav="signup">Join waitlist →</button></div>
+        <div class="fixcard"><div class="pnum">03 — Deadlines <span class="planned-badge">PLANNED</span></div><h3>Compliance Autopilot</h3><div class="problem">Monthly, QRMP and composition clients each follow different due dates, tracked from memory.</div><div class="solution">Auto-generates the right recurring task for each client's actual filing category, plus DSC-expiry alerts.</div><button class="trycta" data-nav="signup">Join waitlist →</button></div>
+        <div class="fixcard"><div class="pnum">04 — Documents <span class="planned-badge">PLANNED</span></div><h3>Client Vault</h3><div class="problem">"What documents do you need?" answered over WhatsApp, 15–20 times a day.</div><div class="solution">Clients upload PAN, bank statements and invoices to a portal; your team is notified only when something actually arrives.</div><button class="trycta" data-nav="signup">Join waitlist →</button></div>
+        <div class="fixcard"><div class="pnum">05 — Data entry <span class="planned-badge">PLANNED</span></div><h3>Invoice OCR</h3><div class="problem">Vendor, GSTIN and line items typed in by hand from scans and phone photos.</div><div class="solution">Reads any invoice — PDF, scan, or blurry photo — and validates the GSTIN checksum in about three seconds.</div><button class="trycta" data-nav="signup">Join waitlist →</button></div>
+        <div class="fixcard"><div class="pnum">06 — Fees <span class="planned-badge">PLANNED</span></div><h3>Aging &amp; Follow-up</h3><div class="problem">No clean view of which clients are overdue on fees, or by how long.</div><div class="solution">Live aging report with one-tap WhatsApp payment reminders and Razorpay/UPI links.</div><button class="trycta" data-nav="signup">Join waitlist →</button></div>
       </div>
     </section>
 
@@ -3567,7 +3595,7 @@
         <div class="pricecard" id="firstMonthPriceCard">
           <div class="pc-label">First Month</div>
           <div class="pc-price"><span class="pc-num" data-in="99" data-intl="9">99</span></div>
-          <div class="pc-gst-note">Including all charges</div>
+          <div class="pc-gst-note">+ ₹17.82 charges · ₹116.82 total</div>
           <div class="pc-sub">New accounts only, one-time introductory price</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Real reconciliation engine</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="first" data-nav="checkout" type="button">Start at this price →</button>
@@ -3576,7 +3604,7 @@
         <div class="pricecard">
           <div class="pc-label">Monthly</div>
           <div class="pc-price"><span class="pc-num" data-in="199" data-intl="25">199</span><span class="pc-permo">/mo</span></div>
-          <div class="pc-gst-note">Including all charges</div>
+          <div class="pc-gst-note">+ ₹35.82 charges · ₹234.82 total</div>
           <div class="pc-sub">From month 2 onward, pay-as-you-go</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>Cancel anytime</li></ul>
           <button class="btn btn-outline btn-sm" data-plan="monthly" data-nav="checkout" type="button">Start Free Trial →</button>
@@ -3586,7 +3614,7 @@
           <div class="pc-badge">Best value</div>
           <div class="pc-label">Annual</div>
           <div class="pc-price"><span class="pc-num" data-in="150" data-intl="19">150</span><span class="pc-permo">/mo</span></div>
-          <div class="pc-gst-note">Including all charges</div>
+          <div class="pc-gst-note">+ ₹324 charges · ₹2,124 total/year</div>
           <div class="pc-sub" id="pcAnnualSub">Billed yearly — <span data-in="₹1,800" data-intl="$228">₹1,800</span>/year total</div>
           <ul class="pc-features"><li>Full access</li><li>Unlimited clients</li><li>~25% cheaper than monthly</li></ul>
           <button class="btn btn-gold btn-sm" data-plan="annual" data-nav="checkout" type="button">Get the annual plan →</button>
@@ -3909,7 +3937,7 @@
         </div>
         <div class="spinner" id="reconSpinner"><span class="dotload"></span><span class="dotload"></span><span class="dotload"></span>&nbsp; Reading and matching your files…</div>
         <div class="demo-error" id="reconError" style="display:none;"></div>
-        <p style="font-size:12.5px;color:rgba(36,31,26,0.55);text-align:center;margin-top:14px;">Excel (.xlsx) or CSV only for now — PDF isn't supported yet. Files need columns for Invoice No, GSTIN, and Amount (column names can vary slightly — we try to detect them).</p>
+        <p style="font-size:12.5px;color:rgba(36,31,26,0.55);text-align:center;margin-top:14px;">Excel (.xlsx) or CSV only for now — PDF isn't supported yet. You'll get a chance to confirm the detected columns (Invoice No, GSTIN, Amount, tax breakdown) before matching runs.</p>
       </div>
       <div id="cd-resultsSection" style="display:none;">
         <div class="summarygrid">
@@ -3922,6 +3950,7 @@
           <div class="sumcard mismatch"><div class="n" id="sumGstinMismatch">0</div><div class="l">GSTIN Mismatch</div></div>
         </div>
         <div class="auditline" id="auditLine"></div>
+        <div id="dataQualityWarnings" style="display:none;"></div>
         <div class="resultbar">
           <h3 id="issuesTitle">Issues to review</h3>
           <div class="btnrow">
@@ -4083,13 +4112,14 @@
       <p class="legal-updated">Last updated: September 2026</p>
       <p>This Privacy Policy explains what information EANOVA collects and how it's used.</p>
       <h3>1. What We Collect</h3>
-      <p>Account details you provide (name, firm name, email, region), and the Purchase Register / GSTR-2B files you upload for reconciliation. If you use Share &amp; Earn, we also store your referral code, who referred you (if anyone), and your referral commission/points history.</p>
+      <p>Account details you provide (name, firm name, email, region), and basic client records you add yourself (client name, GSTIN, contact). If you use Share &amp; Earn, we also store your referral code, who referred you (if anyone), and your referral commission/points history.</p>
+      <p><strong>Your Purchase Register and GSTR-2B files are not uploaded to our servers.</strong> Reconciliation runs entirely inside your own browser, using JavaScript — the matching, mismatch detection, and PDF report generation all happen on your device. We never receive, see, or store the row-level invoice data in those files.</p>
       <h3>2. How We Use It</h3>
       <p>To run the reconciliation you request, manage your account and subscription, send OTP/login emails, and process payments (via Razorpay).</p>
       <h3>3. What We Don't Store</h3>
       <p>We never store your card number, CVV, or UPI PIN — these go directly to Razorpay's secure checkout and never touch our servers.</p>
       <h3>4. Data Security</h3>
-      <p>All traffic to and from EANOVA is encrypted in transit (HTTPS/TLS). Data at rest — including your account details and uploaded files — is encrypted (AES-256) on our database provider's infrastructure. India-region hosting for client data is a commitment we're actively working toward, not yet in place.</p>
+      <p>All traffic to and from EANOVA is encrypted in transit (HTTPS/TLS). Data at rest — your account details and client records — is encrypted (AES-256) on our database provider's infrastructure. Your Purchase Register / GSTR-2B files are processed only in your browser's memory and are not transmitted to or stored on our servers at all. India-region hosting for account data is a commitment we're actively working toward, not yet in place.</p>
       <h3>5. Sharing</h3>
       <p>We don't sell your data. It's shared only with service providers required to run EANOVA — currently Razorpay (payments) and our email provider (OTP/notification emails).</p>
       <h3>6. Data Retention &amp; Deletion</h3>
@@ -4257,6 +4287,20 @@
   <!-- Claim Milestone Gift — same pattern as withdrawal/refund: pick a
        contact method, the actual gift is decided manually by the founder
        after verifying on Live Chat/email. No automatic reward. -->
+  <!-- Column Mapping preview — shown after files are read, before any
+       matching runs. Body is filled dynamically (openColumnMappingModal)
+       since the choices depend on each file's actual headers. -->
+  <div class="modal-overlay" id="columnMappingModal">
+    <div class="modal" style="max-width:660px;">
+      <button class="modal-close" data-close-modal="columnMappingModal" id="colMapCancelX">✕</button>
+      <h3>Confirm columns before matching</h3>
+      <p style="font-size:13px;color:rgba(36,31,26,0.6);margin-top:6px;">We've guessed which column is which from your file's headers — please check them, especially <strong>Invoice Total</strong>, since that's the amount used for matching.</p>
+      <div id="colMapBody" style="margin-top:16px;max-height:52vh;overflow-y:auto;padding-right:4px;"></div>
+      <div class="auth-error" id="colMapError" style="display:none;"></div>
+      <button class="btn" id="colMapContinueBtn" style="width:100%;margin-top:14px;justify-content:center;">Continue to Reconciliation</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="milestoneClaimModal">
     <div class="modal" style="text-align:center;padding:32px 28px;">
       <button class="modal-close" data-close-modal="milestoneClaimModal">✕</button>
@@ -5676,41 +5720,137 @@
       return prev[lb];
     }
 
-    function normalizeRows(rows) {
+    // একটা ফাইলের raw rows থেকে headers ও auto-detect করা column suggestions
+    // বের করে — শুধু সাজেশন, এখনো কোনো row বানানো হয় না। User এই
+    // suggestions দেখে Column Mapping স্ক্রিনে confirm/ঠিক করবে।
+    //
+    // ⚠️ bug fix: আগে amount-column খোঁজার patterns-এ /taxable.?value/i
+    // সবার আগে ছিল, /invoice.?value/i ও /total/i-এর আগে। তাই যে ফাইলে
+    // "Taxable Value" আর "Invoice Total" দুটো column-ই থাকত, matching
+    // ভুল করে "Taxable Value"-এর উপর হতো, আসল invoice total-এর উপর না —
+    // ফলে invoice total বদলালেও mismatch ধরা পড়ত না। এখন invoice-total
+    // জাতীয় column প্রাধান্য পায়, taxable value শুধু শেষ fallback।
+    function detectColumnSet(rows) {
       if (!rows || !rows.length) return null;
       var sample = rows[0];
-      var invKey = findColumn(sample, [/invoice.?no/i, /inv.?no/i, /bill.?no/i, /^invoice$/i, /^inv$/i]);
-      var gstinKey = findColumn(sample, [/gstin/i]);
-      var amtKey = findColumn(sample, [/taxable.?value/i, /invoice.?value/i, /^amount$/i, /^value$/i, /total.?value/i, /amount/i]);
-      if (!invKey || !gstinKey || !amtKey) return null;
-      var skipped = 0;
+      var headers = Object.keys(sample);
+      if (!headers.length) return null;
+      return {
+        headers: headers,
+        invKey: findColumn(sample, [/invoice.?no/i, /inv.?no/i, /bill.?no/i, /^invoice$/i, /^inv$/i]),
+        gstinKey: findColumn(sample, [/gstin/i]),
+        totalKey: findColumn(sample, [/invoice.?value/i, /invoice.?total/i, /grand.?total/i, /net.?amount/i, /total.?value/i, /^total$/i, /^amount$/i, /^value$/i, /taxable.?value/i]),
+        dateKey: findColumn(sample, [/invoice.?date/i, /bill.?date/i, /^date$/i]),
+        taxableKey: findColumn(sample, [/taxable.?value/i, /taxable.?amt/i, /^taxable$/i]),
+        cgstKey: findColumn(sample, [/^cgst/i, /central.?gst/i]),
+        sgstKey: findColumn(sample, [/^sgst/i, /state.?gst/i, /ut.?gst/i]),
+        igstKey: findColumn(sample, [/^igst/i, /integrated.?gst/i]),
+        cessKey: findColumn(sample, [/cess/i])
+      };
+    }
+
+    function parseMoney(raw) {
+      var s = String(raw == null ? '' : raw).trim();
+      if (!s) return 0;
+      // Accounting-style negative amounts written as (1,234.00)
+      var isParenNegative = /^\(.*\)$/.test(s);
+      var n = parseFloat(s.replace(/[^0-9.\-]/g, '')) || 0;
+      return isParenNegative ? -Math.abs(n) : n;
+    }
+
+    // মানুষের বেছে দেওয়া (বা auto-detected, user না ছুঁলে) column mapping
+    // থেকে আসল normalized rows বানায়। invKey/gstinKey/totalKey আবশ্যক;
+    // বাকিগুলো (date/taxable/cgst/sgst/igst/cess) ঐচ্ছিক — না থাকলে null।
+    function buildRowsFromMapping(rows, map) {
+      if (!map || !map.invKey || !map.gstinKey || !map.totalKey) return null;
       var parsed = rows.map(function(r) {
-        var rawAmt = String(r[amtKey]).trim();
-        // Handle accounting-style negative amounts written as (1,234.00)
-        var isParenNegative = /^\(.*\)$/.test(rawAmt);
-        var amt = parseFloat(rawAmt.replace(/[^0-9.\-]/g, '')) || 0;
-        if (isParenNegative) amt = -Math.abs(amt);
         return {
-          invoiceNo: String(r[invKey]).trim(),
-          invoiceKey: normalizeInvoiceNo(r[invKey]),
-          gstin: String(r[gstinKey]).trim().toUpperCase(),
-          amount: amt
+          invoiceNo: String(r[map.invKey] == null ? '' : r[map.invKey]).trim(),
+          invoiceKey: normalizeInvoiceNo(r[map.invKey]),
+          gstin: String(r[map.gstinKey] == null ? '' : r[map.gstinKey]).trim().toUpperCase(),
+          amount: parseMoney(r[map.totalKey]),
+          dateRaw: map.dateKey ? String(r[map.dateKey] == null ? '' : r[map.dateKey]).trim() : '',
+          taxable: map.taxableKey ? parseMoney(r[map.taxableKey]) : null,
+          cgst: map.cgstKey ? parseMoney(r[map.cgstKey]) : null,
+          sgst: map.sgstKey ? parseMoney(r[map.sgstKey]) : null,
+          igst: map.igstKey ? parseMoney(r[map.igstKey]) : null,
+          cess: map.cessKey ? parseMoney(r[map.cessKey]) : null
         };
       });
       // Rows with a blank Invoice No or GSTIN can't be matched on anything,
       // but must still be counted rather than silently vanishing from the
       // row totals (they show up in the audit line as "unreadable rows").
       var valid = parsed.filter(function(r) { return r.invoiceKey && r.gstin; });
-      skipped = parsed.length - valid.length;
-      valid._skippedCount = skipped;
+      valid._skippedCount = parsed.length - valid.length;
       return valid;
+    }
+
+    // GSTIN format: 2-digit state code + 10-char PAN + 1 entity digit + 'Z'
+    // + 1 checksum char. This only checks the *shape*, not the checksum
+    // algorithm itself — enough to catch typos/garbage without a false
+    // "invalid" on a legitimately unusual-but-valid GSTIN.
+    var GSTIN_FORMAT_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+    // Pre-reconciliation data-quality pass (#7 — non-blocking, informational).
+    // Runs once per file, after the column mapping is confirmed and rows
+    // are built, before reconcileRows() runs.
+    function validateRows(rows, label) {
+      var invalidGstin = 0, invalidDate = 0, taxMismatch = 0, duplicateKeysInFile = 0;
+      var seen = new Map();
+      var samples = [];
+      rows.forEach(function(r) {
+        var rowIssues = [];
+        if (!GSTIN_FORMAT_REGEX.test(r.gstin)) { invalidGstin++; rowIssues.push('invalid GSTIN format'); }
+        if (r.dateRaw) {
+          var d = new Date(r.dateRaw);
+          if (isNaN(d.getTime())) { invalidDate++; rowIssues.push('unreadable date'); }
+        }
+        if (r.taxable != null || r.cgst != null || r.sgst != null || r.igst != null || r.cess != null) {
+          var sum = (r.taxable || 0) + (r.cgst || 0) + (r.sgst || 0) + (r.igst || 0) + (r.cess || 0);
+          var tol = Math.max(2, Math.abs(r.amount) * 0.01);
+          if (Math.abs(sum - r.amount) > tol) { taxMismatch++; rowIssues.push('tax components don\'t add up to total'); }
+        }
+        var key = r.invoiceKey + '|' + r.gstin;
+        if (seen.has(key)) { duplicateKeysInFile++; rowIssues.push('duplicate Invoice No + GSTIN within this file'); }
+        else seen.set(key, true);
+        if (rowIssues.length && samples.length < 5) {
+          samples.push({ invoiceNo: r.invoiceNo, gstin: r.gstin, issues: rowIssues });
+        }
+      });
+      return {
+        label: label, total: rows.length,
+        invalidGstin: invalidGstin, invalidDate: invalidDate,
+        taxMismatch: taxMismatch, duplicateKeysInFile: duplicateKeysInFile,
+        samples: samples
+      };
     }
 
     // Bumped whenever the matching logic itself changes, independent of the
     // report's generation timestamp — so an old report can always be traced
     // back to exactly which version of the logic produced it (requirement:
     // version/date-stamp the matching logic, not just the report time).
-    var MATCHING_LOGIC_VERSION = 'v2.0 (2026-09-07)';
+    var MATCHING_LOGIC_VERSION = 'v2.2 (2026-10-03)';
+
+    // Carries the optional tax-breakdown fields (taxable value, CGST, SGST,
+    // IGST, cess, invoice date) from whichever PR/2B rows were involved in
+    // a decision through to the report — purely additive, doesn't affect
+    // matching at all. Any field whose column wasn't mapped stays null.
+    function taxBreakdown(prRow, gstrRow) {
+      return {
+        prDate: prRow ? (prRow.dateRaw || '') : '',
+        gstrDate: gstrRow ? (gstrRow.dateRaw || '') : '',
+        prTaxable: (prRow && prRow.taxable != null) ? prRow.taxable : null,
+        prCgst: (prRow && prRow.cgst != null) ? prRow.cgst : null,
+        prSgst: (prRow && prRow.sgst != null) ? prRow.sgst : null,
+        prIgst: (prRow && prRow.igst != null) ? prRow.igst : null,
+        prCess: (prRow && prRow.cess != null) ? prRow.cess : null,
+        gstrTaxable: (gstrRow && gstrRow.taxable != null) ? gstrRow.taxable : null,
+        gstrCgst: (gstrRow && gstrRow.cgst != null) ? gstrRow.cgst : null,
+        gstrSgst: (gstrRow && gstrRow.sgst != null) ? gstrRow.sgst : null,
+        gstrIgst: (gstrRow && gstrRow.igst != null) ? gstrRow.igst : null,
+        gstrCess: (gstrRow && gstrRow.cess != null) ? gstrRow.cess : null
+      };
+    }
 
     function reconcileRows(prRows, gstrRows) {
       var gstrByKey = new Map();   // "invoiceKey|gstin" -> [rows] (tracks exact-key duplicates)
@@ -5783,7 +5923,7 @@
         if (isSplit) {
           matched++;
           splitMatchedCount++;
-          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: splitSum, diff: Math.abs(pr.amount - splitSum), type: 'matched', note: 'Split across ' + splitPieces + ' rows in 2B, summed' });
+          allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: splitSum, diff: Math.abs(pr.amount - splitSum), type: 'matched', note: 'Split across ' + splitPieces + ' rows in 2B, summed' }, taxBreakdown(pr, null)));
           return;
         }
 
@@ -5811,8 +5951,8 @@
             fuzzyMatchedCount++;
             needsReviewCount++;
             var fDiff = Math.abs(pr.amount - gstrRow.amount);
-            issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review', note: 'Invoice No differs slightly from 2B (possible typo) — confirm before relying on this match.', resolved: false });
-            allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review' });
+            issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review', note: 'Invoice No differs slightly from 2B (possible typo) — confirm before relying on this match.', resolved: false }, taxBreakdown(pr, gstrRow)));
+            allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: fDiff, type: 'needs_review' }, taxBreakdown(pr, gstrRow)));
             return;
           }
         }
@@ -5836,31 +5976,31 @@
           if (gstinMismatchBest && gstinMismatchDiff <= tolerance) {
             gstinMismatchBest._consumed = true;
             gstinMismatchCount++;
-            issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch', note: 'Same invoice & amount, but GSTIN differs between Purchase Register (' + pr.gstin + ') and 2B (' + gstinMismatchBest.gstin + ').', resolved: false });
-            allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch' });
+            issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch', note: 'Same invoice & amount, but GSTIN differs between Purchase Register (' + pr.gstin + ') and 2B (' + gstinMismatchBest.gstin + ').', resolved: false }, taxBreakdown(pr, gstinMismatchBest)));
+            allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin + ' vs ' + gstinMismatchBest.gstin, purchaseAmt: pr.amount, gstrAmt: gstinMismatchBest.amount, diff: gstinMismatchDiff, type: 'gstin_mismatch' }, taxBreakdown(pr, gstinMismatchBest)));
             return;
           }
         }
 
         if (!gstrRow) {
           missingCount++;
-          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false });
-          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing' });
+          issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing', resolved: false }, taxBreakdown(pr, null)));
+          allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: 0, diff: pr.amount, type: 'missing' }, taxBreakdown(pr, null)));
           return;
         }
 
         var diff = Math.abs(pr.amount - gstrRow.amount);
         if (diff < 1) {
           matched++;
-          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'matched' });
+          allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'matched' }, taxBreakdown(pr, gstrRow)));
         } else if (diff <= tolerance) {
           partialCount++;
-          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial', resolved: false });
-          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial' });
+          issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial', resolved: false }, taxBreakdown(pr, gstrRow)));
+          allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'partial' }, taxBreakdown(pr, gstrRow)));
         } else {
           mismatchCount++;
-          issues.push({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch', resolved: false });
-          allRows.push({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch' });
+          issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch', resolved: false }, taxBreakdown(pr, gstrRow)));
+          allRows.push(Object.assign({ invoiceNo: pr.invoiceNo, gstin: pr.gstin, purchaseAmt: pr.amount, gstrAmt: gstrRow.amount, diff: diff, type: 'mismatch' }, taxBreakdown(pr, gstrRow)));
         }
       });
 
@@ -5873,10 +6013,15 @@
         if (r._consumed) return;
         var key = r.invoiceKey + '|' + r.gstin;
         var isDup = duplicateKeys.has(key);
-        if (isDup) duplicateCount++;
-        missingInBooksCount++;
-        issues.push({ id: state._nextMismatchId++, invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books', resolved: false });
-        allRows.push({ invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books' });
+        // bug fix: these used to be counted in BOTH buckets — a duplicate
+        // row bumped duplicateCount *and* missingInBooksCount, so trying to
+        // reconcile "Missing in Books + Duplicates = unclaimed 2B rows"
+        // never actually added up. Now each unclaimed 2B row lands in
+        // exactly one bucket, matching the mutually-exclusive 'type' it's
+        // already given below.
+        if (isDup) { duplicateCount++; } else { missingInBooksCount++; }
+        issues.push(Object.assign({ id: state._nextMismatchId++, invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books', resolved: false }, taxBreakdown(null, r)));
+        allRows.push(Object.assign({ invoiceNo: r.invoiceNo, gstin: r.gstin, purchaseAmt: 0, gstrAmt: r.amount, diff: r.amount, type: isDup ? 'duplicate_2b' : 'missing_in_books' }, taxBreakdown(null, r)));
       });
 
       return {
@@ -5893,23 +6038,132 @@
       };
     }
 
-    async function runRealReconciliation(prFile, gstrFile) {
-      var prRowsRaw = await readFileAsRows(prFile);
-      var gstrRowsRaw = await readFileAsRows(gstrFile);
-      var prRows = normalizeRows(prRowsRaw);
-      var gstrRows = normalizeRows(gstrRowsRaw);
-      if (!prRows || !gstrRows) {
-        throw new Error("Couldn't find Invoice No / GSTIN / Amount columns in one of the files. Check the column headers and try again.");
+    // Column Mapping modal — fields shown per file. "key" matches the
+    // detectColumnSet()/buildRowsFromMapping() field names.
+    var COLUMN_MAPPING_FIELDS = [
+      { key: 'invKey', label: 'Invoice No', required: true },
+      { key: 'gstinKey', label: 'GSTIN', required: true },
+      { key: 'totalKey', label: 'Invoice Total (used for matching)', required: true },
+      { key: 'dateKey', label: 'Invoice Date', required: false },
+      { key: 'taxableKey', label: 'Taxable Value', required: false },
+      { key: 'cgstKey', label: 'CGST', required: false },
+      { key: 'sgstKey', label: 'SGST', required: false },
+      { key: 'igstKey', label: 'IGST', required: false },
+      { key: 'cessKey', label: 'Cess', required: false }
+    ];
+
+    function renderColumnMappingSection(fileKey, title, cols) {
+      var html = '<div style="margin-bottom:18px;"><h4 style="font-size:13.5px;margin-bottom:10px;">' + title + '</h4>';
+      COLUMN_MAPPING_FIELDS.forEach(function(f) {
+        var options = '<option value="">' + (f.required ? '— choose —' : '(none)') + '</option>' +
+          cols.headers.map(function(h) {
+            var sel = (h === cols[f.key]) ? ' selected' : '';
+            var safe = String(h).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            return '<option value="' + safe + '"' + sel + '>' + h + '</option>';
+          }).join('');
+        html += '<div class="field" style="margin-bottom:8px;"><label style="font-size:12px;">' + f.label + (f.required ? ' *' : '') + '</label>' +
+          '<select data-colmap-file="' + fileKey + '" data-colmap-field="' + f.key + '">' + options + '</select></div>';
+      });
+      html += '</div>';
+      return html;
+    }
+
+    // Shows the modal and resolves/rejects via callbacks rather than a
+    // promise directly, so it can be awaited from runRealReconciliation()
+    // below using `new Promise(...)`.
+    function openColumnMappingModal(prCols, gstrCols, onConfirm, onCancel) {
+      var body = document.getElementById('colMapBody');
+      body.innerHTML = renderColumnMappingSection('pr', 'Purchase Register', prCols) + renderColumnMappingSection('gstr', 'GSTR-2B', gstrCols);
+      document.getElementById('colMapError').style.display = 'none';
+      openModal('columnMappingModal');
+
+      var continueBtn = document.getElementById('colMapContinueBtn');
+      var cancelX = document.getElementById('colMapCancelX');
+      var overlay = document.getElementById('columnMappingModal');
+
+      function readMapping(fileKey) {
+        var map = {};
+        body.querySelectorAll('[data-colmap-file="' + fileKey + '"]').forEach(function(sel) {
+          map[sel.dataset.colmapField] = sel.value || null;
+        });
+        return map;
       }
-      if (prRows.length === 0 || gstrRows.length === 0) {
-        throw new Error('One of the files has no readable rows once the header is removed.');
+      function cleanup() {
+        continueBtn.removeEventListener('click', onContinueClick);
+        cancelX.removeEventListener('click', onCancelClick);
+        overlay.removeEventListener('click', onOverlayClick);
       }
-      var result = reconcileRows(prRows, gstrRows);
-      result.prSkippedCount = prRows._skippedCount || 0;
-      result.gstrSkippedCount = gstrRows._skippedCount || 0;
-      result.rawPrRowCount = prRowsRaw.length;
-      result.rawGstrRowCount = gstrRowsRaw.length;
-      return result;
+      function onContinueClick() {
+        var prMap = readMapping('pr');
+        var gstrMap = readMapping('gstr');
+        if (!prMap.invKey || !prMap.gstinKey || !prMap.totalKey || !gstrMap.invKey || !gstrMap.gstinKey || !gstrMap.totalKey) {
+          var err = document.getElementById('colMapError');
+          err.textContent = 'Please choose Invoice No, GSTIN and Invoice Total for both files.';
+          err.style.display = 'block';
+          return;
+        }
+        closeModal('columnMappingModal');
+        cleanup();
+        onConfirm({ pr: prMap, gstr: gstrMap });
+      }
+      function onCancelClick() {
+        closeModal('columnMappingModal');
+        cleanup();
+        onCancel();
+      }
+      function onOverlayClick(e) { if (e.target === overlay) onCancelClick(); }
+
+      continueBtn.addEventListener('click', onContinueClick);
+      cancelX.addEventListener('click', onCancelClick);
+      overlay.addEventListener('click', onOverlayClick);
+    }
+
+    // Reads both files, lets the user confirm/correct the column mapping,
+    // then validates and reconciles using exactly that mapping. Resolves
+    // with the full result (now including .validation and .columnMapping);
+    // rejects with an Error — if the user backs out of the mapping step,
+    // that Error has `.cancelled = true` so callers can treat it as a
+    // silent no-op rather than showing a scary error message (and, in the
+    // dashboard flow, so the daily trial slot is never touched for it —
+    // see runReconciliation(), which only checks/consumes that slot AFTER
+    // this resolves).
+    function runRealReconciliation(prFile, gstrFile) {
+      return new Promise(function(resolve, reject) {
+        Promise.all([readFileAsRows(prFile), readFileAsRows(gstrFile)]).then(function(res) {
+          var prRowsRaw = res[0], gstrRowsRaw = res[1];
+          var prCols = detectColumnSet(prRowsRaw);
+          var gstrCols = detectColumnSet(gstrRowsRaw);
+          if (!prCols || !gstrCols) {
+            reject(new Error('One of the files has no readable header row. Check the file and try again.'));
+            return;
+          }
+          openColumnMappingModal(prCols, gstrCols, function(mapping) {
+            try {
+              var prRows = buildRowsFromMapping(prRowsRaw, mapping.pr);
+              var gstrRows = buildRowsFromMapping(gstrRowsRaw, mapping.gstr);
+              if (!prRows || !gstrRows || prRows.length === 0 || gstrRows.length === 0) {
+                reject(new Error('One of the files has no readable rows once the header is removed.'));
+                return;
+              }
+              var result = reconcileRows(prRows, gstrRows);
+              result.prSkippedCount = prRows._skippedCount || 0;
+              result.gstrSkippedCount = gstrRows._skippedCount || 0;
+              result.rawPrRowCount = prRowsRaw.length;
+              result.rawGstrRowCount = gstrRowsRaw.length;
+              result.columnMapping = mapping;
+              result.validation = {
+                pr: validateRows(prRows, 'Purchase Register'),
+                gstr: validateRows(gstrRows, 'GSTR-2B')
+              };
+              resolve(result);
+            } catch (err) { reject(err); }
+          }, function() {
+            var cancelErr = new Error('Reconciliation cancelled.');
+            cancelErr.cancelled = true;
+            reject(cancelErr);
+          });
+        }).catch(reject);
+      });
     }
 
     // A plan is only valid for one month from purchase. subscriptionActive
@@ -5946,12 +6200,33 @@
         return;
       }
 
+      // Read files + confirm column mapping FIRST — entirely free,
+      // client-side, no server call yet. Only once that's confirmed do we
+      // check (and, for trial users, consume) today's reconciliation slot
+      // below. This ordering matters: /api/check-reconciliation-limit marks
+      // the slot used the moment it returns "allowed", so if that ran
+      // *before* the mapping step, backing out of mapping would burn a
+      // trial user's one free reconciliation for the day for nothing.
+      document.getElementById('reconSpinner').classList.add('show');
+      document.getElementById('runReconBtn').disabled = true;
+      var results;
+      try {
+        results = await runRealReconciliation(c.prFileObj, c.gstrFileObj);
+      } catch (err) {
+        document.getElementById('reconSpinner').classList.remove('show');
+        document.getElementById('runReconBtn').disabled = false;
+        if (!(err && err.cancelled)) {
+          errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
+          errBox.style.display = 'block';
+        }
+        return;
+      }
+
       // Free trial: one reconciliation per calendar day. Paid plans skip
       // this entirely (checked server-side too, so it can't be bypassed by
       // editing localStorage — the /api/check-reconciliation-limit route
       // returns { allowed: true, reason: 'paid' } immediately for paid users).
       if (!isSubscriptionValid() && state.user) {
-        document.getElementById('runReconBtn').disabled = true;
         var originalRunBtnText = document.getElementById('runReconBtn').textContent;
         document.getElementById('runReconBtn').textContent = 'Checking trial limit…';
         try {
@@ -5961,9 +6236,10 @@
             body: JSON.stringify({ email: state.user.email })
           });
           var limitData = await limitRes.json();
-          document.getElementById('runReconBtn').disabled = false;
           document.getElementById('runReconBtn').textContent = originalRunBtnText;
           if (!limitData.allowed) {
+            document.getElementById('reconSpinner').classList.remove('show');
+            document.getElementById('runReconBtn').disabled = false;
             // Some backends distinguish "trial window has fully ended" from
             // "today's one free reconciliation is already used" via a
             // reason code — show the accurate message when that's present,
@@ -5981,16 +6257,12 @@
           // If the limit check itself fails (network hiccup), don't block a
           // trial user's only workflow over it — fail open, same as the
           // server does on its side.
-          document.getElementById('runReconBtn').disabled = false;
           document.getElementById('runReconBtn').textContent = originalRunBtnText;
           console.warn('Could not verify trial limit, proceeding:', limitErr);
         }
       }
 
-      document.getElementById('reconSpinner').classList.add('show');
-      document.getElementById('runReconBtn').disabled = true;
       try {
-        var results = await runRealReconciliation(c.prFileObj, c.gstrFileObj);
         c.results = results;
         c.reconciled = true;
         persistCurrentAccount();
@@ -6009,11 +6281,9 @@
             body: JSON.stringify({ email: state.user.email, clientData: clientForServer })
           }).catch(function(err) { console.warn('Could not sync reconciliation result to server:', err); });
         }
-      } catch (err) {
+      } finally {
         document.getElementById('reconSpinner').classList.remove('show');
         document.getElementById('runReconBtn').disabled = false;
-        errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
-        errBox.style.display = 'block';
       }
     }
 
@@ -6049,6 +6319,30 @@
         (r.splitMatchedCount ? '<span><strong>' + r.splitMatchedCount + '</strong> split-invoice match(es) (summed across multiple 2B rows)</span>' : '') +
         skippedNote +
         '<span style="margin-left:auto;color:rgba(36,31,26,0.45);">Matching logic ' + (r.matchingLogicVersion || '—') + '</span>';
+
+      // Data-quality warnings (#7) — informational, never blocks the
+      // report; just surfaces what validateRows() found in each file.
+      var dqwEl = document.getElementById('dataQualityWarnings');
+      if (dqwEl) {
+        var vList = [r.validation && r.validation.pr, r.validation && r.validation.gstr].filter(Boolean);
+        var lines = [];
+        vList.forEach(function(v) {
+          if (v.invalidGstin) lines.push(v.invalidGstin + ' row(s) in ' + v.label + ' with a GSTIN that doesn\'t match the standard 15-character format');
+          if (v.invalidDate) lines.push(v.invalidDate + ' row(s) in ' + v.label + ' with an unreadable invoice date');
+          if (v.taxMismatch) lines.push(v.taxMismatch + ' row(s) in ' + v.label + ' where Taxable + CGST + SGST + IGST + Cess doesn\'t add up to the Invoice Total');
+          if (v.duplicateKeysInFile) lines.push(v.duplicateKeysInFile + ' row(s) in ' + v.label + ' repeating the same Invoice No + GSTIN within that same file');
+        });
+        if (lines.length) {
+          dqwEl.style.display = 'block';
+          dqwEl.innerHTML = '<div style="background:rgba(192,138,40,0.08);border:1px solid rgba(192,138,40,0.3);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12.5px;color:#6b5319;">' +
+            '<strong>⚠️ Data quality warnings</strong> (doesn\'t block the report, just worth checking):<ul style="margin:6px 0 0 18px;padding:0;">' +
+            lines.map(function(l) { return '<li>' + l + '</li>'; }).join('') +
+            '</ul></div>';
+        } else {
+          dqwEl.style.display = 'none';
+          dqwEl.innerHTML = '';
+        }
+      }
 
       var unresolved = r.issues.filter(function(i) { return !i.resolved; }).length;
       document.getElementById('issuesTitle').textContent = unresolved + ' issue' + (unresolved === 1 ? '' : 's') + ' to review';
@@ -6110,6 +6404,30 @@
 
     var typeLabelsForExport = { missing: 'Missing in 2B', missing_in_books: 'Missing in Books', duplicate_2b: 'Duplicate in 2B', needs_review: 'Needs Review', mismatch: 'Mismatch', partial: 'Partial', matched: 'Matched', gstin_mismatch: 'GSTIN Mismatch' };
 
+    // Tax breakdown (#4 — client feedback): shows taxable value / CGST /
+    // SGST / IGST / cess alongside the existing amount comparison, when
+    // those columns were mapped. One combined column rather than ~12
+    // separate PR/2B columns, so the export table stays readable; prefers
+    // whichever side (Purchase Register or 2B) actually has the data for
+    // that row.
+    function hasAnyTaxBreakdown(rows) {
+      return (rows || []).some(function(i) {
+        return i.prTaxable != null || i.prCgst != null || i.prSgst != null || i.prIgst != null || i.prCess != null ||
+               i.gstrTaxable != null || i.gstrCgst != null || i.gstrSgst != null || i.gstrIgst != null || i.gstrCess != null;
+      });
+    }
+    function formatTaxBreakdown(i) {
+      var src = (i.prTaxable != null || i.prCgst != null || i.prSgst != null || i.prIgst != null || i.prCess != null) ? 'pr' : 'gstr';
+      var get = function(f) { var v = i[src + f]; return v; };
+      var parts = [];
+      if (get('Taxable') != null) parts.push('Taxable ₹' + get('Taxable').toLocaleString('en-IN'));
+      if (get('Cgst') != null) parts.push('CGST ₹' + get('Cgst').toLocaleString('en-IN'));
+      if (get('Sgst') != null) parts.push('SGST ₹' + get('Sgst').toLocaleString('en-IN'));
+      if (get('Igst') != null) parts.push('IGST ₹' + get('Igst').toLocaleString('en-IN'));
+      if (get('Cess') != null) parts.push('Cess ₹' + get('Cess').toLocaleString('en-IN'));
+      return parts.join(', ');
+    }
+
     // Full row-by-row match log — every row from both files, including
     // rows that matched cleanly, not just the ones flagged as issues. The
     // PDF report (below) stays focused on what needs attention; this is
@@ -6120,9 +6438,17 @@
       if (!c || !c.results) return;
       var r = c.results;
       var lines = [];
-      lines.push(['Invoice No', 'GSTIN', 'Purchase Register Amount', 'GSTR-2B Amount', 'Difference', 'Type', 'Note'].map(csvEscape).join(','));
-      (r.allRows || r.issues || []).forEach(function(i) {
-        lines.push([i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, typeLabelsForExport[i.type] || i.type, i.note || ''].map(csvEscape).join(','));
+      var rowsForCsv = r.allRows || r.issues || [];
+      var showTaxCol = hasAnyTaxBreakdown(rowsForCsv);
+      var csvHeader = ['Invoice No', 'GSTIN', 'Purchase Register Amount', 'GSTR-2B Amount', 'Difference', 'Type'];
+      if (showTaxCol) csvHeader.push('Tax Breakdown (Taxable/CGST/SGST/IGST/Cess)');
+      csvHeader.push('Note');
+      lines.push(csvHeader.map(csvEscape).join(','));
+      rowsForCsv.forEach(function(i) {
+        var row = [i.invoiceNo, i.gstin, i.purchaseAmt, i.gstrAmt, i.diff, typeLabelsForExport[i.type] || i.type];
+        if (showTaxCol) row.push(formatTaxBreakdown(i));
+        row.push(i.note || '');
+        lines.push(row.map(csvEscape).join(','));
       });
       lines.push('');
       lines.push(['Matching logic version', r.matchingLogicVersion || '—'].map(csvEscape).join(','));
@@ -6149,9 +6475,11 @@
       // (including ones that matched cleanly) was actually classified,
       // instead of having to trust the summary counts alone.
       var rows = (r.allRows && r.allRows.length) ? r.allRows : r.issues;
+      var showTaxCol = hasAnyTaxBreakdown(rows);
       return rows.map(function(i) {
         var status = i.type === 'matched' ? '—' : (i.resolved ? 'Resolved' : 'Open');
-        return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + (typeLabelsForExport[i.type] || i.type) + '</td><td>' + status + (i.note ? '<br><span style="font-size:10px;color:#777;">' + i.note + '</span>' : '') + '</td></tr>';
+        var taxCell = showTaxCol ? ('<td style="font-size:10.5px;">' + (formatTaxBreakdown(i) || '—') + '</td>') : '';
+        return '<tr><td>' + i.invoiceNo + '</td><td>' + i.gstin + '</td><td>₹' + i.purchaseAmt.toLocaleString('en-IN') + '</td><td>₹' + i.gstrAmt.toLocaleString('en-IN') + '</td><td>₹' + i.diff.toLocaleString('en-IN') + '</td><td>' + (typeLabelsForExport[i.type] || i.type) + '</td>' + taxCell + '<td>' + status + (i.note ? '<br><span style="font-size:10.5px;color:#444;"><strong>Reason:</strong> ' + i.note + '</span>' : '') + '</td></tr>';
       }).join('');
     }
 
@@ -6167,6 +6495,7 @@
         (r.needsReviewCount ? (' &nbsp; Needs Review: <strong>' + r.needsReviewCount + '</strong>') : '') +
         (totalSkipped ? (' &nbsp; Skipped (unreadable rows): <strong>' + totalSkipped + '</strong>') : '') +
         '<br>Matching logic version: <strong>' + (r.matchingLogicVersion || '—') + '</strong> &nbsp; Generated: <strong>' + (r.generatedAt ? new Date(r.generatedAt).toLocaleString('en-IN') : '—') + '</strong>' +
+        (r.duplicateCount ? '<br><span style="color:#777;">Note: "Duplicates in 2B" and "Missing in Books" are mutually exclusive — each unclaimed 2B row is counted in exactly one of the two. Add them together to get every 2B row with no corresponding entry in the books.</span>' : '') +
         '</p>';
     }
 
@@ -6175,12 +6504,13 @@
       if (!c || !c.results) return;
       var r = c.results;
       var rows = buildReportTableHtml(c, r);
+      var taxTh = hasAnyTaxBreakdown(r.allRows || r.issues) ? '<th>Tax Breakdown</th>' : '';
       document.getElementById('print-report').innerHTML =
         '<h2 style="font-family:Georgia,serif;">GST Reconciliation Report</h2>' +
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
         '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>GSTIN Mismatch:</strong> ' + (r.gstinMismatchCount || 0) + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Needs Review:</strong> ' + (r.needsReviewCount || 0) + '</p>' +
         buildAuditSummaryHtml(r) +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th>' + taxTh + '<th>Status / Reason</th></tr></thead><tbody>' + rows + '</tbody></table>';
       window.print();
     });
 
@@ -6205,7 +6535,7 @@
         '<p><strong>Client:</strong> ' + c.name + ' &nbsp; <strong>GSTIN:</strong> ' + c.gstin + '</p>' +
         '<p><strong>Matched:</strong> ' + r.matched + ' &nbsp; <strong>Partial:</strong> ' + r.partialCount + ' &nbsp; <strong>Mismatch:</strong> ' + r.mismatchCount + ' &nbsp; <strong>GSTIN Mismatch:</strong> ' + (r.gstinMismatchCount || 0) + ' &nbsp; <strong>Missing in 2B:</strong> ' + r.missingCount + ' &nbsp; <strong>Needs Review:</strong> ' + (r.needsReviewCount || 0) + '</p>' +
         buildAuditSummaryHtml(r) +
-        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<table border="1" cellpadding="6" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px;"><thead><tr><th>Invoice No</th><th>GSTIN</th><th>Purchase Amt</th><th>2B Amt</th><th>Diff</th><th>Type</th>' + (hasAnyTaxBreakdown(r.allRows || r.issues) ? '<th>Tax Breakdown</th>' : '') + '<th>Status / Reason</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<div style="margin-top:30px;padding-top:14px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="font-size:10px;color:#888;">Generated by EANOVA — eanova.in — this report reflects the two files uploaded by the account holder and is not a filing with the GST department.</div>' +
           '<div style="border:2px solid #A63D40;color:#A63D40;padding:8px 14px;border-radius:4px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;text-align:center;transform:rotate(-4deg);white-space:nowrap;">EANOVA VERIFIED<br><span style="font-weight:400;font-size:9px;">' + dateStr + '</span></div>' +
@@ -7372,8 +7702,10 @@
         } catch (err) {
           document.getElementById('demoSpinner').classList.remove('show');
           runBtn.disabled = false;
-          errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
-          errBox.style.display = 'block';
+          if (!(err && err.cancelled)) {
+            errBox.textContent = '⚠️ ' + (err.message || 'Something went wrong while reading the files.');
+            errBox.style.display = 'block';
+          }
         }
       });
     })();
