@@ -1398,6 +1398,12 @@
     .ai-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; min-height: 48px; }
     .ai-head .ti-result { margin-bottom: 0; }
     .ai-logo { height: 46px; width: auto; max-width: 70px; object-fit: contain; display: block; pointer-events: none; }
+    .ai-avatar {
+      width: 46px; height: 46px; border-radius: 50%; flex: none;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--navy); color: #fff;
+      font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 15px; letter-spacing: 0.5px;
+    }
     .ai-arrow {
       position: absolute; top: calc(50% - 22px); z-index: 3;
       width: 40px; height: 40px; border-radius: 50%;
@@ -3717,41 +3723,37 @@
     </section>
 
     <section class="wrap" id="testimonials">
-      <div class="section-head"><span class="eyebrow">From early users</span><h2>What CA firms say</h2></div>
-      <div class="testimonial-grid">
-        <div class="testimonial-card">
-          <span class="ti-result">4 hrs → 25 min</span>
-          <p class="ti-quote">"After using EANOVA, my reconciliation work has become much easier. Earlier it used to take about 4 hours; now it takes about 25 minutes. The most useful feature for me is auto GSTIN mismatch detection, because it helps identify errors quickly and reduces manual checking."</p>
-          <div class="ti-attrib">
-            <div class="ti-name">Saurav Chakraborty</div>
-            <div class="ti-role">CA, Chakraborty &amp; Associates</div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <span class="ti-result">3 hrs → 30 min</span>
-          <p class="ti-quote">"Using EANOVA has brought a good improvement in my regular reconciliation work. Especially finding mismatch/GSTIN mismatch is much faster than before. Earlier it used to take about 3 hours; now it has reduced to around 30 minutes."</p>
-          <p class="ti-suggestion"><strong>Would like to see:</strong> an invoice-wise remark save feature/option added in the future.</p>
-          <div class="ti-attrib">
-            <div class="ti-name">Pritam Sen</div>
-            <div class="ti-role">Tax Consultant, Sen Tax Solutions</div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <span class="ti-result">5 hrs → 40 min</span>
-          <p class="ti-quote">"I have used EANOVA for some time and found it quite helpful in my daily GST reconciliation work. I got the most benefit from the auto reconciliation matching feature — it reduced manual checking and brought my work time down from about 5 hours to around 40 minutes."</p>
-          <p class="ti-suggestion"><strong>Would like to see:</strong> a bulk GSTIN correction suggestion feature in the future.</p>
-          <div class="ti-attrib">
-            <div class="ti-name">Arindam Basu</div>
-            <div class="ti-role">CA, Basu &amp; Co.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-head" style="margin-top:56px;"><span class="eyebrow">Independent AI reviews</span><h2>Tested by AI assistants</h2></div>
-      <div class="ai-slider" id="aiSlider" aria-roledescription="carousel" aria-label="AI assistant reviews">
+            <div class="section-head"><span class="eyebrow">From early users &amp; independent testers</span><h2>Tested by AI assistants &amp; CA firms</h2></div>
+      <div class="ai-slider" id="aiSlider" aria-roledescription="carousel" aria-label="Reviews from CA firms and AI assistants">
         <button type="button" class="ai-arrow ai-prev" id="aiPrev" aria-label="Previous review">&#8249;</button>
         <div class="ai-viewport" id="aiViewport" tabindex="0">
           <div class="ai-track" id="aiTrack">
+          <article class="testimonial-card ai-card">
+            <div class="ai-head"><span class="ai-avatar" aria-hidden="true">SC</span><span class="ti-result">4 hrs → 25 min</span></div>
+            <p class="ti-quote">"After using EANOVA, my reconciliation work has become much easier. Earlier it used to take about 4 hours; now it takes about 25 minutes. The most useful feature for me is auto GSTIN mismatch detection, because it helps identify errors quickly and reduces manual checking."</p>
+            <div class="ti-attrib">
+              <div class="ti-name">Saurav Chakraborty</div>
+              <div class="ti-role">CA, Chakraborty &amp; Associates</div>
+            </div>
+          </article>
+          <article class="testimonial-card ai-card">
+            <div class="ai-head"><span class="ai-avatar" aria-hidden="true">PS</span><span class="ti-result">3 hrs → 30 min</span></div>
+            <p class="ti-quote">"Using EANOVA has brought a good improvement in my regular reconciliation work. Especially finding mismatch/GSTIN mismatch is much faster than before. Earlier it used to take about 3 hours; now it has reduced to around 30 minutes."</p>
+            <p class="ti-suggestion"><strong>Would like to see:</strong> an invoice-wise remark save feature/option added in the future.</p>
+            <div class="ti-attrib">
+              <div class="ti-name">Pritam Sen</div>
+              <div class="ti-role">Tax Consultant, Sen Tax Solutions</div>
+            </div>
+          </article>
+          <article class="testimonial-card ai-card">
+            <div class="ai-head"><span class="ai-avatar" aria-hidden="true">AB</span><span class="ti-result">5 hrs → 40 min</span></div>
+            <p class="ti-quote">"I have used EANOVA for some time and found it quite helpful in my daily GST reconciliation work. I got the most benefit from the auto reconciliation matching feature — it reduced manual checking and brought my work time down from about 5 hours to around 40 minutes."</p>
+            <p class="ti-suggestion"><strong>Would like to see:</strong> a bulk GSTIN correction suggestion feature in the future.</p>
+            <div class="ti-attrib">
+              <div class="ti-name">Arindam Basu</div>
+              <div class="ti-role">CA, Basu &amp; Co.</div>
+            </div>
+          </article>
           <article class="testimonial-card ai-card">
             <div class="ai-head"><img class="ai-logo" src="data:image/png;base64,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" alt="Perplexity logo" loading="lazy" draggable="false"><span class="ti-result">★ 4.5/5</span></div>
             <p class="ti-quote">"I tested EANOVA using sample Purchase Register and GSTR-2B data. The reconciliation was fast, clear, and well structured. It correctly identified exact matches, partial amount differences, GSTIN mismatches, missing invoices, and duplicate entries. The new column-mapping confirmation and invoice-level tax breakdown make the process more transparent and useful for GST reconciliation. Overall, EANOVA is a promising tool for CA firms, accountants, and finance teams."</p>
