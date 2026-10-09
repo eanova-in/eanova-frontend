@@ -7163,7 +7163,7 @@
                 : '<span style="font-size:11.5px;font-weight:600;color:var(--gold);">(Pending)</span>';
               return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(36,31,26,0.08);">' +
                 '<div style="display:flex;align-items:center;"><span class="ref-status-dot ' + dotClass + '"></span>' +
-                '<span style="font-weight:600;">' + a.name + '</span></div>' +
+                '<span style="font-weight:600;">' + String(a.name == null ? '' : a.name).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }) + '</span></div>' +
                 label +
                 '</div>';
             }).join('');

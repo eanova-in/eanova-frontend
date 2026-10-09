@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>EANOVA Admin</title>
+<style>
+  :root {
+    --navy:#14213D; --cream:#F4EEE2; --card:#FBF9F3; --gold:#C08A28; --green:#3F6659;
+    --red:#A63D2F; --ink:#241F1A; --line:rgba(20,33,61,.14); --muted:rgba(36,31,26,.6);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  button { font:inherit; cursor:pointer; }
+  .hidden { display:none !important; }
+
+  /* login */
+  #loginView { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:30px; width:100%; max-width:360px; box-shadow:0 10px 30px rgba(20,33,61,.08); }
+  .login-box h1 { margin:0 0 4px; font-size:22px; color:var(--navy); }
+  .login-box p { margin:0 0 18px; color:var(--muted); font-size:13px; }
+  label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:12px 0 4px; }
+  input[type=text], input[type=password], input[type=number], input.txt {
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; font:inherit; color:var(--ink);
+  }
+  input:focus { outline:2px solid rgba(63,102,89,.35); border-color:var(--green); }
+  .btn { background:var(--navy); color:#fff; border:none; border-radius:6px; padding:10px 16px; font-weight:600; }
+  .btn:hover { opacity:.9; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn.ghost { background:transparent; color:var(--navy); border:1px solid var(--line); }
+  .btn.green { background:var(--green); }
+  .btn.red { background:var(--red); }
+  .btn.sm { padding:6px 10px; font-size:12.5px; }
+  .err { color:var(--red); font-size:13px; margin-top:12px; min-height:18px; }
+
+  /* app */
+  header.top { position:sticky; top:0; z-index:10; background:var(--navy); color:#fff; display:flex; align-items:center; gap:14px; padding:12px 20px; flex-wrap:wrap; }
+  header.top h1 { margin:0; font-size:17px; letter-spacing:.3px; }
+  header.top .sp { flex:1; }
+  header.top .btn.ghost { color:#fff; border-color:rgba(255,255,255,.35); }
+  .wrap { max-width:1200px; margin:0 auto; padding:20px; }
+  .stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 18px; min-width:140px; }
+  .stat b { display:block; font-size:22px; color:var(--navy); }
+  .stat span { font-size:12px; color:var(--muted); }
+  .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
+  .toolbar input { max-width:320px; }
+  .note { color:var(--muted); font-size:12.5px; }
+
+  .tablewrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); background:rgba(20,33,61,.04); white-space:nowrap; }
+  tr.urow { cursor:pointer; }
+  tr.urow:hover { background:rgba(63,102,89,.07); }
+  tr.urow.open { background:rgba(63,102,89,.12); }
+  td.num { color:var(--muted); width:46px; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .b-green { background:rgba(63,102,89,.15); color:var(--green); }
+  .b-gold { background:rgba(192,138,40,.18); color:#8a6212; }
+  .b-grey { background:rgba(36,31,26,.08); color:var(--muted); }
+  .b-red { background:rgba(166,61,47,.14); color:var(--red); }
+
+  tr.drow > td { background:#fff; padding:0; }
+  .detail { padding:18px 20px 22px; display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+  .panel { border:1px solid var(--line); border-radius:8px; padding:14px 16px; background:var(--card); }
+  .panel.wide { grid-column:1/-1; }
+  .panel h3 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--navy); }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px dashed rgba(20,33,61,.1); }
+  .kv:last-child { border-bottom:none; }
+  .kv span:first-child { color:var(--muted); }
+  .kv span:last-child { text-align:right; word-break:break-word; font-weight:600; }
+  .money { font-variant-numeric:tabular-nums; }
+  .editbox { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-top:10px; }
+  .editbox .f { flex:1; min-width:120px; }
+  .editbox label { margin-top:0; }
+  .minitable { width:100%; font-size:13px; }
+  .minitable th, .minitable td { padding:6px 8px; }
+  .scroll { overflow-x:auto; }
+  .msg { margin-top:8px; font-size:13px; min-height:18px; }
+  .msg.ok { color:var(--green); } .msg.bad { color:var(--red); }
+  .empty { color:var(--muted); font-style:italic; padding:6px 0; }
+  .loading { padding:20px; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginView">
+  <form class="login-box" id="loginForm" autocomplete="off">
+    <h1>EANOVA Admin</h1>
+    <p>Private area — founder access only.</p>
+    <label for="u">Username</label>
+    <input type="text" id="u" autocomplete="username" required>
+    <label for="p">Password</label>
+    <input type="password" id="p" autocomplete="current-password" required>
+    <button class="btn" id="loginBtn" type="submit" style="width:100%;margin-top:18px;">Log in</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appView" class="hidden">
+  <header class="top">
+    <h1>EANOVA Admin</h1>
+    <span class="sp"></span>
+    <button class="btn ghost sm" id="refreshBtn">↻ Refresh</button>
+    <button class="btn ghost sm" id="logoutBtn">Log out</button>
+  </header>
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><b id="sTotal">–</b><span>Total sign-ups</span></div>
+      <div class="stat"><b id="sPaid">–</b><span>Active paid plans</span></div>
+      <div class="stat"><b id="sReferred">–</b><span>Signed up via referral</span></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="txt" id="search" placeholder="Search name, firm or email…">
+      <button class="btn ghost sm" id="jumpBtn">⬇ Jump to newest</button>
+      <span class="note">Oldest at top · newest at bottom · click a row for details · times are IST</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Name / Firm</th><th>Email</th><th>Signed up</th><th>Plan</th><th>Referred / Bought</th><th>Balance</th></tr>
+        </thead>
+        <tbody id="tbody"><tr><td colspan="7" class="loading">Loading… (the server may take up to a minute to wake up)</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API_BASE = 'https://eanova-backend.onrender.com';
+  var TOKEN_KEY = 'eanova_admin_token';
+  var users = [];
+  var openId = null;
+  var detailCache = {};
+
+  function $(id) { return document.getElementById(id); }
+  // ইউজারের দেওয়া সব লেখা (নাম, ফার্ম, ইমেইল) এস্কেপ করে বসানো হয়
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function inr(n) { return '₹' + (Math.round((n || 0) * 100) / 100).toLocaleString('en-IN'); }
+  function fmtDate(iso) {
+    if (!iso && iso !== 0) return '—';
+    var d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' }) +
+      ', ' + d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+  function fmtDay(ms) {
+    return new Date(ms).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  var PLAN_NAMES = { first: 'First month', monthly: 'Monthly', annual: 'Annual' };
+
+  function api(path, opts) {
+    opts = opts || {};
+    var headers = { 'Content-Type': 'application/json' };
+    var t = sessionStorage.getItem(TOKEN_KEY);
+    if (t) headers.Authorization = 'Bearer ' + t;
+    return fetch(API_BASE + path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (res.status === 401 && t) { logout('Session expired — please log in again.'); throw new Error('expired'); }
+          if (!res.ok) throw new Error(data.message || ('Error ' + res.status));
+          return data;
+        });
+      });
+  }
+
+  /* ---------- login / logout ---------- */
+  function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); loadUsers(); }
+  function logout(msg) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    detailCache = {}; openId = null; users = [];
+    $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden');
+    $('p').value = ''; $('loginErr').textContent = msg || '';
+  }
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('loginBtn'); btn.disabled = true; btn.textContent = 'Logging in…'; $('loginErr').textContent = '';
+    api('/api/admin/login', { method: 'POST', body: { username: $('u').value, password: $('p').value } })
+      .then(function (d) { sessionStorage.setItem(TOKEN_KEY, d.token); showApp(); })
+      .catch(function (err) { $('loginErr').textContent = err.message === 'Failed to fetch' ? 'Cannot reach the server. If it was asleep, wait a few seconds and try again.' : err.message; })
+      .then(function () { btn.disabled = false; btn.textContent = 'Log in'; });
+  });
+  $('logoutBtn').addEventListener('click', function () { logout(); });
+  $('refreshBtn').addEventListener('click', function () { detailCache = {}; loadUsers(); });
+  $('search').addEventListener('input', render);
+  $('jumpBtn').addEventListener('click', function () { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
+
+  /* ---------- list ---------- */
+  function loadUsers() {
+    api('/api/admin/users').then(function (d) {
+      users = d.users;
+      $('sTotal').textContent = d.total;
+      $('sPaid').textContent = d.paidActive;
+      $('sReferred').textContent = users.reduce(function (a, u) { return a + u.referredCount; }, 0);
+      render();
+    }).catch(function (err) {
+      if (err.message !== 'expired') $('tbody').innerHTML = '<tr><td colspan="7" class="loading" style="color:var(--red)">' + esc(err.message) + '</td></tr>';
+    });
+  }
+
+  function planBadge(u) {
+    if (u.planActive) return '<span class="badge b-green">' + esc(PLAN_NAMES[u.activePlan] || u.activePlan || 'Active') + '</span>';
+    if (u.hasPaidBefore) return '<span class="badge b-red">Expired</span>';
+    return '<span class="badge b-grey">No plan</span>';
+  }
+
+  function render() {
+    var q = $('search').value.trim().toLowerCase();
+    var list = users.filter(function (u) {
+      return !q || (u.name + ' ' + u.firm + ' ' + u.email).toLowerCase().indexOf(q) !== -1;
+    });
+    if (!list.length) { $('tbody').innerHTML = '<tr><td colspan="7" class="loading">No users found.</td></tr>'; return; }
+    var html = '';
+    list.forEach(function (u) {
+      var isOpen = openId === u.id;
+      html += '<tr class="urow' + (isOpen ? ' open' : '') + '" data-id="' + esc(u.id) + '">' +
+        '<td class="num">' + u.serial + '</td>' +
+        '<td><b>' + esc(u.name || '—') + '</b><div class="note">' + esc(u.firm) + '</div></td>' +
+        '<td>' + esc(u.email) + '</td>' +
+        '<td>' + esc(fmtDate(u.signedUpAt)) + '</td>' +
+        '<td>' + planBadge(u) + '</td>' +
+        '<td>' + u.referredCount + ' / ' + u.boughtCount + '</td>' +
+        '<td class="money">' + inr(u.availableBalance) + '</td></tr>';
+      if (isOpen) html += '<tr class="drow" data-for="' + esc(u.id) + '"><td colspan="7"><div class="loading" id="dbox">Loading details…</div></td></tr>';
+    });
+    $('tbody').innerHTML = html;
+    if (openId) loadDetail(openId, false);
+  }
+
+  $('tbody').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr.urow');
+    if (!tr) return;
+    var id = tr.getAttribute('data-id');
+    openId = (openId === id) ? null : id;
+    render();
+    if (openId) {
+      var row = document.querySelector('tr.urow[data-id="' + openId + '"]');
+      if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
+
+  /* ---------- detail ---------- */
+  function loadDetail(id, force) {
+    if (!force && detailCache[id]) { paintDetail(detailCache[id]); return; }
+    api('/api/admin/users/' + encodeURIComponent(id)).then(function (d) {
+      detailCache[id] = d;
+      if (openId === id) paintDetail(d);
+    }).catch(function (err) {
+      var box = $('dbox'); if (box && err.message !== 'expired') box.innerHTML = '<span style="color:var(--red)">' + esc(err.message) + '</span>';
+    });
+  }
+
+  function kv(k, v) { return '<div class="kv"><span>' + esc(k) + '</span><span>' + v + '</span></div>'; }
+
+  function statusBadge(s) {
+    var map = { available: ['b-green', 'Available'], on_hold: ['b-gold', 'On hold'], withdrawn: ['b-grey', 'Withdrawn'], reversed: ['b-red', 'Reversed'] };
+    var m = map[s] || ['b-grey', s];
+    return '<span class="badge ' + m[0] + '">' + m[1] + '</span>';
+  }
+
+  function paintDetail(d) {
+    var box = document.querySelector('tr.drow[data-for="' + d.id + '"] td');
+    if (!box) return;
+    var now = Date.now();
+
+    // Plan
+    var planHtml;
+    if (d.plan.active) {
+      var daysLeft = Math.max(0, Math.ceil((d.plan.expiry - now) / 86400000));
+      planHtml = kv('Status', '<span class="badge b-green">Active</span>') +
+        kv('Plan', esc(PLAN_NAMES[d.plan.activePlan] || d.plan.activePlan)) +
+        kv('Valid until', esc(fmtDay(d.plan.expiry))) +
+        kv('Days left', daysLeft);
+    } else if (d.plan.hasPaidBefore) {
+      planHtml = kv('Status', '<span class="badge b-red">Expired</span>') +
+        kv('Last plan', esc(PLAN_NAMES[d.plan.activePlan] || d.plan.activePlan || '—')) +
+        (d.plan.expiry ? kv('Expired on', esc(fmtDay(d.plan.expiry))) : '');
+    } else {
+      planHtml = kv('Status', '<span class="badge b-grey">No plan (free trial)</span>');
+    }
+
+    // Account
+    var refBy = d.referredBy ? (esc(d.referredBy.name || '') + ' &lt;' + esc(d.referredBy.email) + '&gt;') : '—';
+    var acct = kv('Name', esc(d.name || '—')) + kv('Firm', esc(d.firm || '—')) + kv('Email', esc(d.email)) +
+      kv('Signed up', esc(fmtDate(d.signedUpAt))) + kv('Region', d.region === 'intl' ? 'International' : 'India') +
+      kv('Google linked', d.googleLinked ? 'Yes' : 'No') + kv('Clients added', d.clientsCount) +
+      kv('Last reconciliation', esc(d.lastReconciliationDate || '—')) +
+      kv('Referral code', esc(d.referralCode || '—')) + kv('Referred by', refBy);
+
+    // Earnings
+    var p = d.points;
+    var earn = kv('Referred (signed up)', d.referredCount) + kv('Bought a plan', d.boughtCount) +
+      kv('Total earned', '<span class="money">' + inr(p.totalEarned) + '</span>') +
+      kv('Available balance', '<span class="money">' + inr(p.availableBalance) + '</span>') +
+      kv('On hold (7 days)', '<span class="money">' + inr(p.onHold) + '</span>') +
+      kv('Withdrawn', '<span class="money">' + inr(p.withdrawn) + '</span>') +
+      kv('Reversed', '<span class="money">' + inr(p.reversed) + '</span>') +
+      '<div class="editbox">' +
+        '<div class="f"><label>Set available balance to (₹)</label><input type="number" id="newBal" min="0" step="0.01" value="' + p.availableBalance + '"></div>' +
+        '<div class="f"><label>Note (optional)</label><input type="text" class="txt" id="balNote" maxlength="200" placeholder="reason"></div>' +
+        '<button class="btn green sm" id="saveBal">Save</button>' +
+        '<button class="btn red sm" id="zeroBal">Set to ₹0</button>' +
+      '</div>' +
+      (p.onHold > 0 ? '<div class="note" style="margin-top:6px;">Note: ' + inr(p.onHold) + ' is still on hold and will become available later. To cancel it too, use “Reverse” in the table below.</div>' : '') +
+      '<div class="msg" id="balMsg"></div>';
+
+    // Referred accounts
+    var refHtml;
+    if (!d.referred.length) refHtml = '<div class="empty">Nobody has signed up with this user’s referral code yet.</div>';
+    else {
+      refHtml = '<div class="scroll"><table class="minitable"><thead><tr><th>Name</th><th>Email</th><th>Signed up</th><th>Status</th><th>Earned from them</th></tr></thead><tbody>' +
+        d.referred.map(function (r) {
+          return '<tr><td>' + esc(r.name || '—') + '</td><td>' + esc(r.email) + '</td><td>' + esc(fmtDate(r.signedUpAt)) + '</td><td>' +
+            (r.bought ? '<span class="badge b-green">Bought</span>' : '<span class="badge b-gold">Pending</span>') +
+            '</td><td class="money">' + inr(r.earnedFromThem) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    // Ledger
+    var ledHtml;
+    if (!d.ledger.length) ledHtml = '<div class="empty">No commission entries yet.</div>';
+    else {
+      ledHtml = '<div class="scroll"><table class="minitable"><thead><tr><th>Date</th><th>From</th><th>Plan</th><th>Rate</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>' +
+        d.ledger.map(function (e) {
+          var action = '';
+          if (!e.adminAdjusted) {
+            if (e.status === 'reversed') action = '<button class="btn ghost sm" data-act="restore" data-eid="' + esc(e.id) + '">Restore</button>';
+            else if (e.status !== 'withdrawn') action = '<button class="btn ghost sm" data-act="reverse" data-eid="' + esc(e.id) + '">Reverse</button>';
+          }
+          var from = e.adminAdjusted ? ('<i>Admin adjustment</i>' + (e.note ? '<div class="note">' + esc(e.note) + '</div>' : '')) : esc(e.buyerEmail);
+          var rate = e.adminAdjusted ? '—' : (Math.round(e.rate * 1000) / 10 + '%' + (e.firstReferralBonus ? ' ★' : ''));
+          var plan = e.adminAdjusted ? '—' : esc(PLAN_NAMES[e.planPurchased] || e.planPurchased || '—');
+          return '<tr><td>' + esc(fmtDate(e.createdAt)) + '</td><td>' + from + '</td><td>' + plan + '</td><td>' + rate +
+            '</td><td class="money">' + (e.amount < 0 ? '−' : '') + inr(Math.abs(e.amount)) + '</td><td>' + statusBadge(e.status) +
+            (e.status === 'on_hold' ? '<div class="note">until ' + esc(fmtDay(e.availableAt)) + '</div>' : '') + '</td><td>' + action + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    // Withdrawals + milestones
+    var wd = d.withdrawalRequests.length ? '<div class="scroll"><table class="minitable"><thead><tr><th>Date</th><th>Amount</th><th>Via</th><th>Payout</th><th>Status</th></tr></thead><tbody>' +
+      d.withdrawalRequests.map(function (w) {
+        return '<tr><td>' + esc(fmtDate(w.createdAt)) + '</td><td class="money">' + inr(w.amount) + '</td><td>' + esc(w.contactMethod) + '</td><td>' + esc(w.payoutMethod) +
+          (w.payoutDetails ? '<div class="note">' + esc(w.payoutDetails) + '</div>' : '') + '</td><td>' + esc(w.status) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<div class="empty">No withdrawal requests.</div>';
+    var ms = d.milestoneClaims.length ? d.milestoneClaims.map(function (m) {
+      return '<div class="kv"><span>' + esc(m.milestone) + ' referrals · ' + esc(fmtDate(m.requestedAt)) + '</span><span>' + esc(m.status) + ' (' + esc(m.contactMethod) + ')</span></div>';
+    }).join('') : '<div class="empty">No milestone claims.</div>';
+
+    box.innerHTML = '<div class="detail">' +
+      '<div class="panel"><h3>Account</h3>' + acct + '</div>' +
+      '<div class="panel"><h3>Plan</h3>' + planHtml + '</div>' +
+      '<div class="panel"><h3>Referral earnings</h3>' + earn + '</div>' +
+      '<div class="panel wide"><h3>People referred (' + d.referredCount + ' · ' + d.boughtCount + ' bought)</h3>' + refHtml + '</div>' +
+      '<div class="panel wide"><h3>Commission history</h3>' + ledHtml + '</div>' +
+      '<div class="panel"><h3>Withdrawal requests</h3>' + wd + '</div>' +
+      '<div class="panel"><h3>Milestone gift claims</h3>' + ms + '</div>' +
+      '</div>';
+
+    function setMsg(t, ok) { var m = $('balMsg'); if (m) { m.textContent = t; m.className = 'msg ' + (ok ? 'ok' : 'bad'); } }
+    function saveBalance(amount) {
+      var cur = d.points.availableBalance;
+      if (!confirm('Change available balance of ' + d.email + '\nfrom ' + inr(cur) + ' to ' + inr(amount) + ' ?')) return;
+      api('/api/admin/users/' + encodeURIComponent(d.id) + '/set-balance', { method: 'POST', body: { amount: amount, note: $('balNote').value } })
+        .then(function (r) {
+          delete detailCache[d.id];
+          loadUsers();            // তালিকার balance-ও নতুন হবে; খোলা প্যানেল নিজে রিলোড হবে
+          setTimeout(function () { setMsg(r.message, true); }, 400);
+        })
+        .catch(function (err) { setMsg(err.message, false); });
+    }
+    $('saveBal').addEventListener('click', function () {
+      var v = parseFloat($('newBal').value);
+      if (!isFinite(v) || v < 0) { setMsg('Enter a valid amount (0 or more).', false); return; }
+      saveBalance(v);
+    });
+    $('zeroBal').addEventListener('click', function () { $('newBal').value = 0; saveBalance(0); });
+
+    box.querySelectorAll('button[data-act]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var act = b.getAttribute('data-act');
+        if (!confirm((act === 'reverse' ? 'Reverse' : 'Restore') + ' this commission entry?')) return;
+        api('/api/admin/users/' + encodeURIComponent(d.id) + '/ledger/' + encodeURIComponent(b.getAttribute('data-eid')) + '/' + act, { method: 'POST' })
+          .then(function () { delete detailCache[d.id]; loadUsers(); })
+          .catch(function (err) { alert(err.message); });
+      });
+    });
+  }
+
+  // টোকেন থাকলে (একই ট্যাবে রিলোড করলে) সরাসরি অ্যাপ খোলা
+  if (sessionStorage.getItem(TOKEN_KEY)) showApp();
+})();
+</script>
+</body>
+</html>
