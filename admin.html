@@ -78,6 +78,7 @@
   .minitable { width:100%; font-size:13px; }
   .minitable th, .minitable td { padding:6px 8px; }
   .scroll { overflow-x:auto; }
+  .minitable td:first-child { white-space:nowrap; }
   .msg { margin-top:8px; font-size:13px; min-height:18px; }
   .msg.ok { color:var(--green); } .msg.bad { color:var(--red); }
   .empty { color:var(--muted); font-style:italic; padding:6px 0; }
@@ -303,6 +304,7 @@
       kv('On hold (7 days)', '<span class="money">' + inr(p.onHold) + '</span>') +
       kv('Withdrawn', '<span class="money">' + inr(p.withdrawn) + '</span>') +
       kv('Reversed', '<span class="money">' + inr(p.reversed) + '</span>') +
+      kv('Pending withdrawal requests', '<span class="money">' + inr(d.withdrawalRequests.filter(function (w) { return w.status !== 'success'; }).reduce(function (t, w) { return t + w.amount; }, 0)) + '</span>') +
       '<div class="editbox">' +
         '<div class="f"><label>Set available balance to (₹)</label><input type="number" id="newBal" min="0" step="0.01" value="' + p.availableBalance + '"></div>' +
         '<div class="f"><label>Note (optional)</label><input type="text" class="txt" id="balNote" maxlength="200" placeholder="reason"></div>' +
@@ -345,10 +347,15 @@
     }
 
     // Withdrawals + milestones
-    var wd = d.withdrawalRequests.length ? '<div class="scroll"><table class="minitable"><thead><tr><th>Date</th><th>Amount</th><th>Via</th><th>Payout</th><th>Status</th></tr></thead><tbody>' +
+    var wd = d.withdrawalRequests.length ? '<div class="scroll"><table class="minitable"><thead><tr><th>Date</th><th>Amount</th><th>Via</th><th>Payout</th><th>Status</th><th></th></tr></thead><tbody>' +
       d.withdrawalRequests.map(function (w) {
-        return '<tr><td>' + esc(fmtDate(w.createdAt)) + '</td><td class="money">' + inr(w.amount) + '</td><td>' + esc(w.contactMethod) + '</td><td>' + esc(w.payoutMethod) +
-          (w.payoutDetails ? '<div class="note">' + esc(w.payoutDetails) + '</div>' : '') + '</td><td>' + esc(w.status) + '</td></tr>';
+        var done = w.status === 'success';
+        var badge = done ? '<span class="badge b-green">Success</span>' : '<span class="badge b-gold">Pending</span>';
+        var btn = done
+          ? '<button class="btn ghost sm" data-wd="pending" data-wid="' + esc(w.id) + '">Back to pending</button>'
+          : '<button class="btn green sm" data-wd="success" data-wid="' + esc(w.id) + '">Mark success</button>';
+        return '<tr><td>' + esc(fmtDate(w.createdAt)) + (done && w.completedAt ? '<div class="note">done ' + esc(fmtDate(w.completedAt)) + '</div>' : '') + '</td><td class="money">' + inr(w.amount) + '</td><td>' + esc(w.contactMethod) + '</td><td>' + esc(w.payoutMethod) +
+          (w.payoutDetails ? '<div class="note">' + esc(w.payoutDetails) + '</div>' : '') + '</td><td>' + badge + '</td><td>' + btn + '</td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty">No withdrawal requests.</div>';
     var ms = d.milestoneClaims.length ? d.milestoneClaims.map(function (m) {
       return '<div class="kv"><span>' + esc(m.milestone) + ' referrals · ' + esc(fmtDate(m.requestedAt)) + '</span><span>' + esc(m.status) + ' (' + esc(m.contactMethod) + ')</span></div>';
@@ -360,7 +367,7 @@
       '<div class="panel"><h3>Referral earnings</h3>' + earn + '</div>' +
       '<div class="panel wide"><h3>People referred (' + d.referredCount + ' · ' + d.boughtCount + ' bought)</h3>' + refHtml + '</div>' +
       '<div class="panel wide"><h3>Commission history</h3>' + ledHtml + '</div>' +
-      '<div class="panel"><h3>Withdrawal requests</h3>' + wd + '</div>' +
+      '<div class="panel wide"><h3>Withdrawal requests</h3>' + wd + '</div>' +
       '<div class="panel"><h3>Milestone gift claims</h3>' + ms + '</div>' +
       '</div>';
 
@@ -382,6 +389,16 @@
       saveBalance(v);
     });
     $('zeroBal').addEventListener('click', function () { $('newBal').value = 0; saveBalance(0); });
+
+    box.querySelectorAll('button[data-wd]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var st = b.getAttribute('data-wd');
+        if (!confirm(st === 'success' ? 'Mark this withdrawal as SUCCESS?\n(Balance is not changed — set it separately.)' : 'Move this withdrawal back to pending?')) return;
+        api('/api/admin/users/' + encodeURIComponent(d.id) + '/withdrawals/' + encodeURIComponent(b.getAttribute('data-wid')) + '/status', { method: 'POST', body: { status: st } })
+          .then(function () { delete detailCache[d.id]; loadUsers(); })
+          .catch(function (err) { alert(err.message); });
+      });
+    });
 
     box.querySelectorAll('button[data-act]').forEach(function (b) {
       b.addEventListener('click', function () {
