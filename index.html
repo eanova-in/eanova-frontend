@@ -2238,6 +2238,28 @@
       color: rgba(36, 31, 26, 0.6);
       margin-top: 6px;
     }
+    /* Withdrawal history popup + moving notice */
+    .wd-ticker {
+      position: relative; overflow: hidden; height: 28px; margin: 14px 0 12px;
+      border-radius: 6px; background: rgba(192, 138, 40, 0.12);
+    }
+    .wd-ticker-text {
+      position: absolute; top: 0; left: 0; line-height: 28px; white-space: nowrap;
+      font-size: 12px; font-weight: 600; color: #8a6212;
+      animation: wdTicker 20s linear infinite;
+    }
+    .wd-ticker-text a { color: var(--navy); text-decoration: underline; }
+    @keyframes wdTicker {
+      from { left: 0; transform: translateX(-100%); }
+      to   { left: 100%; transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .wd-ticker { height: auto; padding: 6px 10px; }
+      .wd-ticker-text { position: static; white-space: normal; line-height: 1.5; animation: none; }
+    }
+    .wd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .wd-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: rgba(36,31,26,0.55); padding: 6px 6px; border-bottom: 1px solid rgba(36,31,26,0.12); }
+    .wd-table td { padding: 10px 6px; border-bottom: 1px solid rgba(36,31,26,0.08); vertical-align: top; }
     .modal-overlay {
       display: none;
       position: fixed;
@@ -4305,9 +4327,12 @@
           <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">On hold (7-day)</div>
           <div style="font-size:22px;font-weight:700;color:var(--gold);margin-top:4px;" id="refOnHold">₹0</div>
         </div>
-        <div style="flex:1;min-width:140px;background:rgba(36,31,26,0.06);border-radius:10px;padding:14px 16px;">
-          <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">Total earned</div>
-          <div style="font-size:22px;font-weight:700;margin-top:4px;" id="refTotalEarned">₹0</div>
+        <div style="flex:1;min-width:140px;background:rgba(36,31,26,0.06);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div>
+            <div style="font-size:11.5px;color:rgba(36,31,26,0.6);font-weight:600;">Total earned</div>
+            <div style="font-size:22px;font-weight:700;margin-top:4px;" id="refTotalEarned">₹0</div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="wdHistoryBtn">History</button>
         </div>
       </div>
 
@@ -4330,6 +4355,7 @@
       <h3 style="margin-top:34px;">History</h3>
       <div id="refHistoryList" style="margin-top:10px;font-size:13.5px;"></div>
       <div id="refHistoryEmpty" style="display:none;color:rgba(36,31,26,0.5);font-size:13.5px;margin-top:6px;">No referral activity yet — share your link above to start earning.</div>
+
     </div>
   </section>
 
@@ -4377,9 +4403,11 @@
     </div>
   </div>
 
-  <!-- Request Withdrawal — records the request server-side and locks the
-       available points, then hands off to Live Chat/email where the user
-       shares bank/UPI details and the founder pays out manually. -->
+  <!-- Request Withdrawal — records the request server-side as "pending" and
+       moves the available balance into it (balance becomes ₹0; Total earned
+       is unchanged). The founder later marks it Success and sets any new
+       balance from the Admin Panel. The user shares bank/UPI details on
+       Live Chat/email and the founder pays out manually. -->
   <div class="modal-overlay" id="withdrawalModal">
     <div class="modal">
       <button class="modal-close" data-close-modal="withdrawalModal">✕</button>
@@ -4393,10 +4421,7 @@
             <option value="upi_qr">UPI QR code</option>
           </select>
         </div>
-        <div class="field">
-          <label>Notes (optional — e.g. account/IFSC, or "will share UPI QR on chat")</label>
-          <textarea id="wd-payout-details" rows="3" placeholder="Optional — you can also just share this on chat/email"></textarea>
-        </div>
+        <p style="font-size:13.5px;font-weight:600;color:var(--navy);margin:2px 0 14px;">Submit your details in Live Chat or Email.</p>
         <div class="field">
           <label>Continue on</label>
           <select id="wd-contact-method">
@@ -4407,6 +4432,18 @@
         <div class="auth-error" id="withdrawalError" style="display:none;"></div>
         <button class="btn" type="submit" style="width:100%;margin-top:10px;justify-content:center;">Submit Request</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Withdrawal History popup — opened by the "History" button next to
+       Total earned. Status (Pending/Success) is set by the founder from
+       the Admin Panel. -->
+  <div class="modal-overlay" id="wdHistoryModal">
+    <div class="modal">
+      <button class="modal-close" data-close-modal="wdHistoryModal">✕</button>
+      <h3>Withdrawal History</h3>
+      <div class="wd-ticker" aria-live="off"><span class="wd-ticker-text">If you have not received your payment, please contact Live Chat or our support email: <a href="mailto:eanova.in@gmail.com">eanova.in@gmail.com</a></span></div>
+      <div id="wdHistoryBody"></div>
     </div>
   </div>
 
@@ -7071,6 +7108,7 @@
 
     // ---- Referral view ----
     var _referralPointsCache = null;
+    var _withdrawalRequestsCache = [];
     var _pendingMilestoneClaim = null;
 
     function submitMilestoneClaim(contactMethod) {
@@ -7117,6 +7155,8 @@
           document.getElementById('refTotalEarned').textContent = '₹' + body.points.totalEarned;
           if (linkInput) linkInput.value = body.referralLink;
 
+          _withdrawalRequestsCache = body.withdrawalRequests || [];
+
           var msList = document.getElementById('refMilestonesList');
           if (msList) {
             var milestones = body.milestones || [];
@@ -7159,8 +7199,8 @@
               var isSuccess = a.status === 'success';
               var dotClass = isSuccess ? 'success' : 'pending';
               var label = isSuccess
-                ? (a.totalEarned > 0 ? '<span style="font-size:11.5px;font-weight:600;color:var(--green);">Success — ₹' + a.totalEarned + ' earned</span>' : '<span style="font-size:11.5px;font-weight:600;color:var(--green);">Success</span>')
-                : '<span style="font-size:11.5px;font-weight:600;color:var(--gold);">(Pending)</span>';
+                ? '<span style="font-size:11.5px;font-weight:600;color:var(--green);">Success</span>' + (a.totalEarned > 0 ? ' <span style="font-size:11px;color:rgba(36,31,26,0.55);margin-left:6px;">+₹' + a.totalEarned + '</span>' : '')
+                : '<span style="font-size:11.5px;font-weight:600;color:var(--gold);">Pending</span>';
               return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(36,31,26,0.08);">' +
                 '<div style="display:flex;align-items:center;"><span class="ref-status-dot ' + dotClass + '"></span>' +
                 '<span style="font-weight:600;">' + String(a.name == null ? '' : a.name).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }) + '</span></div>' +
@@ -7206,6 +7246,29 @@
       el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 2400);
     }
 
+    function escHtml(v) {
+      return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+    }
+    document.getElementById('wdHistoryBtn').addEventListener('click', function() {
+      var body = document.getElementById('wdHistoryBody');
+      var list = _withdrawalRequestsCache || [];
+      if (!list.length) {
+        body.innerHTML = '<div style="color:rgba(36,31,26,0.5);font-size:13.5px;padding:8px 0;">No withdrawal requests yet.</div>';
+      } else {
+        body.innerHTML = '<div style="overflow-x:auto;"><table class="wd-table"><thead><tr><th>Amount</th><th>Method</th><th>Status</th><th>Requested</th></tr></thead><tbody>' +
+          list.map(function(w) {
+            var ok = w.status === 'success';
+            var method = w.payoutMethod === 'upi_qr' ? 'UPI QR' : (w.payoutMethod === 'bank' ? 'Bank' : escHtml(w.payoutMethod || '—'));
+            var status = ok
+              ? '<span style="font-weight:600;color:var(--green);">Success</span>'
+              : '<span style="font-weight:600;color:var(--gold);">Pending</span>';
+            var when = new Date(w.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+            return '<tr><td style="font-weight:600;">₹' + Number(w.amount) + '</td><td>' + method + '</td><td>' + status + '</td><td style="font-size:12px;color:rgba(36,31,26,0.7);">' + escHtml(when) + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+      }
+      openModal('wdHistoryModal');
+    });
+
     document.getElementById('refWithdrawBtn').addEventListener('click', function() {
       var available = (_referralPointsCache && _referralPointsCache.availableBalance) || 0;
       if (available < 100) {
@@ -7222,7 +7285,7 @@
       var errBox = document.getElementById('withdrawalError');
       errBox.style.display = 'none';
       var payoutMethod = document.getElementById('wd-payout-method').value;
-      var payoutDetails = document.getElementById('wd-payout-details').value;
+      var payoutDetails = '';
       var contactMethod = document.getElementById('wd-contact-method').value;
       var submitBtn = e.target.querySelector('button[type="submit"]');
       setBtnLoading(submitBtn, true);
@@ -7243,7 +7306,7 @@
             var subject = encodeURIComponent('Withdrawal Request - ' + email);
             var mailBody = encodeURIComponent(
               'Hi EANOVA team,\n\nI have requested a withdrawal of ₹' + result.body.amount + '.\n\n' +
-              'My account email: ' + email + '\nPayout method: ' + payoutMethod + '\nDetails: ' + payoutDetails
+              'My account email: ' + email + '\nPayout method: ' + payoutMethod
             );
             window.location.href = 'mailto:eanova.in@gmail.com?subject=' + subject + '&body=' + mailBody;
           }
