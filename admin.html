@@ -299,7 +299,8 @@
     // Earnings
     var p = d.points;
     var earn = kv('Referred (signed up)', d.referredCount) + kv('Bought a plan', d.boughtCount) +
-      kv('Total earned', '<span class="money">' + inr(p.totalEarned) + '</span>') +
+      kv('Total earned (paid out — user sees this)', '<span class="money">' + inr(p.totalEarned) + '</span>') +
+      kv('Credited so far (commission + your adjustments)', '<span class="money">' + inr(p.creditedTotal) + '</span>') +
       kv('Available balance', '<span class="money">' + inr(p.availableBalance) + '</span>') +
       kv('On hold (7 days)', '<span class="money">' + inr(p.onHold) + '</span>') +
       kv('Withdrawn', '<span class="money">' + inr(p.withdrawn) + '</span>') +
