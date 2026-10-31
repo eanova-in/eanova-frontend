@@ -4755,7 +4755,12 @@
       // the currently-active plan's real details instead of showing the
       // payment form.
       var successBox = document.getElementById('checkoutSuccess');
-      if (state.subscriptionActive && isSubscriptionValid()) {
+      // Use isSubscriptionValid() here, not the raw state.subscriptionActive
+      // flag — subscriptionActive alone doesn't account for expiry, so an
+      // account whose plan already expired was still shown "already
+      // running" / "no need to purchase again" and had no way to buy a new
+      // plan. isSubscriptionValid() checks subscriptionExpiry too.
+      if (isSubscriptionValid()) {
         var activeInfo = currentPlanPrice(state.activePlan || 'monthly');
         var planNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
         document.getElementById('checkoutForm').style.display = 'none';
@@ -5698,7 +5703,13 @@
       document.getElementById('dashFirm').textContent = state.user.firm;
 
       const banner = document.getElementById('trialBanner');
-      if (state.subscriptionActive) {
+      // isSubscriptionValid() (not the raw state.subscriptionActive flag)
+      // decides whether the "active" banner or the "choose a plan" banner
+      // shows — subscriptionActive alone doesn't account for expiry, so an
+      // account whose plan had already expired was still shown "Subscription
+      // active" here with no plan-buying buttons at all, leaving no way to
+      // renew. See isSubscriptionValid() for the expiry check.
+      if (isSubscriptionValid()) {
         banner.classList.add('active');
         var planKey = state.activePlan || 'monthly';
         var pInfo = currentPlanPrice(planKey);
@@ -5715,8 +5726,15 @@
         var alreadyPaidBefore = !!(state.user && state.user.hasPaidBefore);
         var firstCardHtml = alreadyPaidBefore ? '' :
             '<div class="dash-plan-card"><div class="dash-plan-name">First Month</div><div class="dash-plan-price">' + firstP.currency + firstP.amount + firstP.period + '</div><button class="btn btn-sm btn-outline" data-plan="first" data-nav="checkout" type="button">Choose</button></div>';
+        // A plan that was bought and then expired is a different situation
+        // from a never-paid trial account — say so instead of calling it a
+        // "Free trial" when it was in fact a paid plan that lapsed.
+        var wasExpiredPaidPlan = !!(state.subscriptionExpiry && Date.now() >= state.subscriptionExpiry && alreadyPaidBefore);
+        var bannerMsg = wasExpiredPaidPlan
+          ? '⌛ <strong>Your plan has expired</strong> — renew below to keep using EANOVA.'
+          : '🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial. Choose a plan to continue after your trial:';
         banner.innerHTML =
-          '<div class="msg" style="margin-bottom:12px;">🎓 <strong>Free trial active</strong> — 11 days remaining. Unlimited clients during trial. Choose a plan to continue after your trial:</div>' +
+          '<div class="msg" style="margin-bottom:12px;">' + bannerMsg + '</div>' +
           '<div class="dash-plan-grid">' +
             firstCardHtml +
             '<div class="dash-plan-card"><div class="dash-plan-name">Monthly</div><div class="dash-plan-price">' + monthlyP.currency + monthlyP.amount + monthlyP.period + '</div><button class="btn btn-sm btn-outline" data-plan="monthly" data-nav="checkout" type="button">Choose</button></div>' +
@@ -6974,12 +6992,20 @@
       profileEmailRevealed = false;
       renderProfileEmail();
       var badge = document.getElementById('pdPlanBadge');
-      if (state.subscriptionActive) {
+      if (isSubscriptionValid()) {
         var planKey = state.activePlan || 'monthly';
         var p = currentPlanPrice(planKey);
         var planNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
         badge.textContent = 'Paid — ' + (planNames[planKey] || 'Monthly') + ' — ' + p.currency + p.amount + p.period;
         badge.classList.remove('trial');
+      } else if (state.subscriptionActive) {
+        // subscriptionActive is still true in the DB but the expiry date has
+        // passed — show it as expired rather than "Paid", since it no
+        // longer grants access.
+        var expiredPlanKey = state.activePlan || 'monthly';
+        var expiredPlanNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
+        badge.textContent = (expiredPlanNames[expiredPlanKey] || 'Monthly') + ' — Expired';
+        badge.classList.add('trial');
       } else {
         badge.textContent = 'Free trial';
         badge.classList.add('trial');
