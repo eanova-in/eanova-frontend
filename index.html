@@ -4755,7 +4755,7 @@
       // the currently-active plan's real details instead of showing the
       // payment form.
       var successBox = document.getElementById('checkoutSuccess');
-      if (state.subscriptionActive) {
+      if (state.subscriptionActive && isSubscriptionValid()) {
         var activeInfo = currentPlanPrice(state.activePlan || 'monthly');
         var planNames = { first: 'First Month', monthly: 'Monthly', annual: 'Annual' };
         document.getElementById('checkoutForm').style.display = 'none';
