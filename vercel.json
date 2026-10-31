@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/eanova-landing-page.html" },
-    { "source": "/((?!eanova-landing-page\\.html|eanova-logo\\.png|manifest\\.json|favicon\\.ico|favicon-32x32\\.png).*)", "destination": "/index.html" }
+    { "source": "/((?!index\\.html|app\\.html|eanova-logo\\.png|manifest\\.json|favicon\\.ico|favicon-32x32\\.png).*)", "destination": "/app.html" }
   ]
 }
